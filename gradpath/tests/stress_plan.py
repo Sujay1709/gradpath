@@ -108,7 +108,7 @@ def dashboard_queries(values):
         return values.get(m.group(1), "") if m else v
 
     seen, out = set(), []
-    for f in sorted(glob.glob(os.path.join(DASHBOARDS, "gradpath-*.json"))):
+    for f in sorted(glob.glob(os.path.join(DASHBOARDS, "**", "gradpath-*.json"), recursive=True)):
         d = json.load(open(f))
         targets = [t for p in walk(d["panels"]) for t in p.get("targets", [])]
         targets += [v["query"] for v in d["templating"]["list"] if v["type"] == "query"]
@@ -361,6 +361,42 @@ def check_smart_filters(api, seed, n=40):
     return rep
 
 
+def check_product(api):
+    """Student app: every page serves, the planner calculates from a request body, charts are embeddable."""
+    rep = Report()
+    for path in ["/", "/schools", "/graphs", "/graphs/debt-earnings", "/graphs/rankings", "/graphs/programs",
+                 "/graphs/states", "/graphs/credentials", "/states", "/help", "/plan", "/plan/review",
+                 "/plan/results", "/plan/edit"]:
+        req = urllib.request.Request(api + path, headers={"Accept": "text/html"})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            body = r.read().decode()
+            if r.status != 200 or 'id="primary-nav"' not in body:
+                rep.flag("page", f"{path}: status {r.status}")
+    plan = {"school": "186380", "start_year": "2027", "grad_year": "2031", "borrowing": "5500", "living": "12000",
+            "salary_low": "40000", "salary_high": "70000"}
+    req = urllib.request.Request(api + "/plan/calculate", data=json.dumps(plan).encode(), method="POST",
+                                 headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        res = json.loads(r.read())
+    (est,), *_ = get(api, "/plan/estimate", plan)
+    for key in ("debt_at_repayment_start", "standard_monthly_payment", "debt_free_range", "funding_gap"):
+        if res["estimate"][key] != est[key]:
+            rep.flag("calculate_mismatch", f"{key}: POST {res['estimate'][key]} vs GET {est[key]}")
+    if {"scenarios", "timeline", "milestones", "explanation", "notes"} - set(res):
+        rep.flag("calculate_shape", str(sorted(res)))
+    manifest = json.load(urllib.request.urlopen(api + "/static/app/embed.json"))
+    for slug, e in manifest["graphs"].items():
+        url = f"{manifest['grafana']}/d-solo/{e['uid']}/?orgId=1&panelId={e['panel_id']}"
+        try:
+            with urllib.request.urlopen(url, timeout=30) as r:
+                if "deny" in (r.headers.get("X-Frame-Options") or "").lower():
+                    rep.flag("embed_blocked", f"{slug}: Grafana sends X-Frame-Options deny (allow_embedding off)")
+        except Exception as ex:
+            rep.flag("embed_unreachable", f"{slug}: {ex}")
+    print(f"  14 product pages, POST /plan/calculate and {len(manifest['graphs'])} embedded charts checked")
+    return rep
+
+
 # ── 3 + 4. Cache, gzip and performance ───────────────────────────────────────
 
 def check_cache_and_perf(api):
@@ -420,7 +456,7 @@ def main():
     args = ap.parse_args()
 
     try:
-        get(args.api, "/")
+        get(args.api, "/meta/health")
     except Exception as e:
         sys.exit(f"GradPath API not reachable at {args.api} ({e}). Start it with ./start.sh first.")
 
@@ -430,6 +466,9 @@ def main():
     print("1. Dashboard queries")
     reports.append(("dashboard queries", check_dashboards(args.api, sample_school)))
     reports[-1][1].print_issues("dashboard queries")
+    print("1a. Student app")
+    reports.append(("student app", check_product(args.api)))
+    reports[-1][1].print_issues("student app")
     print("1b. Smart filters")
     reports.append(("smart filters", check_smart_filters(args.api, args.seed)))
     reports[-1][1].print_issues("smart filters")

@@ -11,7 +11,7 @@ from datetime import date
 from functools import lru_cache
 
 import pandas as pd
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import FileResponse, Response
 
 from config import DATA_YEAR_LABEL, SCORECARD_URL, STATIC_DIR
@@ -633,9 +633,42 @@ def plan_explain(pp: PlanParams = Depends(), flt: Filters = Depends()):
     return _timeline(pp, flt)["explanation"]
 
 
-@router.get("/plan")
-def plan_form():
-    return FileResponse(os.path.join(STATIC_DIR, "plan.html"), media_type="text/html")
+PLAN_KEYS = ["start_year", "grad_year", "savings", "contribution", "grants", "existing_debt", "borrowing", "rate",
+             "tuition", "living", "salary_low", "salary_mid", "salary_high", "repay_pct", "in_state", "work_state",
+             "occupation"]
+
+
+@router.post("/plan/calculate")
+def plan_calculate(body: dict = Body(...)):
+    """
+    Everything the My Plan results page needs, in one call. Personal values arrive in the request
+    body (never in a URL), are used once, and are not stored or cached.
+    """
+    val = lambda k: None if body.get(k) in (None, "") else str(body[k])[:80]
+    pp = PlanParams(**{k: val(k) for k in PLAN_KEYS})
+    flt = Filters(school=val("school"), major=val("major"), credential=val("credential"))
+    est = plan_estimate(pp, flt)[0]
+    est.pop("card", None)
+    return {"estimate": est, "scenarios": plan_scenarios(pp, flt), "notes": plan_notes(pp, flt),
+            "timeline": plan_timeline(pp, flt), "milestones": plan_milestones(pp, flt),
+            "explanation": plan_explain(pp, flt)}
+
+
+# ── Student product pages: one app shell, routed in the browser ─────────────
+APP_INDEX = os.path.join(STATIC_DIR, "app", "index.html")
+
+
+def app_page():
+    return FileResponse(APP_INDEX, media_type="text/html", headers={"Cache-Control": "no-cache"})
+
+
+def app_graph_page(slug: str):
+    return app_page()
+
+
+for _path in ["/plan", "/plan/review", "/plan/results", "/plan/edit", "/schools", "/graphs", "/states", "/help"]:
+    router.add_api_route(_path, app_page, methods=["GET"], include_in_schema=False)
+router.add_api_route("/graphs/{slug}", app_graph_page, methods=["GET"], include_in_schema=False)
 
 
 # ── Help / sources ───────────────────────────────────────────────────────────

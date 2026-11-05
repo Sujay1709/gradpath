@@ -68,7 +68,8 @@ grafana server \
   cfg:auth.anonymous.enabled=true \
   cfg:auth.anonymous.org_role=Viewer \
   cfg:users.default_theme=light \
-  cfg:dashboards.default_home_dashboard_path="$GRADPATH/grafana/dashboards/gradpath-overview.json" \
+  cfg:security.allow_embedding=true \
+  cfg:dashboards.default_home_dashboard_path="$GRADPATH/grafana/dashboards/main/gradpath-start.json" \
   > "$GRAFANA_LOG" 2>&1 &
 GRAFANA_PID=$!
 echo "        PID: $GRAFANA_PID  |  Log: $GRAFANA_LOG"
@@ -85,8 +86,8 @@ echo ""
 echo "============================================================"
 echo "  GradPath is running!"
 echo ""
-echo "  GradPath home:         http://localhost:3000   (no login needed)"
-echo "  My Plan form:          http://localhost:8000/plan"
+echo "  GradPath app:          http://localhost:8000   (students start here)"
+echo "  Grafana (admin):       http://localhost:3000"
 echo "  Classic dashboards:    http://localhost:3000/d/gradpath-main  ·  /d/gradpath-tax"
 echo "  API docs:              http://localhost:8000/docs"
 echo ""

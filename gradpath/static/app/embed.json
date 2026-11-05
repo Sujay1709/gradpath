@@ -1,0 +1,35 @@
+{
+  "grafana": "http://localhost:3000",
+  "graphs": {
+    "debt-earnings": {
+      "uid": "gradpath-graph-debt-earnings",
+      "panel_id": 2,
+      "title": "Debt vs. Earnings"
+    },
+    "rankings": {
+      "uid": "gradpath-graph-rankings",
+      "panel_id": 2,
+      "title": "Degree ROI Rankings"
+    },
+    "rankings-earnings": {
+      "uid": "gradpath-graph-rankings",
+      "panel_id": 4,
+      "title": "Highest median earnings"
+    },
+    "programs": {
+      "uid": "gradpath-graph-programs",
+      "panel_id": 2,
+      "title": "Program Comparison"
+    },
+    "states": {
+      "uid": "gradpath-graph-states",
+      "panel_id": 2,
+      "title": "State Comparison"
+    },
+    "credentials": {
+      "uid": "gradpath-graph-credentials",
+      "panel_id": 2,
+      "title": "Credential-Level Comparison"
+    }
+  }
+}

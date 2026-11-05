@@ -16,8 +16,15 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "dashboards")
-CLASSIC_MAIN = os.path.join(OUT, "gradpath_main.json")
-CLASSIC_TAX = os.path.join(OUT, "gradpath_tax.json")
+# One directory per Grafana folder (see provisioning/dashboards/gradpath.yaml)
+FOLDER_DIRS = {"main": os.path.join(OUT, "main"),          # GradPath (admin launcher)
+               "detail": os.path.join(OUT, "detail"),      # GradPath Detail Views (charts the app embeds)
+               "legacy": os.path.join(OUT, "legacy")}      # GradPath Legacy (superseded pages, Classic)
+CLASSIC_MAIN = os.path.join(OUT, "legacy", "gradpath_main.json")
+CLASSIC_TAX = os.path.join(OUT, "legacy", "gradpath_tax.json")
+APP_URL = "http://localhost:8000"                        # the student product
+EMBED_MANIFEST = os.path.join(os.path.dirname(HERE), "static", "app", "embed.json")
+EMBED = {}                                               # slug -> {"uid", "panel_id"} for d-solo embeds
 
 DS = {"type": "marcusolsson-json-datasource", "uid": "gradpath-api"}
 API_BASE = "http://localhost:8000"          # FastAPI (serves the My Plan form)
@@ -315,16 +322,20 @@ def textbox(name, label, default="", hide=2):
             "options": [{"selected": True, "text": default, "value": default}]}
 
 
-def dashboard(uid, title, page: Page, extra_vars=(), description=""):
+def dashboard(uid, title, page: Page, extra_vars=(), description="", visible=None):
+    variables = shared_variables()
+    if visible is not None:                      # other shared filters stay settable via URL, but hidden
+        for v in variables:
+            if v["name"] not in visible:
+                v["hide"] = 2
     return {
         "uid": uid, "title": title, "description": description, "tags": ["gradpath", APP_TAG],
         "editable": True, "graphTooltip": 0, "schemaVersion": 39, "version": 1, "refresh": "",
         "time": {"from": "now-6h", "to": "now"}, "timepicker": {"hidden": True}, "timezone": "browser",
         "fiscalYearStartMonth": 0, "liveNow": False, "weekStart": "",
         "annotations": {"list": []},
-        "links": [{"title": "All GradPath pages", "type": "dashboards", "tags": [APP_TAG], "asDropdown": True,
-                   "includeVars": True, "keepTime": False, "targetBlank": False, "icon": "external link"}],
-        "templating": {"list": shared_variables() + list(extra_vars)},
+        "links": [],
+        "templating": {"list": variables + list(extra_vars)},
         "panels": page.panels,
     }
 
@@ -442,17 +453,18 @@ def graphs_landing():
 
 
 def graph_page(uid, title, intro, explain, build_main, extras=None):
+    slug = uid.replace("gradpath-graph-", "")
     pg = Page()
-    pg.add(nav_panel("gradpath-graphs"), 24, 2)
-    pg.add(header(title, intro, back_to_graphs=True), 24, 4)
-    pg.add(active_filters(), 24, 2)
-    pg.add(build_main(), 24, 15)
+    pg.add(text(f"**Detail view.** Students see this chart inside the GradPath app: "
+                f"[open {title} in GradPath →]({APP_URL}/graphs/{slug})", transparent=True), 24, 2)
+    main = pg.add(build_main(), 24, 15)
+    EMBED[slug] = {"uid": uid, "panel_id": main["id"], "title": title}
     pg.add(text(explain + "\n\n*Tip: use the panel menu → **Inspect → Data** to see or download the numbers behind "
                           "this chart.*", title="How to read this graph"), 24, 6)
     if extras:
         extras(pg)
     pg.add(footer(), 24, 2)
-    return dashboard(uid, f"GradPath — {title}", pg)
+    return dashboard(uid, f"GradPath — {title}", pg, visible={"major", "state", "credential"})
 
 
 def scatter_panel():
@@ -543,8 +555,10 @@ def rankings_page():
                      "earnings.")
 
     def extras(pg):
-        pg.add(moved(11, "Highest median earnings — top 20 program types",
-                     "Programs grouped by major, credential and school type, ranked by median earnings."), 24, 11)
+        alt = pg.add(moved(11, "Highest median earnings — top 20 program types",
+                           "Programs grouped by major, credential and school type, ranked by median earnings."), 24, 11)
+        EMBED["rankings-earnings"] = {"uid": "gradpath-graph-rankings", "panel_id": alt["id"],
+                                      "title": "Highest median earnings"}
     explain = ("- Each row groups the same **major + credential + school type** across all matching schools and "
                "takes the median.\n- **Debt ÷ earnings** = median debt ÷ median earnings. 🟢 under 0.5 · 🟡 0.5–1.0 "
                "· 🔴 1.0 or more (debt at least one year of earnings). The colours are reading aids, not a grade.\n"
@@ -1020,11 +1034,11 @@ def patch_classic(path, title_suffix=" (Classic)"):
             "id": BANNER_ID, "type": "text", "title": "", "transparent": True,
             "gridPos": {"x": 0, "y": 0, "w": 24, "h": 2},
             "options": {"mode": "markdown", "content":
-                        "🆕 **This is the Classic GradPath dashboard, kept unchanged for reference.** The new app has "
-                        "navigation, school search, verified state taxes and a planner: "
-                        "**[Open GradPath Overview →](/d/gradpath-overview)**"}})
+                        "🗄️ **Classic GradPath dashboard, kept for reference.** Students use the GradPath app: "
+                        f"**[{APP_URL}]({APP_URL})**"}})
     for p in d["panels"]:
         fix_json_paths(p)
+    d["links"] = []                          # no separate link menus; the banner links to the app
     if not d["title"].endswith(title_suffix):
         d["title"] += title_suffix
     d["tags"] = sorted(set(d.get("tags", [])) | {"gradpath-classic"})
@@ -1033,22 +1047,64 @@ def patch_classic(path, title_suffix=" (Classic)"):
 
 # ── Build / check ────────────────────────────────────────────────────────────
 
+def add_banner(d, content, banner_id=901):
+    """Prepend a full-width notice and push existing panels down."""
+    if any(p.get("id") == banner_id for p in d["panels"]):
+        return d
+    for p in d["panels"]:
+        p["gridPos"]["y"] += 2
+    d["panels"].insert(0, {"id": banner_id, "type": "text", "title": "", "transparent": True,
+                           "gridPos": {"x": 0, "y": 0, "w": 24, "h": 2},
+                           "options": {"mode": "markdown", "content": content}})
+    return d
+
+
+LEGACY_NOTE = (f"🗄️ **Legacy view.** Students now use the GradPath app at **[{APP_URL}]({APP_URL})**. "
+               "This Grafana page is kept for reference only.")
+
+
+def launcher():
+    pg = Page()
+    pg.add(text(f"""# GradPath
+
+**Students:** open the GradPath app → **[{APP_URL}]({APP_URL})**
+
+The app covers Overview, My Plan, Schools, Graphs, States and Help. It embeds the charts from this Grafana instance.
+
+**Admins and analysts**
+- **GradPath Detail Views**: the chart dashboards the app embeds (one per graph).
+- **GradPath Legacy**: the earlier Grafana page versions and the Classic dashboards, kept for reference.
+"""), 24, 10)
+    d = dashboard("gradpath-start", "GradPath — Start here", pg, visible=set(),
+                  description="Admin launcher. Students use the GradPath app on port 8000.")
+    d["templating"]["list"] = []
+    return d
+
+
+# file name -> (folder key, dashboard)
 def build_all():
-    dashboards = {
+    EMBED.clear()
+    legacy_pages = {
         "gradpath-overview.json": overview(),
-        "gradpath-my-plan.json": plan_page(),
         "gradpath-schools.json": schools_page(),
         "gradpath-states.json": states_page(),
         "gradpath-graphs.json": graphs_landing(),
         "gradpath-help.json": help_page(),
-        "gradpath-graph-debt-earnings.json": debt_earnings_page(),
-        "gradpath-graph-rankings.json": rankings_page(),
-        "gradpath-graph-programs.json": programs_page(),
-        "gradpath-graph-states.json": states_graph_page(),
-        "gradpath-graph-credentials.json": credentials_page(),
     }
-    dashboards["gradpath_main.json"] = patch_classic(CLASSIC_MAIN)
-    dashboards["gradpath_tax.json"] = patch_classic(CLASSIC_TAX)
+    dashboards = {name: ("legacy", add_banner(d, LEGACY_NOTE)) for name, d in legacy_pages.items()}
+    dashboards["gradpath-my-plan.json"] = ("legacy", add_banner(plan_page(), LEGACY_NOTE + (
+        " ⚠️ **Privacy:** this old version puts your financial inputs in the page address (URL), so they appear "
+        "in browser history and in any link you share. Use the app's My Plan instead; it keeps them in your "
+        "browser.")))
+    for name, fn in [("gradpath-graph-debt-earnings.json", debt_earnings_page),
+                     ("gradpath-graph-rankings.json", rankings_page),
+                     ("gradpath-graph-programs.json", programs_page),
+                     ("gradpath-graph-states.json", states_graph_page),
+                     ("gradpath-graph-credentials.json", credentials_page)]:
+        dashboards[name] = ("detail", fn())
+    dashboards["gradpath-start.json"] = ("main", launcher())
+    dashboards["gradpath_main.json"] = ("legacy", patch_classic(CLASSIC_MAIN))
+    dashboards["gradpath_tax.json"] = ("legacy", patch_classic(CLASSIC_TAX))
     return dashboards
 
 
@@ -1060,23 +1116,24 @@ def all_panels(panels):
 
 def check(dashboards):
     problems, uids = [], {}
-    for name, d in dashboards.items():
+    for name, (_, d) in dashboards.items():
         if d["uid"] in uids:
             problems.append(f"duplicate uid {d['uid']} in {name} and {uids[d['uid']]}")
         uids[d["uid"]] = name
         ids = [p["id"] for p in all_panels(d["panels"])]
         if len(ids) != len(set(ids)):
             problems.append(f"{name}: duplicate panel ids")
-        if APP_TAG in d.get("tags", []):
+        if d.get("links"):
+            problems.append(f"{name}: duplicate dashboard-link menu")
+        if APP_TAG in d.get("tags", []) and d["uid"] != "gradpath-start":
             var_names = {v["name"] for v in d["templating"]["list"]}
             missing = set(SHARED) - var_names
             if missing:
                 problems.append(f"{name}: missing shared variables {sorted(missing)}")
-            first = d["panels"][0]
-            if not (first["type"] == "text" and "GradPath pages" in first["options"]["content"]):
-                problems.append(f"{name}: first panel is not the navigation bar")
-            if first["gridPos"]["y"] != 0:
-                problems.append(f"{name}: navigation bar is not at the top")
+    for slug, e in EMBED.items():
+        if not any(d["uid"] == e["uid"] and any(p["id"] == e["panel_id"] for p in all_panels(d["panels"]))
+                   for _, d in dashboards.values()):
+            problems.append(f"embed {slug}: panel {e['panel_id']} not found in {e['uid']}")
         json.dumps(d)
     return problems
 
@@ -1090,12 +1147,18 @@ def main():
     if "--check" in sys.argv:
         print(f"OK: {len(dashboards)} dashboards valid")
         return
-    for name, d in dashboards.items():
-        with open(os.path.join(OUT, name), "w") as f:
+    for name, (folder, d) in dashboards.items():
+        os.makedirs(FOLDER_DIRS[folder], exist_ok=True)
+        with open(os.path.join(FOLDER_DIRS[folder], name), "w") as f:
             json.dump(d, f, indent=2, ensure_ascii=False)
             f.write("\n")
         n = sum(1 for _ in all_panels(d["panels"]))
-        print(f"wrote {name:38s} uid={d['uid']:30s} panels={n}")
+        print(f"wrote {folder:6s}/{name:36s} uid={d['uid']:30s} panels={n}")
+    os.makedirs(os.path.dirname(EMBED_MANIFEST), exist_ok=True)
+    with open(EMBED_MANIFEST, "w") as f:
+        json.dump({"grafana": "http://localhost:3000", "graphs": EMBED}, f, indent=2)
+        f.write("\n")
+    print(f"wrote embed manifest: {len(EMBED)} charts")
 
 
 if __name__ == "__main__":

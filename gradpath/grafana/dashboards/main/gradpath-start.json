@@ -1,0 +1,56 @@
+{
+  "uid": "gradpath-start",
+  "title": "GradPath — Start here",
+  "description": "Admin launcher. Students use the GradPath app on port 8000.",
+  "tags": [
+    "gradpath",
+    "gradpath-app"
+  ],
+  "editable": true,
+  "graphTooltip": 0,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": true
+  },
+  "timezone": "browser",
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "weekStart": "",
+  "annotations": {
+    "list": []
+  },
+  "links": [],
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "# GradPath\n\n**Students:** open the GradPath app → **[http://localhost:8000](http://localhost:8000)**\n\nThe app covers Overview, My Plan, Schools, Graphs, States and Help. It embeds the charts from this Grafana instance.\n\n**Admins and analysts**\n- **GradPath Detail Views**: the chart dashboards the app embeds (one per graph).\n- **GradPath Legacy**: the earlier Grafana page versions and the Classic dashboards, kept for reference.\n",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 10
+      }
+    }
+  ]
+}

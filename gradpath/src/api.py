@@ -30,7 +30,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import numpy as np
 import pandas as pd
-from fastapi import Depends, FastAPI, Query
+from fastapi import Depends, FastAPI, Query, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -51,6 +52,19 @@ from filters import Filters, apply_filters  # noqa: E402
 from app_routes import router as app_router  # noqa: E402
 
 app.include_router(app_router)
+
+from config import STATIC_DIR  # noqa: E402
+
+
+class AppStaticFiles(StaticFiles):
+    """Revalidate app files on every load (cheap 304s via ETag) so updates show up immediately."""
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
+app.mount("/static", AppStaticFiles(directory=STATIC_DIR), name="static")
 
 # Performance: repeated identical GETs come from memory; large JSON is gzipped.
 # Starlette makes the last-added middleware the outermost, so the cache stores
@@ -84,8 +98,14 @@ def meta_health():
 # ── Health / datasource test ──────────────────────────────────────────────────
 
 @app.get("/")
-def health():
-    """Grafana calls GET / to test the datasource connection."""
+def health(request: Request):
+    """
+    Browsers get the GradPath app (Overview). API clients, including Grafana's datasource
+    test, get the JSON health check.
+    """
+    if "text/html" in request.headers.get("accept", ""):
+        from app_routes import app_page
+        return app_page()
     return {"status": "ok", "service": "GradPath API", "records": len(get_df())}
 
 

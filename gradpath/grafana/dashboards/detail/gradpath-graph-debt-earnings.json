@@ -1,0 +1,1010 @@
+{
+  "uid": "gradpath-graph-debt-earnings",
+  "title": "GradPath — Debt vs. Earnings",
+  "description": "",
+  "tags": [
+    "gradpath",
+    "gradpath-app"
+  ],
+  "editable": true,
+  "graphTooltip": 0,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": true
+  },
+  "timezone": "browser",
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "weekStart": "",
+  "annotations": {
+    "list": []
+  },
+  "links": [],
+  "templating": {
+    "list": [
+      {
+        "name": "school",
+        "label": "School (type name or state code)",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/schools",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/schools",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": false,
+        "allValue": "__all",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 2,
+        "skipUrlSync": false,
+        "allowCustomValue": false
+      },
+      {
+        "name": "state",
+        "label": "State",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/states",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/states",
+        "refresh": 1,
+        "includeAll": false,
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false,
+        "allowCustomValue": false
+      },
+      {
+        "name": "major",
+        "label": "Major",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/majors",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/majors",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": false,
+        "allValue": "__all",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false,
+        "allowCustomValue": false
+      },
+      {
+        "name": "cip",
+        "label": "CIP code",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/cips",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "major",
+              "${major}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/cips",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": false,
+        "allValue": "__all",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 2,
+        "skipUrlSync": false,
+        "allowCustomValue": false
+      },
+      {
+        "name": "credential",
+        "label": "Credential",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/credentials",
+          "cacheDurationSeconds": 300,
+          "params": [],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/credentials",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": false,
+        "allValue": "__all",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false,
+        "allowCustomValue": false
+      },
+      {
+        "name": "school_type",
+        "label": "School type",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/school_types",
+          "cacheDurationSeconds": 300,
+          "params": [],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/school_types",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": false,
+        "allValue": "__all",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 2,
+        "skipUrlSync": false,
+        "allowCustomValue": false
+      },
+      {
+        "name": "data_year",
+        "label": "Data year",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/data_years",
+          "cacheDurationSeconds": 300,
+          "params": [],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/data_years",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": false,
+        "allValue": "__all",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 2,
+        "skipUrlSync": false,
+        "allowCustomValue": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "**Detail view.** Students see this chart inside the GradPath app: [open Debt vs. Earnings in GradPath →](http://localhost:8000/graphs/debt-earnings)",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      }
+    },
+    {
+      "type": "xychart",
+      "title": "Debt vs. Earnings — one dot per program",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "description": "X: median debt at completion. Y: median earnings 2 years after completion. Colour: school type. Dot size: number of graduates measured. Dashed line: earnings equal debt.",
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/metrics/scatter",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].median_debt",
+              "name": "median_debt",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].earnings_public",
+              "name": "earnings_public",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].earnings_private_nonprofit",
+              "name": "earnings_private_nonprofit",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].earnings_private_for_profit",
+              "name": "earnings_private_for_profit",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].cohort_size",
+              "name": "cohort_size",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].median_earnings",
+              "name": "median_earnings",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].debt_to_earnings",
+              "name": "debt_to_earnings",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].school",
+              "name": "school"
+            },
+            {
+              "jsonPath": "$[*].program",
+              "name": "program"
+            },
+            {
+              "jsonPath": "$[*].state",
+              "name": "state"
+            },
+            {
+              "jsonPath": "$[*].credential",
+              "name": "credential"
+            },
+            {
+              "jsonPath": "$[*].school_type",
+              "name": "school_type"
+            }
+          ]
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/metrics/scatter_reference",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].ref_debt",
+              "name": "ref_debt",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].earnings_equal_debt",
+              "name": "earnings_equal_debt",
+              "type": "number"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0,
+          "noValue": "No programs match these filters",
+          "custom": {
+            "show": "points",
+            "pointSize": {
+              "fixed": 5
+            },
+            "fillOpacity": 55,
+            "pointStrokeWidth": 0,
+            "axisPlacement": "auto",
+            "axisCenteredZero": false,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "earnings_public"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F59E0B"
+                }
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Median earnings 2 years after completion"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "earnings_private_nonprofit"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#DC2626"
+                }
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Median earnings 2 years after completion"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "earnings_private_for_profit"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#7C2D12"
+                }
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Median earnings 2 years after completion"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "earnings_equal_debt"
+            },
+            "properties": [
+              {
+                "id": "custom.show",
+                "value": "lines"
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "dash",
+                  "dash": [
+                    10,
+                    10
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#6B7280"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "median_debt"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "Median debt at completion"
+              },
+              {
+                "id": "displayName",
+                "value": "Median debt"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ref_debt"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "Median debt at completion"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cohort_size"
+            },
+            "properties": [
+              {
+                "id": "custom.pointSize",
+                "value": {
+                  "min": 3,
+                  "max": 16
+                }
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "displayName",
+                "value": "Cohort size (graduates measured)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "debt_to_earnings"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "displayName",
+                "value": "Debt ÷ earnings"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "median_earnings"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Median earnings"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "school"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "School"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "program"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Program"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "state"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "State"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "credential"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Credential"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "school_type"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "School type"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "mapping": "manual",
+        "series": [
+          {
+            "name": {
+              "fixed": "Public"
+            },
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "median_debt"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "earnings_public"
+              }
+            },
+            "size": {
+              "matcher": {
+                "id": "byName",
+                "options": "cohort_size"
+              }
+            }
+          },
+          {
+            "name": {
+              "fixed": "Private, nonprofit"
+            },
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "median_debt"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "earnings_private_nonprofit"
+              }
+            },
+            "size": {
+              "matcher": {
+                "id": "byName",
+                "options": "cohort_size"
+              }
+            }
+          },
+          {
+            "name": {
+              "fixed": "Private, for-profit"
+            },
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "median_debt"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "earnings_private_for_profit"
+              }
+            },
+            "size": {
+              "matcher": {
+                "id": "byName",
+                "options": "cohort_size"
+              }
+            }
+          },
+          {
+            "name": {
+              "fixed": "Earnings = debt"
+            },
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 1
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "ref_debt"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "earnings_equal_debt"
+              }
+            }
+          }
+        ],
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "id": 2,
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 24,
+        "h": 15
+      }
+    },
+    {
+      "type": "text",
+      "title": "How to read this graph",
+      "transparent": false,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "- **X-axis — Median debt:** the middle amount of federal student-loan debt that graduates of the program had when they finished. It is *not* the cost of attendance.\n- **Y-axis — Median earnings:** the middle salary of graduates who were working, measured 2 years after completion.\n- **Colour — School type:** 🟡 amber = Public · 🔴 red = Private, nonprofit · 🟤 dark brown = Private, for-profit.\n- **Dot size — Cohort size:** how many graduates were measured. Small dots are less reliable.\n- **Dashed grey line — earnings = debt.** Dots above the line earned more in a year than they owed.\n- **Credential level** is a filter (box at the top) rather than a marker shape: Grafana's scatter chart can only draw circles and squares, which is not enough for three credential levels.\n- Hover over a dot for school, program, state, credential, earnings, debt and the ratio.\n\n*Tip: use the panel menu → **Inspect → Data** to see or download the numbers behind this chart.*",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 3,
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 24,
+        "h": 6
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "<small>📘 **Source:** U.S. Department of Education, [College Scorecard](https://collegescorecard.ed.gov/data/) — Field of Study and Institution files (release 2026-10-05). **Data year:** 2021–22 completers (earnings measured 2023–24).  Historical outcomes, not guarantees. [How these numbers work →](/d/gradpath-help?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam})</small>",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 4,
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 24,
+        "h": 2
+      }
+    }
+  ]
+}

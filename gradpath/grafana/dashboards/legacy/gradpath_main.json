@@ -1,0 +1,1515 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "GradPath: Compare U.S. degree programs by median earnings and median debt. Source: U.S. Department of Education College Scorecard. Historical estimates only.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 900,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "🗄️ **Classic GradPath dashboard, kept for reference.** Students use the GradPath app: **[http://localhost:8000](http://localhost:8000)**"
+      }
+    },
+    {
+      "id": 1,
+      "type": "text",
+      "title": "⚠️ Data Notice",
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 2
+      },
+      "options": {
+        "content": "**Historical estimates only — not salary guarantees.** Median earnings and median debt are reported outcomes for past completers who received federal financial aid. Data may be several years behind current labor-market conditions. Privacy suppression removes small programs (~96% of raw rows). **Source:** U.S. Department of Education College Scorecard — Most-Recent-Cohorts Field of Study (Nov 2026 release).",
+        "mode": "markdown"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Total Programs",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 5
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^total_programs$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].total_programs"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/summary_stats",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Total Institutions",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 5
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          },
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^total_institutions$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].total_institutions"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/summary_stats",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Median Earnings (Overall)",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 5
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 30000
+              },
+              {
+                "color": "green",
+                "value": 50000
+              }
+            ]
+          },
+          "unit": "currencyUSD",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^median_earnings_overall$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].median_earnings_overall"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/summary_stats",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Median Debt (Overall)",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 5
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 20000
+              },
+              {
+                "color": "red",
+                "value": 35000
+              }
+            ]
+          },
+          "unit": "currencyUSD",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^median_debt_overall$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].median_debt_overall"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/summary_stats",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Median Debt-to-Earnings Ratio",
+      "description": "debt / earnings. Lower is better. < 0.5 = green, 0.5–1.0 = yellow, ≥ 1.0 = red.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 5
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 1.0
+              }
+            ]
+          },
+          "unit": "none",
+          "decimals": 3
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^median_debt_to_earnings$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].median_debt_to_earnings"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/summary_stats",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Total States",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 5
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^total_states$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].total_states"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/summary_stats",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "barchart",
+      "title": "Median Earnings by School Type",
+      "description": "Median program-level earnings by school control type.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 9
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "xField": "school_type",
+        "orientation": "horizontal",
+        "barRadius": 0.05,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": {
+          "displayMode": "hidden"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].school_type",
+              "name": "school_type"
+            },
+            {
+              "jsonPath": "$[*].median_earnings_usd",
+              "name": "Median Earnings (USD)",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/earnings_by_school_type",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "barchart",
+      "title": "Median Earnings by Credential Level",
+      "description": "Median program-level earnings by degree type.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 9
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "xField": "credential_level",
+        "orientation": "horizontal",
+        "barRadius": 0.05,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": {
+          "displayMode": "hidden"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].credential_level",
+              "name": "credential_level"
+            },
+            {
+              "jsonPath": "$[*].median_earnings_usd",
+              "name": "Median Earnings (USD)",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/earnings_by_credential",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "barchart",
+      "title": "Debt-to-Earnings Ratio by School Type",
+      "description": "Median debt_to_earnings = median_debt / median_earnings. Lower is better.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 9
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 3
+        },
+        "overrides": []
+      },
+      "options": {
+        "xField": "school_type",
+        "orientation": "horizontal",
+        "barRadius": 0.05,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": {
+          "displayMode": "hidden"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].school_type",
+              "name": "school_type"
+            },
+            {
+              "jsonPath": "$[*].median_debt_to_earnings",
+              "name": "Debt-to-Earnings",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/dte_by_school_type",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Top 20 Programs — Highest Median Earnings",
+      "description": "Grouped by program type + credential + school type. Highest median earnings 2yr post-completion.",
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "median_earnings"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Median Earnings"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "median_debt"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Median Debt"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "debt_to_earnings"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 3
+              },
+              {
+                "id": "displayName",
+                "value": "Debt / Earnings"
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1.0
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cip_title"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Program"
+              },
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "credential_level"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Credential"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "school_type"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "School Type"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Median Earnings",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].cip_title",
+              "name": "cip_title"
+            },
+            {
+              "jsonPath": "$[*].credential_level",
+              "name": "credential_level"
+            },
+            {
+              "jsonPath": "$[*].school_type",
+              "name": "school_type"
+            },
+            {
+              "jsonPath": "$[*].median_earnings",
+              "name": "median_earnings",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].median_debt",
+              "name": "median_debt",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].debt_to_earnings",
+              "name": "debt_to_earnings",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/top_programs_earnings?n=20",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "table",
+      "title": "Top 20 Programs — Lowest Debt-to-Earnings Ratio",
+      "description": "Programs where debt is lowest relative to annual earnings. Lower ratio = better ROI on debt.",
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "median_earnings"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Median Earnings"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "median_debt"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Median Debt"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "debt_to_earnings"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 3
+              },
+              {
+                "id": "displayName",
+                "value": "Debt / Earnings"
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1.0
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cip_title"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Program"
+              },
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "credential_level"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Credential"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "school_type"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "School Type"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Debt / Earnings",
+            "desc": false
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].cip_title",
+              "name": "cip_title"
+            },
+            {
+              "jsonPath": "$[*].credential_level",
+              "name": "credential_level"
+            },
+            {
+              "jsonPath": "$[*].school_type",
+              "name": "school_type"
+            },
+            {
+              "jsonPath": "$[*].median_earnings",
+              "name": "median_earnings",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].median_debt",
+              "name": "median_debt",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].debt_to_earnings",
+              "name": "debt_to_earnings",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/top_programs_dte?n=20",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "barchart",
+      "title": "Median Earnings by State",
+      "description": "Median of program-level median earnings per state. All 51 reporting states shown.",
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "xField": "state",
+        "orientation": "horizontal",
+        "barRadius": 0.05,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": {
+          "displayMode": "hidden"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].state",
+              "name": "state"
+            },
+            {
+              "jsonPath": "$[*].median_earnings_usd",
+              "name": "Median Earnings (USD)",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/state_earnings",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "piechart",
+      "title": "Programs by School Type",
+      "description": "Count of programs with reportable earnings+debt, by school type.",
+      "gridPos": {
+        "h": 10,
+        "w": 6,
+        "x": 12,
+        "y": 27
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "pieType": "pie",
+        "displayLabels": [
+          "percent",
+          "name"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value"
+          ]
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].school_type",
+              "name": "school_type"
+            },
+            {
+              "jsonPath": "$[*].count",
+              "name": "count",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/school_type_dist",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "piechart",
+      "title": "Programs by Credential Level",
+      "description": "Count of programs with reportable data, by degree level.",
+      "gridPos": {
+        "h": 10,
+        "w": 6,
+        "x": 18,
+        "y": 27
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "pieType": "pie",
+        "displayLabels": [
+          "percent",
+          "name"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value"
+          ]
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].credential_level",
+              "name": "credential_level"
+            },
+            {
+              "jsonPath": "$[*].count",
+              "name": "count",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/credential_dist",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "type": "table",
+      "title": "Full Program Comparison Table — 500 programs, lowest debt-to-earnings first",
+      "description": "Sortable table. Earnings = median 2yr post-completion. Debt = median cumulative federal loan debt at completion. DTE color: green < 0.5, yellow 0.5–1.0, red ≥ 1.0.",
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "median_earnings"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Earnings"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "median_debt"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Debt"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "earnings_debt_difference"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Earnings − Debt"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "earnings_to_debt"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 3
+              },
+              {
+                "id": "displayName",
+                "value": "Earnings / Debt"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "debt_to_earnings"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 3
+              },
+              {
+                "id": "displayName",
+                "value": "Debt / Earnings"
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1.0
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "institution_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "School"
+              },
+              {
+                "id": "custom.width",
+                "value": 220
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cip_title"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Program"
+              },
+              {
+                "id": "custom.width",
+                "value": 260
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "credential_level"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Credential"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "school_type"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "School Type"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cohort_size"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Cohort Size"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "earnings_cohort"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Source Year"
+              },
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Debt / Earnings",
+            "desc": false
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].institution_name",
+              "name": "institution_name"
+            },
+            {
+              "jsonPath": "$[*].state",
+              "name": "state"
+            },
+            {
+              "jsonPath": "$[*].school_type",
+              "name": "school_type"
+            },
+            {
+              "jsonPath": "$[*].cip_title",
+              "name": "cip_title"
+            },
+            {
+              "jsonPath": "$[*].credential_level",
+              "name": "credential_level"
+            },
+            {
+              "jsonPath": "$[*].median_earnings",
+              "name": "median_earnings",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].median_debt",
+              "name": "median_debt",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].debt_to_earnings",
+              "name": "debt_to_earnings",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].earnings_to_debt",
+              "name": "earnings_to_debt",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].earnings_debt_difference",
+              "name": "earnings_debt_difference",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].cohort_size",
+              "name": "cohort_size",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].earnings_cohort",
+              "name": "earnings_cohort"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/metrics/programs_table?limit=500",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "type": "text",
+      "title": "How These Metrics Are Calculated",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 51
+      },
+      "options": {
+        "content": "### Metric Formulas\n\n| Metric | Formula | Interpretation |\n|--------|---------|----------------|\n| **Debt / Earnings** | `median_debt ÷ median_earnings` | Lower = less debt relative to one year of income |\n| **Earnings / Debt** | `median_earnings ÷ median_debt` | Higher = more annual income relative to total debt |\n| **Earnings − Debt** | `median_earnings − median_debt` | Positive = annual earnings exceed total cumulative debt |\n\n**Color thresholds (Debt/Earnings):** 🟢 < 0.5 · 🟡 0.5–1.0 · 🔴 ≥ 1.0\n\nAll values are medians — half of completers were above, half below.",
+        "mode": "markdown"
+      }
+    },
+    {
+      "id": 18,
+      "type": "text",
+      "title": "How to Interpret These Results",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 51
+      },
+      "options": {
+        "content": "### Important Caveats\n\n- **Median earnings are historical outcomes for past completers, not salary guarantees.**\n- **Median debt ≠ total cost of attendance.** Debt reflects federal loans taken, not tuition.\n- Data represents only students who received **federal financial aid**.\n- **Privacy suppression** removes programs with small cohorts (~96% of raw rows removed).\n- Data may be **several years behind** current labor-market conditions.\n- Programs with the same CIP code can differ significantly between institutions.\n- School, major, and credential do **not cause** a particular salary outcome.\n- Location, occupation, experience, internships, economic conditions, and individual circumstances all affect earnings.\n- This dashboard provides **educational scenario information** and does not provide personalized financial advice.",
+        "mode": "markdown"
+      }
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [
+    "college-scorecard",
+    "education",
+    "gradpath",
+    "gradpath-classic"
+  ],
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": true
+  },
+  "timezone": "browser",
+  "title": "GradPath — Degree ROI Dashboard (Classic)",
+  "uid": "gradpath-main",
+  "version": 2
+}

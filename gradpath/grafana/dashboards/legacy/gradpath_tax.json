@@ -1,0 +1,996 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "GradPath Tax Analysis: State income tax rates, AI-predicted federal tax brackets, and net earnings after all taxes by state. Educational use only — not tax advice.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 900,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "🗄️ **Classic GradPath dashboard, kept for reference.** Students use the GradPath app: **[http://localhost:8000](http://localhost:8000)**"
+      }
+    },
+    {
+      "id": 1,
+      "type": "text",
+      "title": "⚠️ Tax Data Notice",
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 2
+      },
+      "options": {
+        "content": "**Educational use only — not tax advice.** State tax rates shown are 2024 top marginal rates from the Tax Foundation. The AI classifier uses 18,503-parameter neural network trained on 10,000 synthetic profiles. Federal brackets per IRS Rev. Proc. 2023-34. Individual tax liability depends on deductions, credits, and other factors not modeled here. Consult a tax professional for accurate advice.\n\n**Sources:** IRS 2024 brackets • Tax Foundation 2024 State Tax Rates • FICA rates per SSA",
+        "mode": "markdown"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "AI Model Accuracy",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 5
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 80
+              },
+              {
+                "color": "green",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^accuracy_pct$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].accuracy_pct"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/tax/model_stats",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Training Profiles",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 5
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^n_train$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].n_train"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/tax/model_stats",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Neural Net Parameters",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 5
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          },
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^n_parameters$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].n_parameters"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/tax/model_stats",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Input Features",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 5
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^n_features$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].n_features"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/tax/model_stats",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "text",
+      "title": "Architecture: Income → 128 → 64 → 32 → 7 brackets",
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 5
+      },
+      "options": {
+        "content": "**Neural Network Architecture**\n\n`Input(61) → Dense(128) → ReLU → Dense(64) → ReLU → Dense(32) → ReLU → Output(7)`\n\n7 classes: `10%` `12%` `22%` `24%` `32%` `35%` `37%`\n\n61 features: income, age, state (40 one-hot), school type, credential, filing status, debt, experience, dependents",
+        "mode": "markdown"
+      }
+    },
+    {
+      "id": 7,
+      "type": "barchart",
+      "title": "State Top Marginal Income Tax Rates (2024)",
+      "description": "Top marginal state income tax rate per state. 0% = no state income tax. Flat = single rate. Colors show tax category.",
+      "gridPos": {
+        "h": 12,
+        "w": 16,
+        "x": 0,
+        "y": 9
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "xField": "state",
+        "orientation": "horizontal",
+        "barRadius": 0.05,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": {
+          "displayMode": "hidden"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].state",
+              "name": "state"
+            },
+            {
+              "jsonPath": "$[*].top_marginal_rate_pct",
+              "name": "Top Marginal Rate (%)",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/tax/state_rates",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "State Tax Categories",
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 16,
+        "y": 9
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "top_marginal_rate_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "displayName",
+                "value": "Top Rate %"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "state"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "State"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tax_category"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Category"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Top Rate %",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].state",
+              "name": "state"
+            },
+            {
+              "jsonPath": "$[*].top_marginal_rate_pct",
+              "name": "top_marginal_rate_pct",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].tax_category",
+              "name": "tax_category"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/tax/state_rates",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "barchart",
+      "title": "Net Income After All Taxes by State — Median Earner ($34,348 gross, single filer)",
+      "description": "Federal + state income tax + FICA deducted from median program earnings ($34,348). Shows take-home pay by state. States with no income tax have highest net.",
+      "gridPos": {
+        "h": 12,
+        "w": 16,
+        "x": 0,
+        "y": 21
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0,
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "xField": "state",
+        "orientation": "horizontal",
+        "barRadius": 0.05,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": {
+          "displayMode": "hidden"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].state",
+              "name": "state"
+            },
+            {
+              "jsonPath": "$[*].net_income",
+              "name": "Net Income (USD)",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/tax/earnings_after_tax_by_state",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "After-Tax Net Income by State — Full Detail",
+      "description": "All 51 states sorted by net income. Includes effective rate and state rate for the median $34,348 earner, single filer.",
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 16,
+        "y": 21
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "net_income"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Net Income"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_tax"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Total Tax"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "effective_rate_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "displayName",
+                "value": "Effective Rate"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "state_rate_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "displayName",
+                "value": "State Rate"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "state"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "State"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "federal_bracket"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Fed Bracket"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Net Income",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].state",
+              "name": "state"
+            },
+            {
+              "jsonPath": "$[*].net_income",
+              "name": "net_income",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].total_tax",
+              "name": "total_tax",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].effective_rate_pct",
+              "name": "effective_rate_pct",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].state_rate_pct",
+              "name": "state_rate_pct",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].federal_bracket",
+              "name": "federal_bracket"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/tax/earnings_after_tax_by_state",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "barchart",
+      "title": "AI Model: Tax Bracket Distribution in Training Data",
+      "description": "How 10,000 synthetic profiles distribute across the 7 federal brackets. Reflects realistic income distributions per credential level.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 33
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "xField": "bracket",
+        "orientation": "vertical",
+        "barRadius": 0.05,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": {
+          "displayMode": "hidden"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].bracket",
+              "name": "bracket"
+            },
+            {
+              "jsonPath": "$[*].support",
+              "name": "Profiles",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/tax/bracket_distribution",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "table",
+      "title": "AI Model: Per-Bracket Classification Performance",
+      "description": "Precision, recall, and F1 score per federal bracket. The model was trained on 10,000 synthetic profiles with 15% held out for testing.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "datasource": {
+        "uid": "gradpath-api",
+        "type": "marcusolsson-json-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "precision"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.8
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.9
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "recall"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.8
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.9
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "f1"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "displayName",
+                "value": "F1 Score"
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.8
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.9
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bracket"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Federal Bracket"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "support"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Test Samples"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "footer": {
+          "show": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "gradpath-api",
+            "type": "marcusolsson-json-datasource"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].bracket",
+              "name": "bracket"
+            },
+            {
+              "jsonPath": "$[*].support",
+              "name": "support",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].precision",
+              "name": "precision",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].recall",
+              "name": "recall",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].f1",
+              "name": "f1",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "urlPath": "/tax/bracket_distribution",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "text",
+      "title": "How the AI Tax Classifier Works",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
+      "options": {
+        "content": "### AI Tax Bracket Classification\n\n**What it does:** Given a user's income, state, age, credential, school type, filing status, debt, experience, and dependents, the neural network classifies them into one of 7 federal income tax brackets.\n\n**Architecture:** 3-layer MLP — Input(61) → Dense(128, ReLU) → Dense(64, ReLU) → Dense(32, ReLU) → Output(7, Softmax) — **18,503 total parameters** — 95.4% accuracy on held-out test set.\n\n**Features used (61 total):** log(income) · age/75 · years_exp/40 · log(student_debt) · log(monthly_payment) · log(median_earnings) · log(median_debt) · debt_to_earnings · dependents/5 · retirement_rate · 40 state one-hot flags · 3 school type flags · 3 credential flags · 3 filing status flags · homeowner flag · part-time flag\n\n**Training data:** 10,000 synthetic profiles with income drawn from realistic log-normal distributions per credential level, with experience and age premiums applied. All labels assigned using the deterministic 2024 IRS bracket schedule.\n\n⚠️ Disclaimer: This classifier is trained on synthetic data for educational demonstration. For real tax planning, use IRS-certified software or consult a tax professional.",
+        "mode": "markdown"
+      }
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [
+    "ai-classifier",
+    "gradpath",
+    "gradpath-classic",
+    "tax"
+  ],
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": true
+  },
+  "timezone": "browser",
+  "title": "GradPath — Tax Bracket AI Dashboard (Classic)",
+  "uid": "gradpath-tax",
+  "version": 1
+}

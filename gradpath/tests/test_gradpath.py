@@ -176,6 +176,20 @@ class SmartFilterTests(unittest.TestCase):
         self.assertGreater(len(options_majors(Filters())), 300)              # 320 majors overall
 
 
+class PlanCalculateTests(unittest.TestCase):
+    def test_body_matches_get_endpoints(self):
+        from app_routes import PlanParams, plan_calculate, plan_estimate
+        body = {"school": "186380", "start_year": 2027, "grad_year": 2031, "borrowing": 5500, "living": 12000,
+                "salary_low": 40000, "unexpected": "ignored"}
+        res = plan_calculate(body)
+        get = plan_estimate(PlanParams(start_year="2027", grad_year="2031", borrowing="5500", living="12000",
+                                       salary_low="40000"), Filters(school="186380"))[0]
+        for k in ("debt_at_repayment_start", "standard_monthly_payment", "debt_free_range"):
+            self.assertEqual(res["estimate"][k], get[k])
+        self.assertEqual(set(res), {"estimate", "scenarios", "notes", "timeline", "milestones", "explanation"})
+        self.assertNotIn("card", res["estimate"])
+
+
 class FilterTests(unittest.TestCase):
     df = pd.DataFrame({
         "institution_id": ["1", "2", "3"], "state": ["CA", "NY", "CA"],

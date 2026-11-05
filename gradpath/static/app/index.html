@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GradPath</title>
+<meta name="description" content="Plan your degree with real College Scorecard outcomes and your own assumptions.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/static/app/app.css">
+</head>
+<body>
+<!-- One icon set: 24px stroke icons, 2px lines, round caps (drawn for GradPath). -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
+  <symbol id="i-plan" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
+  <symbol id="i-school" viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/><path d="M22 9v6"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M8 16v-5"/><path d="M12 16V8"/><path d="M16 16v-3"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l9.5 17h-19z"/><path d="M12 10v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.5h.01"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5H5V6h5"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
+  <symbol id="i-scatter" viewBox="0 0 24 24"><path d="M4 20V4"/><path d="M4 20h16"/><circle cx="9" cy="14" r="1.5"/><circle cx="13" cy="9" r="1.5"/><circle cx="17" cy="12" r="1.5"/><circle cx="11" cy="16" r="1.5"/></symbol>
+  <symbol id="i-rank" viewBox="0 0 24 24"><path d="M5 6h14"/><path d="M5 12h10"/><path d="M5 18h6"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+</svg>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" data-link>
+      <svg class="icon icon--brand" aria-hidden="true"><use href="#i-school"/></svg>
+      <span>GradPath</span>
+    </a>
+    <button class="menu-button" type="button" aria-expanded="false" aria-controls="primary-nav">
+      <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg><span>Menu</span>
+    </button>
+    <nav id="primary-nav" class="primary-nav" aria-label="GradPath"></nav>
+  </div>
+</header>
+
+<main id="main" class="page" tabindex="-1"></main>
+
+<footer class="site-footer">
+  <p>Outcomes: U.S. Department of Education, College Scorecard (release Oct 2026; graduates of 2021–22, earnings measured 2023–24).
+    State taxes: official state revenue pages, tax year 2025. Educational estimates, not financial or tax advice.</p>
+</footer>
+
+<div id="announcer" class="visually-hidden" aria-live="polite"></div>
+
+<dialog id="confirm-dialog" class="dialog" aria-labelledby="confirm-title">
+  <form method="dialog">
+    <h2 id="confirm-title" class="dialog__title"></h2>
+    <p id="confirm-body"></p>
+    <div class="dialog__actions">
+      <button class="button button--secondary" value="cancel">Keep my answers</button>
+      <button class="button button--danger" value="confirm" id="confirm-ok">Clear</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module" src="/static/app/app.js"></script>
+</body>
+</html>

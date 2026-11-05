@@ -12,57 +12,69 @@ and loan payoff.
 
 **Repository:** https://github.com/Sujay1709/gradpath
 
-**Open GradPath:** http://localhost:3000 — goes straight to the GradPath home page (no login needed).
+**Open GradPath:** **http://localhost:8000**. This is the student app, and it needs no login.
 
-After you run `./start.sh`, open these in your browser:
-
-| Page | Link |
-|---|---|
-| 🏠 GradPath home | http://localhost:3000 |
-| 🏠 Overview | http://localhost:3000/d/gradpath-overview |
-| 🧭 My Plan form | http://localhost:8000/plan |
-| 🧭 My Plan results | http://localhost:3000/d/gradpath-my-plan |
-| 🏫 Schools | http://localhost:3000/d/gradpath-schools |
-| 🗺️ States & Taxes | http://localhost:3000/d/gradpath-states |
-| 📊 Graphs | http://localhost:3000/d/gradpath-graphs |
-| ❓ Help | http://localhost:3000/d/gradpath-help |
-| Classic dashboards | http://localhost:3000/d/gradpath-main · http://localhost:3000/d/gradpath-tax |
-| API docs | http://localhost:8000/docs |
-
-The `localhost` links only work on the computer running GradPath.
-
-**No login.** `start.sh` turns on Grafana's anonymous access with the read-only *Viewer* role and makes the
-Overview the home page. Visitors can use every page and filter, but they can't edit or delete dashboards.
-To edit, use **Sign in** (top right) or go to http://localhost:3000/login with your Grafana admin account.
-
----
-
-## The six pages
-
-Every page has the same navigation bar at the top, with the current page highlighted. The shared filters
-(School, State, Major, CIP code, Credential, School type, Data year) carry over when you move between pages.
-
-| Page | URL | What it shows |
+| Page | Link | What it's for |
 |---|---|---|
-| 🏠 Overview | `/d/gradpath-overview` | Matching schools and programs, median earnings, debt and ratio, plus cards linking to every page |
-| 🧭 My Plan | `/d/gradpath-my-plan` (inputs at `http://localhost:8000/plan`) | Cost, funding gap, debt at graduation, monthly payment, debt-free range, salary scenarios |
-| 🏫 Schools | `/d/gradpath-schools` | Searchable ranked table; click a school for its address, programs and outcomes |
-| 🗺️ States & Taxes | `/d/gradpath-states` | Verified tax facts (tax year 2025) for 10 states, with sources and an example estimate |
-| 📊 Graphs | `/d/gradpath-graphs` | Cards linking to five graph pages (below) |
-| ❓ Help | `/d/gradpath-help` | How-to, formulas, data years, tax method, privacy, FAQ, limitations |
+| Overview | http://localhost:8000/ | Three main choices, plus outcome lookup by school, major or state |
+| My Plan | http://localhost:8000/plan | 4-step walkthrough → review → results (funding gap, debt, payment, debt-free range) |
+| Schools | http://localhost:8000/schools | Search and rank programs; open a school; add it to My Plan |
+| Graphs | http://localhost:8000/graphs | Five questions, each with a chart, a plain-language summary and a table |
+| States | http://localhost:8000/states | Verified tax-year-2025 facts for 10 states, with sources |
+| Help | http://localhost:8000/help | Getting started, metrics, building a plan, sources, privacy, limitations, FAQ |
 
-The five graph pages are:
+Admin and analyst views are in Grafana at http://localhost:3000, organised into three folders:
 
-- `gradpath-graph-debt-earnings`
-- `gradpath-graph-rankings`
-- `gradpath-graph-programs`
-- `gradpath-graph-states`
-- `gradpath-graph-credentials`
+| Folder | Contents |
+|---|---|
+| **GradPath** | A "Start here" launcher (Grafana's home page) |
+| **GradPath Detail Views** | The five chart dashboards that the app embeds |
+| **GradPath Legacy** | The earlier Grafana page versions (Overview, My Plan, Schools, States, Graphs, Help) and the Classic dashboards, kept for reference |
 
-All of these dashboards live in the Grafana folder **GradPath**. The original dashboards still work as
-**Classic** versions: `/d/gradpath-main` and `/d/gradpath-tax`.
+API docs: http://localhost:8000/docs. The `localhost` links only work on the computer running GradPath.
 
 ---
+
+## Architecture (Nov 2026 UX recovery)
+
+```
+Browser ──► GradPath app (FastAPI, port 8000)
+            ├─ static/app/  one app: nav, page-specific filters, empty states, 4-step planner
+            ├─ JSON API     /metrics, /options, /schools, /states, /plan/calculate (POST)
+            └─ embeds charts from Grafana (port 3000) with d-solo: one panel, no Grafana menus
+Grafana ──► JSON API datasource → the same FastAPI endpoints
+```
+
+- **Why an app on port 8000?** Grafana text panels strip `<style>`, `<svg>` and scripts, and kiosk mode still
+  shows every filter box. The student pages need a responsive menu, panels hidden until a selection is made,
+  removable filter chips and focus management, so they live in the app. Grafana stays the chart engine: the
+  app embeds the existing chart queries unchanged.
+- **Privacy.** My Plan answers are stored only in the browser (`localStorage`, key `gradpath.plan.v2`) and are
+  sent to `POST /plan/calculate` in the request body. Financial values never appear in a URL, browser history
+  or a shared link, and the server neither stores nor caches them. The old Grafana My Plan, which put values in
+  the URL, is in **GradPath Legacy** with a warning.
+- **Filters per page.**
+
+  | Page | Filters |
+  |---|---|
+  | Overview | School, major, state; *More filters*: credential, school type |
+  | Schools | School, major, state, credential; *More filters*: CIP code, school type |
+  | Graphs | Major, state, credential; *More filters*: school, CIP code, school type |
+  | States | State, plus an example income |
+  | Help, My Plan | No dataset filters |
+
+  There is only one data year, so it is shown as a label rather than a filter. School, major and state carry
+  over between Overview, Schools and Graphs through the page address, and picking a school fills in its state.
+- **Accessibility.**
+  - Skip link; the current page is announced (`aria-current`); focus moves to the heading on every navigation.
+  - Tap targets of at least 44 px; visible focus rings; tables scroll or become cards on phones.
+  - Every chart has a table version; the debt-to-earnings label uses words and a shape, not colour alone.
+  - Respects reduced-motion preferences; text pairs meet WCAG AA contrast.
+- **Checked layouts.** Every page at 1440, 1024, 768 and 390 px, with no horizontal overflow and the nav on
+  one line on desktop or a single menu below 960 px.
+
+Before and after screenshots are in `gradpath/docs/screenshots/`. The audit and the recovery map are in
+`gradpath/docs/ux_recovery_map.md`.
 
 ## Setup (first time)
 
@@ -122,7 +134,7 @@ To use a newer College Scorecard download, put the files in `dataset/…` and up
 
 ```bash
 ./start.sh
-open http://localhost:3000
+open http://localhost:8000
 ```
 
 `start.sh` builds any missing data, starts the FastAPI backend on port 8000 and starts Grafana on port 3000.
@@ -161,7 +173,7 @@ Institution CSV ────────► src/build_reference_data.py ─► s
 Official state pages ───► state_tax_reference.csv (hand-verified) ──────────┘        │  JSON
                                                                                      ▼
                      grafana/build_dashboards.py ─► grafana/dashboards/*.json ─► Grafana (JSON API datasource)
-                     static/plan.html (My Plan form, served at :8000/plan) ─► opens the My Plan dashboard
+                     static/app/ (student app at :8000) ─► embeds Detail View charts; My Plan calculates via POST /plan/calculate
 ```
 
 - **One source for all dashboards.** `grafana/build_dashboards.py` defines the nav bar, the shared
@@ -245,13 +257,14 @@ IBM_BOB/
     │   ├── plan_calc.py             deterministic plan formulas
     │   ├── response_cache.py        in-memory cache for read-only GET endpoints
     │   └── data_store.py            load-once data access
-    ├── static/plan.html             My Plan input form
+    ├── static/app/                  student app (index.html, app.css, app.js, pages.js, plan.js, embed.json)
     ├── tests/test_gradpath.py       unit tests
     ├── tests/stress_plan.py         API stress test (rerun after data refresh)
     ├── data/processed/ · data/samples/
     ├── docs/                        data mapping + methodology
     └── grafana/
         ├── build_dashboards.py      generates every dashboard
-        ├── dashboards/*.json        generated, committed
+        ├── dashboards/main|detail|legacy/   generated, one directory per Grafana folder
+        ├── backup/                  dashboard JSON before the UX recovery
         └── provisioning/            datasource + "GradPath" folder provider
 ```
