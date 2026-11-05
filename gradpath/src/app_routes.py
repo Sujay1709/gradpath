@@ -7,10 +7,11 @@ filters arrive as query params and are applied by filters.apply_filters.
 """
 import os
 from datetime import date
+from functools import lru_cache
 
 import pandas as pd
 from fastapi import APIRouter, Depends, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 
 from config import DATA_YEAR_LABEL, SCORECARD_URL, STATIC_DIR
 from data_store import (
@@ -73,17 +74,30 @@ def options_cips(flt: Filters = Depends()):
 
 @router.get("/options/schools")
 def options_schools(flt: Filters = Depends()):
-    df = apply_filters(get_df(), flt.without("school"))
+    f = flt.without("school")
+    return Response(content=_school_options_json(f.state, f.major, f.cip, f.credential, f.school_type,
+                                                 f.data_year), media_type="application/json")
+
+
+@lru_cache(maxsize=256)
+def _school_options_json(state, major, cip, credential, school_type, data_year) -> str:
+    """'Name — City, ST' labels keyed by institution ID; cached because every page load asks for them."""
+    flt = Filters(state=state, major=major, cip=cip, credential=credential, school_type=school_type,
+                  data_year=data_year)
+    df = apply_filters(get_df(), flt)
     # 2 source rows have no UNITID and so cannot be selected; they still count in aggregates
     schools = (df[["institution_id", "institution_name", "state"]]
                .dropna(subset=["institution_id"]).drop_duplicates("institution_id"))
-    d = _dir_lookup()
-    rows = []
-    for iid, name, st in schools.itertuples(index=False):
-        city = d.at[iid, "city"] if len(d) and iid in d.index else None
-        where = ", ".join(x for x in [city if isinstance(city, str) else None, st if isinstance(st, str) else None] if x)
-        rows.append({"text": f"{name} — {where}" if where else name, "value": iid})
-    return sorted(rows, key=lambda r: r["text"].lower())
+    d = get_directory()
+    if len(d):
+        schools = schools.merge(d[["institution_id", "city"]], on="institution_id", how="left")
+    else:
+        schools = schools.assign(city=None)
+    where = (schools["city"].fillna("") + ", " + schools["state"].fillna("")).str.strip(", ")
+    text = schools["institution_name"].where(where == "", schools["institution_name"] + " — " + where)
+    out = pd.DataFrame({"text": text, "value": schools["institution_id"]})
+    out = out.iloc[out["text"].str.lower().argsort(kind="stable")]
+    return out.to_json(orient="records", force_ascii=False)
 
 
 @router.get("/options/data_years")

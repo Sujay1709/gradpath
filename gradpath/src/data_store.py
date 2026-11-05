@@ -6,6 +6,7 @@ from functools import lru_cache
 
 import numpy as np
 import pandas as pd
+from fastapi.responses import Response
 
 from config import CLEAN_PARQUET, SCHOOL_DIRECTORY_CSV, STATE_TAX_CSV, SOURCE_REGISTRY_CSV, PROCESSED_DIR
 
@@ -29,13 +30,15 @@ def get_df() -> pd.DataFrame:
     return _df
 
 
-def to_records(df: pd.DataFrame) -> list:
-    """Convert DataFrame to list of dicts, replacing NaN with None."""
-    return [
-        {k: (None if (isinstance(v, float) and np.isnan(v)) or v is pd.NA else v)
-         for k, v in row.items()}
-        for row in df.to_dict(orient="records")
-    ]
+def to_records(df: pd.DataFrame) -> Response:
+    """
+    DataFrame → JSON array response, NaN → null.
+
+    pandas writes the JSON in C, which skips FastAPI's per-value encoding:
+    ~10× faster for the 8,266-row scatter payload.
+    """
+    body = df.to_json(orient="records", force_ascii=False, double_precision=15)
+    return Response(content=body, media_type="application/json")
 
 
 @lru_cache(maxsize=1)

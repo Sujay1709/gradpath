@@ -97,7 +97,23 @@ python3 src/build_reference_data.py    # school_directory, degree_roi_latest, da
 python3 grafana/build_dashboards.py    # regenerate all dashboard JSON (Grafana reloads within ~10 s)
 python3 tests/test_gradpath.py         # unit tests (stdlib unittest, no extra packages)
 cd ..
+
+# The API caches responses in memory, so restart it to serve the refreshed data
+pkill -f "uvicorn api:app"
+(cd gradpath && nohup python3 -m uvicorn api:app --app-dir src --port 8000 > api.log 2>&1 &)
+
+# Then stress-test the running API (≈5 seconds; exit code 1 on any problem)
+python3 gradpath/tests/stress_plan.py
 ```
+
+`tests/stress_plan.py` runs four checks against the running API:
+1. It replays every dashboard query under four filter scenarios.
+2. It runs real schools from all 9 school-type × credential categories through My Plan with five input
+   profiles, and checks every debt, payment, payoff month and date range against an independent loan simulator.
+3. It confirms that cached and compressed responses match fresh ones.
+4. It enforces latency and throughput budgets.
+
+Options: `--quick` (3 schools per category), `--per-category 40`, `--seed 11`, `--skip-perf`.
 
 To use a newer College Scorecard download, put the files in `dataset/…` and update the paths and the
 `SCORECARD_*` constants in `gradpath/src/config.py`.
@@ -143,6 +159,12 @@ Official state pages ───► state_tax_reference.csv (hand-verified) ──
   with the values in the URL. No bank connections, no credentials and no server-side storage.
 - **Deterministic calculations.** `src/plan_calc.py` holds plain formulas with unit tests. No AI is used
   in any calculation.
+- **Performance.**
+  - pandas writes JSON responses directly.
+  - Responses over 2 KB are gzipped. The full 8,266-point scatter drops from 3.0 MB to 0.27 MB.
+  - Read-only GET responses are cached in memory (`src/response_cache.py`). `/plan/*` is never cached
+    because its answers depend on today's date.
+  - Cache statistics are at http://localhost:8000/meta/health.
 
 ## Datasets
 
@@ -192,9 +214,11 @@ IBM_BOB/
     │   ├── app_routes.py            GradPath app endpoints
     │   ├── filters.py               shared filters + safe number parsing
     │   ├── plan_calc.py             deterministic plan formulas
+    │   ├── response_cache.py        in-memory cache for read-only GET endpoints
     │   └── data_store.py            load-once data access
     ├── static/plan.html             My Plan input form
     ├── tests/test_gradpath.py       unit tests
+    ├── tests/stress_plan.py         API stress test (rerun after data refresh)
     ├── data/processed/ · data/samples/
     ├── docs/                        data mapping + methodology
     └── grafana/

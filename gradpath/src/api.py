@@ -52,6 +52,32 @@ from app_routes import router as app_router  # noqa: E402
 
 app.include_router(app_router)
 
+# Performance: repeated identical GETs come from memory; large JSON is gzipped.
+# Starlette makes the last-added middleware the outermost, so the cache stores
+# uncompressed bodies and gzip negotiates per client.
+from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
+from response_cache import ResponseCache  # noqa: E402
+
+app.add_middleware(ResponseCache)
+app.add_middleware(GZipMiddleware, minimum_size=2048, compresslevel=5)
+
+
+def _find_cache():
+    """Walk the built middleware stack to report cache statistics."""
+    layer = app.middleware_stack
+    while layer is not None:
+        if isinstance(layer, ResponseCache):
+            return layer
+        layer = getattr(layer, "app", None)
+    return None
+
+
+@app.get("/meta/health")
+def meta_health():
+    """Record count and cache statistics (tests/stress_plan.py reads this)."""
+    cache = _find_cache()
+    return {"records": len(get_df()), "cache": cache.stats() if cache else None}
+
 
 # ── Health / datasource test ──────────────────────────────────────────────────
 
