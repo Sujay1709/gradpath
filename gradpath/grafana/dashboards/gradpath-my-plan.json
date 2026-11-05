@@ -101,7 +101,8 @@
         "options": [],
         "sort": 0,
         "hide": 0,
-        "skipUrlSync": false
+        "skipUrlSync": false,
+        "allowCustomValue": false
       },
       {
         "name": "state",
@@ -151,7 +152,8 @@
         "options": [],
         "sort": 0,
         "hide": 0,
-        "skipUrlSync": false
+        "skipUrlSync": false,
+        "allowCustomValue": false
       },
       {
         "name": "major",
@@ -205,7 +207,8 @@
         "options": [],
         "sort": 0,
         "hide": 0,
-        "skipUrlSync": false
+        "skipUrlSync": false,
+        "allowCustomValue": false
       },
       {
         "name": "cip",
@@ -263,7 +266,8 @@
         "options": [],
         "sort": 0,
         "hide": 0,
-        "skipUrlSync": false
+        "skipUrlSync": false,
+        "allowCustomValue": false
       },
       {
         "name": "credential",
@@ -304,7 +308,8 @@
         "options": [],
         "sort": 0,
         "hide": 0,
-        "skipUrlSync": false
+        "skipUrlSync": false,
+        "allowCustomValue": false
       },
       {
         "name": "school_type",
@@ -345,7 +350,8 @@
         "options": [],
         "sort": 0,
         "hide": 0,
-        "skipUrlSync": false
+        "skipUrlSync": false,
+        "allowCustomValue": false
       },
       {
         "name": "data_year",
@@ -386,7 +392,8 @@
         "options": [],
         "sort": 0,
         "hide": 0,
-        "skipUrlSync": false
+        "skipUrlSync": false,
+        "allowCustomValue": false
       },
       {
         "name": "in_state",
@@ -1104,8 +1111,9 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
-              "jsonPath": "$[*].historical_median_earnings",
-              "name": "historical_median_earnings"
+              "jsonPath": "$[*].historical_median_earnings_display",
+              "name": "historical_median_earnings_display",
+              "type": "string"
             }
           ]
         }
@@ -1116,9 +1124,7 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
-          },
-          "unit": "currencyUSD",
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -1127,7 +1133,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^historical_median_earnings$/",
+          "fields": "/^historical_median_earnings_display$/",
           "values": false
         },
         "orientation": "auto",
@@ -1264,8 +1270,9 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
-              "jsonPath": "$[*].historical_median_debt",
-              "name": "historical_median_debt"
+              "jsonPath": "$[*].historical_median_debt_display",
+              "name": "historical_median_debt_display",
+              "type": "string"
             }
           ]
         }
@@ -1276,9 +1283,7 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
-          },
-          "unit": "currencyUSD",
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -1287,7 +1292,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^historical_median_debt$/",
+          "fields": "/^historical_median_debt_display$/",
           "values": false
         },
         "orientation": "auto",
@@ -1757,8 +1762,9 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
-              "jsonPath": "$[*].total_education_cost",
-              "name": "total_education_cost"
+              "jsonPath": "$[*].total_education_cost_display",
+              "name": "total_education_cost_display",
+              "type": "string"
             }
           ]
         }
@@ -1769,9 +1775,7 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
-          },
-          "unit": "currencyUSD",
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -1780,7 +1784,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^total_education_cost$/",
+          "fields": "/^total_education_cost_display$/",
           "values": false
         },
         "orientation": "auto",
@@ -1917,8 +1921,9 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
-              "jsonPath": "$[*].savings_at_enrollment",
-              "name": "savings_at_enrollment"
+              "jsonPath": "$[*].savings_at_enrollment_display",
+              "name": "savings_at_enrollment_display",
+              "type": "string"
             }
           ]
         }
@@ -1929,9 +1934,7 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
-          },
-          "unit": "currencyUSD",
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -1940,7 +1943,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^savings_at_enrollment$/",
+          "fields": "/^savings_at_enrollment_display$/",
           "values": false
         },
         "orientation": "auto",
@@ -2077,8 +2080,9 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
-              "jsonPath": "$[*].grants_total",
-              "name": "grants_total"
+              "jsonPath": "$[*].grants_total_display",
+              "name": "grants_total_display",
+              "type": "string"
             }
           ]
         }
@@ -2089,9 +2093,7 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
-          },
-          "unit": "currencyUSD",
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -2100,7 +2102,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^grants_total$/",
+          "fields": "/^grants_total_display$/",
           "values": false
         },
         "orientation": "auto",
@@ -2237,8 +2239,9 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
-              "jsonPath": "$[*].funding_gap",
-              "name": "funding_gap"
+              "jsonPath": "$[*].funding_gap_display",
+              "name": "funding_gap_display",
+              "type": "string"
             }
           ]
         }
@@ -2249,9 +2252,7 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
-          },
-          "unit": "currencyUSD",
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -2260,7 +2261,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^funding_gap$/",
+          "fields": "/^funding_gap_display$/",
           "values": false
         },
         "orientation": "auto",
@@ -2557,8 +2558,9 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
-              "jsonPath": "$[*].gap_after_planned_borrowing",
-              "name": "gap_after_planned_borrowing"
+              "jsonPath": "$[*].gap_after_planned_borrowing_display",
+              "name": "gap_after_planned_borrowing_display",
+              "type": "string"
             }
           ]
         }
@@ -2569,9 +2571,7 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
-          },
-          "unit": "currencyUSD",
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -2580,7 +2580,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^gap_after_planned_borrowing$/",
+          "fields": "/^gap_after_planned_borrowing_display$/",
           "values": false
         },
         "orientation": "auto",
@@ -2717,8 +2717,9 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
-              "jsonPath": "$[*].new_borrowing_total",
-              "name": "new_borrowing_total"
+              "jsonPath": "$[*].new_borrowing_total_display",
+              "name": "new_borrowing_total_display",
+              "type": "string"
             }
           ]
         }
@@ -2729,9 +2730,7 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
-          },
-          "unit": "currencyUSD",
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -2740,7 +2739,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^new_borrowing_total$/",
+          "fields": "/^new_borrowing_total_display$/",
           "values": false
         },
         "orientation": "auto",
@@ -3050,8 +3049,9 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
-              "jsonPath": "$[*].debt_at_repayment_start",
-              "name": "debt_at_repayment_start"
+              "jsonPath": "$[*].debt_at_repayment_start_display",
+              "name": "debt_at_repayment_start_display",
+              "type": "string"
             }
           ]
         }
@@ -3062,9 +3062,7 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
-          },
-          "unit": "currencyUSD",
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -3073,7 +3071,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^debt_at_repayment_start$/",
+          "fields": "/^debt_at_repayment_start_display$/",
           "values": false
         },
         "orientation": "auto",
@@ -3210,8 +3208,9 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
-              "jsonPath": "$[*].standard_monthly_payment",
-              "name": "standard_monthly_payment"
+              "jsonPath": "$[*].standard_monthly_payment_display",
+              "name": "standard_monthly_payment_display",
+              "type": "string"
             }
           ]
         }
@@ -3222,9 +3221,7 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
-          },
-          "unit": "currencyUSD",
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -3233,7 +3230,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^standard_monthly_payment$/",
+          "fields": "/^standard_monthly_payment_display$/",
           "values": false
         },
         "orientation": "auto",
@@ -3370,8 +3367,9 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
-              "jsonPath": "$[*].standard_total_interest",
-              "name": "standard_total_interest"
+              "jsonPath": "$[*].standard_total_interest_display",
+              "name": "standard_total_interest_display",
+              "type": "string"
             }
           ]
         }
@@ -3382,9 +3380,7 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
-          },
-          "unit": "currencyUSD",
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -3393,7 +3389,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^standard_total_interest$/",
+          "fields": "/^standard_total_interest_display$/",
           "values": false
         },
         "orientation": "auto",
@@ -3415,7 +3411,7 @@
     {
       "type": "stat",
       "title": "🧮 Estimated debt-free date range",
-      "description": "Earliest to latest payoff month across your three salary scenarios (YYYY-MM).",
+      "description": "Month of the final loan payment: earliest to latest across your salary scenarios. Payments start 6 months after a May graduation.",
       "datasource": {
         "type": "marcusolsson-json-datasource",
         "uid": "gradpath-api"
@@ -3571,9 +3567,325 @@
       }
     },
     {
+      "type": "stat",
+      "title": "🧮 Time to repay",
+      "description": "How long the payments last, fastest to slowest scenario.",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/plan/estimate",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ],
+            [
+              "in_state",
+              "${in_state}"
+            ],
+            [
+              "start_year",
+              "${start_year}"
+            ],
+            [
+              "grad_year",
+              "${grad_year}"
+            ],
+            [
+              "savings",
+              "${savings}"
+            ],
+            [
+              "contribution",
+              "${contribution}"
+            ],
+            [
+              "grants",
+              "${grants}"
+            ],
+            [
+              "existing_debt",
+              "${existing_debt}"
+            ],
+            [
+              "borrowing",
+              "${borrowing}"
+            ],
+            [
+              "rate",
+              "${rate}"
+            ],
+            [
+              "tuition",
+              "${tuition}"
+            ],
+            [
+              "living",
+              "${living}"
+            ],
+            [
+              "occupation",
+              "${occupation}"
+            ],
+            [
+              "work_state",
+              "${work_state}"
+            ],
+            [
+              "salary_low",
+              "${salary_low}"
+            ],
+            [
+              "salary_mid",
+              "${salary_mid}"
+            ],
+            [
+              "salary_high",
+              "${salary_high}"
+            ],
+            [
+              "repay_pct",
+              "${repay_pct}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].repayment_time_range",
+              "name": "repayment_time_range"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^repayment_time_range$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      },
+      "id": 24,
+      "gridPos": {
+        "x": 0,
+        "y": 34,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "⚙️ First payment due",
+      "description": "Assumes a May graduation and a 6-month grace period.",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/plan/estimate",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ],
+            [
+              "in_state",
+              "${in_state}"
+            ],
+            [
+              "start_year",
+              "${start_year}"
+            ],
+            [
+              "grad_year",
+              "${grad_year}"
+            ],
+            [
+              "savings",
+              "${savings}"
+            ],
+            [
+              "contribution",
+              "${contribution}"
+            ],
+            [
+              "grants",
+              "${grants}"
+            ],
+            [
+              "existing_debt",
+              "${existing_debt}"
+            ],
+            [
+              "borrowing",
+              "${borrowing}"
+            ],
+            [
+              "rate",
+              "${rate}"
+            ],
+            [
+              "tuition",
+              "${tuition}"
+            ],
+            [
+              "living",
+              "${living}"
+            ],
+            [
+              "occupation",
+              "${occupation}"
+            ],
+            [
+              "work_state",
+              "${work_state}"
+            ],
+            [
+              "salary_low",
+              "${salary_low}"
+            ],
+            [
+              "salary_mid",
+              "${salary_mid}"
+            ],
+            [
+              "salary_high",
+              "${salary_high}"
+            ],
+            [
+              "repay_pct",
+              "${repay_pct}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].repayment_start",
+              "name": "repayment_start"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^repayment_start$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      },
+      "id": 25,
+      "gridPos": {
+        "x": 6,
+        "y": 34,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
       "type": "table",
-      "title": "🧮 Salary scenarios — conservative, expected, aspirational",
-      "description": "Payment = the larger of the 10-year standard payment and your chosen share of salary.",
+      "title": "🧮 Salary scenarios — when could you be debt-free?",
+      "description": "Payment = the larger of the 10-year standard payment and your chosen share of salary. Final payment = month of the last payment; payments start 6 months after graduation.",
       "datasource": {
         "type": "marcusolsson-json-datasource",
         "uid": "gradpath-api"
@@ -3697,23 +4009,13 @@
               "type": "number"
             },
             {
-              "jsonPath": "$[*].salary_source",
-              "name": "salary_source"
-            },
-            {
               "jsonPath": "$[*].monthly_payment",
               "name": "monthly_payment",
               "type": "number"
             },
             {
-              "jsonPath": "$[*].payment_share_of_gross_pct",
-              "name": "payment_share_of_gross_pct",
-              "type": "number"
-            },
-            {
-              "jsonPath": "$[*].months_to_debt_free",
-              "name": "months_to_debt_free",
-              "type": "number"
+              "jsonPath": "$[*].time_to_repay",
+              "name": "time_to_repay"
             },
             {
               "jsonPath": "$[*].debt_free_date",
@@ -3725,6 +4027,15 @@
               "type": "number"
             },
             {
+              "jsonPath": "$[*].payment_share_of_gross_pct",
+              "name": "payment_share_of_gross_pct",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].salary_source",
+              "name": "salary_source"
+            },
+            {
               "jsonPath": "$[*].est_state_income_tax",
               "name": "est_state_income_tax",
               "type": "number"
@@ -3732,6 +4043,11 @@
             {
               "jsonPath": "$[*].state_tax_note",
               "name": "state_tax_note"
+            },
+            {
+              "jsonPath": "$[*].months_to_debt_free",
+              "name": "months_to_debt_free",
+              "type": "number"
             }
           ]
         }
@@ -3758,6 +4074,10 @@
               {
                 "id": "displayName",
                 "value": "Scenario"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
               }
             ]
           },
@@ -3769,7 +4089,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "currencyUSD"
+                "value": "locale"
               },
               {
                 "id": "decimals",
@@ -3777,7 +4097,107 @@
               },
               {
                 "id": "displayName",
-                "value": "Starting salary"
+                "value": "Starting salary ($)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "monthly_payment"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Monthly payment ($)"
+              },
+              {
+                "id": "unit",
+                "value": "locale"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "time_to_repay"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Time to repay"
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "debt_free_date"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Final payment"
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_interest"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Total interest ($)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "payment_share_of_gross_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "% of gross pay"
+              },
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 120
               }
             ]
           },
@@ -3790,90 +4210,10 @@
               {
                 "id": "displayName",
                 "value": "Where the salary came from"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "monthly_payment"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "currencyUSD"
               },
               {
-                "id": "decimals",
-                "value": 0
-              },
-              {
-                "id": "displayName",
-                "value": "Monthly loan payment"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "payment_share_of_gross_pct"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Payment as % of gross pay"
-              },
-              {
-                "id": "unit",
-                "value": "percent"
-              },
-              {
-                "id": "decimals",
-                "value": 1
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "months_to_debt_free"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Months to debt-free"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "debt_free_date"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Debt-free (YYYY-MM)"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "total_interest"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "currencyUSD"
-              },
-              {
-                "id": "decimals",
-                "value": 0
-              },
-              {
-                "id": "displayName",
-                "value": "Total interest"
+                "id": "custom.width",
+                "value": 230
               }
             ]
           },
@@ -3885,7 +4225,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "currencyUSD"
+                "value": "locale"
               },
               {
                 "id": "decimals",
@@ -3893,7 +4233,7 @@
               },
               {
                 "id": "displayName",
-                "value": "Est. state income tax / yr"
+                "value": "Est. state income tax / yr ($)"
               }
             ]
           },
@@ -3908,6 +4248,18 @@
                 "value": "State tax note"
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "months_to_debt_free"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
           }
         ]
       },
@@ -3920,10 +4272,10 @@
         "sortBy": []
       },
       "transformations": [],
-      "id": 24,
+      "id": 26,
       "gridPos": {
         "x": 0,
-        "y": 34,
+        "y": 38,
         "w": 24,
         "h": 8
       }
@@ -4108,10 +4460,10 @@
         "sortBy": []
       },
       "transformations": [],
-      "id": 25,
+      "id": 27,
       "gridPos": {
         "x": 0,
-        "y": 42,
+        "y": 46,
         "w": 24,
         "h": 12
       }
@@ -4130,10 +4482,10 @@
           "showMiniMap": false
         }
       },
-      "id": 26,
+      "id": 28,
       "gridPos": {
         "x": 0,
-        "y": 54,
+        "y": 58,
         "w": 24,
         "h": 2
       }
@@ -4152,10 +4504,10 @@
           "showMiniMap": false
         }
       },
-      "id": 27,
+      "id": 29,
       "gridPos": {
         "x": 0,
-        "y": 56,
+        "y": 60,
         "w": 24,
         "h": 2
       }

@@ -108,7 +108,7 @@
           },
           "fields": [
             {
-              "jsonPath": "$.accuracy_pct"
+              "jsonPath": "$[*].accuracy_pct"
             }
           ],
           "method": "GET",
@@ -162,7 +162,7 @@
           },
           "fields": [
             {
-              "jsonPath": "$.n_train"
+              "jsonPath": "$[*].n_train"
             }
           ],
           "method": "GET",
@@ -216,7 +216,7 @@
           },
           "fields": [
             {
-              "jsonPath": "$.n_parameters"
+              "jsonPath": "$[*].n_parameters"
             }
           ],
           "method": "GET",
@@ -270,7 +270,7 @@
           },
           "fields": [
             {
-              "jsonPath": "$.n_features"
+              "jsonPath": "$[*].n_features"
             }
           ],
           "method": "GET",

@@ -136,9 +136,10 @@ def target(path, fields, ref="A", extra_params=(), plan=False, group_by=None):
 
 
 def money(name, label):
+    """Full dollar amounts in tables ("36,425"), since currencyUSD shortens them to "$36K"."""
     return {"matcher": {"id": "byName", "options": name},
-            "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 0},
-                           {"id": "displayName", "value": label}]}
+            "properties": [{"id": "unit", "value": "locale"}, {"id": "decimals", "value": 0},
+                           {"id": "displayName", "value": f"{label} ($)"}]}
 
 
 def rename(name, label, *props):
@@ -273,7 +274,7 @@ def option_var(name, label, path, deps=(), hide=0):
     return {"name": name, "label": label, "type": "query", "datasource": DS, "query": query,
             "definition": path, "refresh": 1, "includeAll": True, "allValue": "__all", "multi": False,
             "current": {"selected": True, "text": "All", "value": "$__all"}, "options": [], "sort": 0,
-            "hide": hide, "skipUrlSync": False}
+            "hide": hide, "skipUrlSync": False, "allowCustomValue": False}
 
 
 def shared_variables():
@@ -321,6 +322,15 @@ def card_html(icon, title, body, preview, href, cta="Open"):
             f'font-size:14px;">{cta} →</a></div></div>')
 
 
+def fix_json_paths(panel):
+    """Classic stats used "$.field", which matches nothing because every endpoint returns a list."""
+    for t in panel.get("targets", []):
+        for fl in t.get("fields", []):
+            jp = fl.get("jsonPath", "")
+            if jp.startswith("$.") and not jp.startswith("$.["):
+                fl["jsonPath"] = "$[*]." + jp[2:]
+
+
 _CLASSIC = None
 
 
@@ -340,10 +350,7 @@ def moved(panel_id, title=None, description=None):
         t["urlPath"] = path
         fixed = [kv.split("=", 1) for kv in query.split("&") if "=" in kv]
         t["params"] = [[v, f"${{{v}}}"] for v in SHARED] + fixed
-        # Classic stats used "$.field", which matches nothing because the API returns a list
-        for fl in t.get("fields", []):
-            if fl.get("jsonPath", "").startswith("$.") and not fl["jsonPath"].startswith("$.["):
-                fl["jsonPath"] = "$[*]." + fl["jsonPath"][2:]
+    fix_json_paths(p)
     if title:
         p["title"] = title
     if description:
@@ -726,6 +733,9 @@ def plan_page():
     est = "/plan/estimate"
 
     def s(title, field, unit="currencyUSD", desc="", decimals=0):
+        if unit == "currencyUSD":
+            return stat(title, est, f"{field}_display", None, decimals=None, description=desc, plan=True,
+                        typ="string")
         return stat(title, est, field, unit, decimals=decimals, description=desc, plan=True)
 
     pg.row("📘 Your school and program")
@@ -769,23 +779,31 @@ def plan_page():
     pg.add(s("🧮 Total interest (standard 10-year plan)", "standard_total_interest",
              desc="All payments minus the starting balance on the standard plan."), 6, 4)
     pg.add(stat("🧮 Estimated debt-free date range", est, "debt_free_range", decimals=None, plan=True,
-                description="Earliest to latest payoff month across your three salary scenarios (YYYY-MM)."), 6, 4)
-    pg.add(table("🧮 Salary scenarios — conservative, expected, aspirational", "/plan/scenarios",
-                 [("scenario", None), ("starting_salary", "number"), ("salary_source", None),
-                  ("monthly_payment", "number"), ("payment_share_of_gross_pct", "number"),
-                  ("months_to_debt_free", "number"), ("debt_free_date", None), ("total_interest", "number"),
-                  ("est_state_income_tax", "number"), ("state_tax_note", None)],
-                 [rename("scenario", "Scenario"), money("starting_salary", "Starting salary"),
-                  rename("salary_source", "Where the salary came from"),
-                  money("monthly_payment", "Monthly loan payment"),
-                  rename("payment_share_of_gross_pct", "Payment as % of gross pay",
-                         {"id": "unit", "value": "percent"}, {"id": "decimals", "value": 1}),
-                  rename("months_to_debt_free", "Months to debt-free"),
-                  rename("debt_free_date", "Debt-free (YYYY-MM)"),
+                description="Month of the final loan payment: earliest to latest across your salary scenarios. "
+                            "Payments start 6 months after a May graduation."), 6, 4)
+    pg.add(stat("🧮 Time to repay", est, "repayment_time_range", decimals=None, plan=True,
+                description="How long the payments last, fastest to slowest scenario."), 6, 4)
+    pg.add(stat("⚙️ First payment due", est, "repayment_start", decimals=None, plan=True,
+                description="Assumes a May graduation and a 6-month grace period."), 6, 4)
+    w = lambda px: {"id": "custom.width", "value": px}
+    pg.add(table("🧮 Salary scenarios — when could you be debt-free?", "/plan/scenarios",
+                 [("scenario", None), ("starting_salary", "number"), ("monthly_payment", "number"),
+                  ("time_to_repay", None), ("debt_free_date", None), ("total_interest", "number"),
+                  ("payment_share_of_gross_pct", "number"), ("salary_source", None),
+                  ("est_state_income_tax", "number"), ("state_tax_note", None), ("months_to_debt_free", "number")],
+                 [rename("scenario", "Scenario", w(120)), money("starting_salary", "Starting salary"),
+                  rename("monthly_payment", "Monthly payment ($)", {"id": "unit", "value": "locale"},
+                         {"id": "decimals", "value": 2}, w(150)),
+                  rename("time_to_repay", "Time to repay", w(130)),
+                  rename("debt_free_date", "Final payment", w(130)),
                   money("total_interest", "Total interest"),
+                  rename("payment_share_of_gross_pct", "% of gross pay",
+                         {"id": "unit", "value": "percent"}, {"id": "decimals", "value": 1}, w(120)),
+                  rename("salary_source", "Where the salary came from", w(230)),
                   money("est_state_income_tax", "Est. state income tax / yr"),
-                  rename("state_tax_note", "State tax note")],
-                 description="Payment = the larger of the 10-year standard payment and your chosen share of salary.",
+                  rename("state_tax_note", "State tax note"), hidden("months_to_debt_free")],
+                 description="Payment = the larger of the 10-year standard payment and your chosen share of salary. "
+                             "Final payment = month of the last payment; payments start 6 months after graduation.",
                  plan=True, wrap=True), 24, 8)
     pg.add(table("⚙️ Assumptions, ❔ missing information and ⚠️ input checks", "/plan/notes",
                  [("type", None), ("detail", None)],
@@ -914,6 +932,8 @@ def patch_classic(path, title_suffix=" (Classic)"):
                         "🆕 **This is the Classic GradPath dashboard, kept unchanged for reference.** The new app has "
                         "navigation, school search, verified state taxes and a planner: "
                         "**[Open GradPath Overview →](/d/gradpath-overview)**"}})
+    for p in d["panels"]:
+        fix_json_paths(p)
     if not d["title"].endswith(title_suffix):
         d["title"] += title_suffix
     d["tags"] = sorted(set(d.get("tags", [])) | {"gradpath-classic"})

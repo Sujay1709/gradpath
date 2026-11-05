@@ -13,7 +13,7 @@ import pandas as pd  # noqa: E402
 
 from filters import Filters, apply_filters, parse_multi, parse_number  # noqa: E402
 from plan_calc import (  # noqa: E402
-    PlanInputs, amortized_payment, compute_plan, months_to_payoff, total_interest,
+    PlanInputs, amortized_payment, compute_plan, months_to_payoff, round_up_cents, total_interest,
 )
 
 
@@ -35,6 +35,15 @@ class AmortizationTests(unittest.TestCase):
         p = amortized_payment(30000, 6.0, 120)
         self.assertEqual(months_to_payoff(30000, 6.0, p), 120)
         self.assertAlmostEqual(total_interest(30000, 6.0, p, 120), p * 120 - 30000, delta=1.0)
+
+    def test_standard_plan_never_exceeds_term(self):
+        # rounded-up cent payments must clear any balance in at most 120 payments
+        import random
+        rnd = random.Random(3)
+        for _ in range(2000):
+            bal, rate = rnd.uniform(1, 250000), rnd.choice([0, 2.75, 5.5, 6.52, 8.08, 12.0])
+            pay = round_up_cents(amortized_payment(bal, rate, 120))
+            self.assertLessEqual(months_to_payoff(bal, rate, pay), 120, (bal, rate, pay))
 
     def test_no_debt(self):
         self.assertEqual(amortized_payment(0, 6.0, 120), 0.0)
@@ -74,6 +83,21 @@ class PlanTests(unittest.TestCase):
         months = [s["months_to_debt_free"] for s in r["scenarios"]]
         self.assertTrue(months[0] >= months[1] >= months[2])
         self.assertLessEqual(months[0], 120)
+
+    def test_debt_free_date_is_last_payment_month(self):
+        # $1,200 at 0%, standard payment $10/month → 120 payments from Nov 2028 → last one Oct 2038
+        r = compute_plan(self.base(start_year=2027, grad_year=2028, annual_borrowing=1200,
+                                   salary_conservative=None, salary_expected=None, salary_aspirational=None))
+        self.assertEqual(r["repayment_start"], "Nov 2028")
+        self.assertEqual(r["standard_debt_free_date"], "Oct 2038")
+        self.assertEqual(r["debt_free_range"], "Oct 2038 (standard 10-year plan)")
+        self.assertEqual(r["repayment_time_range"], "10 yr of payments (standard plan)")
+        # 10% of $36,000 = $300/month → 4 payments: Nov, Dec, Jan, Feb
+        r = compute_plan(self.base(start_year=2027, grad_year=2028, annual_borrowing=1200,
+                                   salary_conservative=36000))
+        self.assertEqual(r["scenarios"][0]["months_to_debt_free"], 4)
+        self.assertEqual(r["scenarios"][0]["debt_free_date"], "Feb 2029")
+        self.assertEqual(r["scenarios"][0]["time_to_repay"], "4 mo")
 
     def test_missing_salary_flagged(self):
         r = compute_plan(self.base(salary_aspirational=None))

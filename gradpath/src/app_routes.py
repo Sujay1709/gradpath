@@ -203,7 +203,9 @@ def _selected_school(flt: Filters) -> str | None:
 def school_detail(flt: Filters = Depends()):
     iid = _selected_school(flt)
     if iid is None:
-        return []
+        hint = "No school selected — type a name in the School box, or click a school in the table below."
+        return [{"school_name": hint, "address": "—", "city_state_zip": "—", "school_type": "—",
+                 "matching_programs": "—", "address_source": "—", "outcomes_source": "—"}]
     progs = apply_filters(get_df(), flt)
     base = get_df()[get_df()["institution_id"] == iid]
     d = _dir_lookup()
@@ -484,16 +486,39 @@ def _plan_context(pp: PlanParams, flt: Filters) -> dict:
                 occupation=(raw.get("occupation") or "").strip()[:80])
 
 
+PLAN_MONEY = ["total_education_cost", "savings_at_enrollment", "grants_total", "funding_gap",
+              "gap_after_planned_borrowing", "new_borrowing_total", "debt_at_repayment_start",
+              "standard_monthly_payment", "standard_total_interest", "historical_median_earnings",
+              "historical_median_debt"]
+
+
+def _dollars(value, cents=False) -> str:
+    if value is None or (isinstance(value, float) and value != value):
+        return "—"
+    return f"${value:,.2f}" if cents else f"${round(value):,}"
+
+
 @router.get("/plan/estimate")
 def plan_estimate(pp: PlanParams = Depends(), flt: Filters = Depends()):
     c = _plan_context(pp, flt)
     r, drow = c["result"], c["drow"]
-    name = drow["school_name"] if drow is not None else ("No school selected" if c["iid"] is None else "School not in directory")
+    if drow is not None:
+        name = drow["school_name"]
+    elif c["iid"] is None:
+        name = "No school selected"
+    else:
+        # schools missing from the Institution file still have a name in the Field of Study data
+        hit = get_df().loc[get_df()["institution_id"] == c["iid"], "institution_name"]
+        name = f"{hit.iloc[0]} (address not reported)" if len(hit) else "School not found"
     addr = (drow["address"] if drow is not None and not pd.isna(drow["address"]) else NOT_REPORTED)
     city = ", ".join(str(x) for x in ([drow["city"], drow["state"]] if drow is not None else []) if not pd.isna(x))
     zp = drow["zip"] if drow is not None and not pd.isna(drow["zip"]) else ""
     flat = {k: v for k, v in r.items() if k != "scenarios"}
+    flat.update({"historical_median_earnings": c["hist_earn"], "historical_median_debt": c["hist_debt"]})
+    # Grafana shortens $6,456 to "$6K"; ready-made strings keep the tiles exact
+    display = {f"{k}_display": _dollars(flat.get(k), cents=k == "standard_monthly_payment") for k in PLAN_MONEY}
     return [{
+        **display,
         **flat,
         "school_name": name,
         "school_address": addr if c["iid"] else "Select a school",

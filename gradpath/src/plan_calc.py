@@ -4,6 +4,7 @@ Deterministic education-finance formulas for the GradPath "My Plan" page.
 No AI, no randomness: same inputs always give the same outputs. Every
 simplifying assumption is listed in ASSUMPTIONS and shown on the dashboard.
 """
+import calendar
 import math
 from dataclasses import dataclass
 
@@ -61,34 +62,36 @@ def amortized_payment(principal: float, annual_rate_pct: float, months: int) -> 
     return principal * r / (1 - (1 + r) ** -months)
 
 
-def months_to_payoff(principal: float, annual_rate_pct: float, payment: float) -> int | None:
-    """Whole months until the balance reaches zero; None if the payment never covers interest."""
+def round_up_cents(amount: float) -> float:
+    """Lenders bill whole cents; rounding up keeps the schedule within its term."""
+    return math.ceil(round(amount * 100, 6)) / 100
+
+
+def _schedule(principal: float, annual_rate_pct: float, payment: float) -> tuple[int | None, float | None]:
+    """Simulate the exact payments shown to the student: (months, total interest)."""
     if principal <= 0:
-        return 0
-    if payment <= 0:
-        return None
+        return 0, 0.0
     r = annual_rate_pct / 100 / 12
-    if r == 0:
-        return math.ceil(principal / payment)
-    if payment <= principal * r:
-        return None
-    return math.ceil(-math.log(1 - r * principal / payment) / math.log(1 + r))
-
-
-def total_interest(principal: float, annual_rate_pct: float, payment: float, months: int | None) -> float | None:
-    """Exact interest over the schedule, with a smaller final payment."""
-    if months is None:
-        return None
-    if principal <= 0 or months == 0:
-        return 0.0
-    r = annual_rate_pct / 100 / 12
-    bal, paid = principal, 0.0
-    for _ in range(months):
+    if payment <= 0 or payment <= principal * r:
+        return None, None
+    bal, paid, months = principal, 0.0, 0
+    while bal > 0.005 and months < 1200:
         bal += bal * r
         pay = min(payment, bal)
         bal -= pay
         paid += pay
-    return round(paid - principal, 2)
+        months += 1
+    return months, round(paid - principal, 2)
+
+
+def months_to_payoff(principal: float, annual_rate_pct: float, payment: float) -> int | None:
+    """Payments until the balance reaches zero; None if the payment never covers interest."""
+    return _schedule(principal, annual_rate_pct, payment)[0]
+
+
+def total_interest(principal: float, annual_rate_pct: float, payment: float, months: int | None = None) -> float | None:
+    """Exact interest over the schedule, including a smaller final payment."""
+    return _schedule(principal, annual_rate_pct, payment)[1]
 
 
 def add_months(year: int, month: int, n: int) -> tuple[int, int]:
@@ -98,6 +101,21 @@ def add_months(year: int, month: int, n: int) -> tuple[int, int]:
 
 def repayment_start(grad_year: int) -> tuple[int, int]:
     return add_months(grad_year, GRADUATION_MONTH, GRACE_MONTHS)
+
+
+def month_label(year: int, month: int) -> str:
+    return f"{calendar.month_abbr[month]} {year}"
+
+
+def duration_label(months: int) -> str:
+    years, rest = divmod(months, 12)
+    parts = ([f"{years} yr"] if years else []) + ([f"{rest} mo"] if rest else [])
+    return " ".join(parts) or "0 mo"
+
+
+def final_payment_month(grad_year: int, months: int) -> str:
+    """The first payment is in the repayment-start month, so payment n lands n − 1 months later."""
+    return month_label(*add_months(*repayment_start(grad_year), months - 1))
 
 
 def _month_index(year: int, month: int) -> int:
@@ -139,8 +157,8 @@ def compute_plan(p: PlanInputs) -> dict:
 
     debt = debt_at_graduation(p)
     principal = debt["debt_at_repayment_start"]
-    std_payment = amortized_payment(principal, p.rate_pct, STANDARD_TERM_MONTHS)
-    std_interest = total_interest(principal, p.rate_pct, std_payment, months_to_payoff(principal, p.rate_pct, std_payment))
+    std_payment = round_up_cents(amortized_payment(principal, p.rate_pct, STANDARD_TERM_MONTHS))
+    std_interest = total_interest(principal, p.rate_pct, std_payment)
     start_y, start_m = repayment_start(p.grad_year)
 
     scenarios = []
@@ -149,36 +167,45 @@ def compute_plan(p: PlanInputs) -> dict:
                           ("Aspirational", p.salary_aspirational)):
         if salary is None or salary <= 0:
             scenarios.append({"scenario": label, "starting_salary": None, "monthly_payment": None,
-                              "months_to_debt_free": None, "debt_free_date": "Missing salary",
+                              "months_to_debt_free": None, "time_to_repay": "—", "debt_free_date": "Missing salary",
                               "total_interest": None, "payment_share_of_gross_pct": None})
             continue
-        budget = max(std_payment, salary / 12 * p.repay_pct / 100)
+        budget = max(std_payment, round_up_cents(salary / 12 * p.repay_pct / 100))
         months = months_to_payoff(principal, p.rate_pct, budget)
         if months is None:
             date = "Not paid off at this payment"
         elif months == 0:
             date = "No loan balance"
         else:
-            y, m = add_months(start_y, start_m, months)
-            date = f"{y}-{m:02d}"
+            date = final_payment_month(p.grad_year, months)
         scenarios.append({
             "scenario": label,
             "starting_salary": round(salary, 0),
             "monthly_payment": round(budget, 2) if principal > 0 else 0.0,
             "months_to_debt_free": months,
+            "time_to_repay": duration_label(months) if months else ("—" if months is None else "No loans"),
             "debt_free_date": date,
-            "total_interest": total_interest(principal, p.rate_pct, budget, months),
+            "total_interest": total_interest(principal, p.rate_pct, budget),
             "payment_share_of_gross_pct": round(budget * 12 / salary * 100, 1) if principal > 0 else 0.0,
         })
 
+    std_months = months_to_payoff(principal, p.rate_pct, std_payment)
+    standard_date = final_payment_month(p.grad_year, std_months) if principal > 0 else "No loan balance"
     dated = [s for s in scenarios if s["months_to_debt_free"] not in (None, 0)]
+    repay_time_range = "No loans to repay"
     if principal <= 0:
         debt_free_range = "No loan balance"
     elif dated:
-        dates = sorted(s["debt_free_date"] for s in dated)
-        debt_free_range = dates[0] if dates[0] == dates[-1] else f"{dates[0]} to {dates[-1]}"
+        fast = min(dated, key=lambda s: s["months_to_debt_free"])
+        slow = max(dated, key=lambda s: s["months_to_debt_free"])
+        same = fast["months_to_debt_free"] == slow["months_to_debt_free"]
+        debt_free_range = fast["debt_free_date"] if same else f"{fast['debt_free_date']} – {slow['debt_free_date']}"
+        repay_time_range = (fast["time_to_repay"] if same
+                            else f"{fast['time_to_repay']} – {slow['time_to_repay']}") + " of payments"
     else:
-        debt_free_range = "Enter salary scenarios"
+        # no salaries entered: the standard 10-year plan still gives a firm date
+        debt_free_range = f"{standard_date} (standard 10-year plan)"
+        repay_time_range = f"{duration_label(std_months)} of payments (standard plan)"
 
     return {
         "years_in_school": years,
@@ -192,7 +219,9 @@ def compute_plan(p: PlanInputs) -> dict:
         **debt,
         "standard_monthly_payment": round(std_payment, 2),
         "standard_total_interest": std_interest,
-        "repayment_start": f"{start_y}-{start_m:02d}",
+        "repayment_start": month_label(start_y, start_m),
+        "standard_debt_free_date": standard_date,
         "debt_free_range": debt_free_range,
+        "repayment_time_range": repay_time_range,
         "scenarios": scenarios,
     }

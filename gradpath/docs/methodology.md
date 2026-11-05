@@ -129,8 +129,10 @@ This is the same definition used by the College Scorecard's public-facing tool.
 | Debt when repayment starts | `existing balance + annual borrowing × years + simple interest` — each September disbursement accrues interest until repayment starts in November after a May graduation (6-month grace) |
 | Standard monthly payment | `P·r / (1 − (1+r)^−120)`, with `r` = annual rate ÷ 12 |
 | Scenario payment | `max(standard payment, repay% × salary ÷ 12)` |
-| Months to debt-free | `−ln(1 − rP/A) ÷ ln(1+r)`, rounded up; "not paid off" if `A ≤ rP` |
-| Total interest | simulated month by month (the final payment is smaller) |
+| Payments | rounded **up** to the cent, as lenders bill, so the standard plan always finishes within 120 payments |
+| Months to debt-free | simulated month by month with the exact payment shown (the final payment is smaller); "not paid off" if `A ≤ rP` |
+| Final payment month | first payment month (November after a May graduation) + payments − 1 |
+| Total interest | sum of all payments − starting balance, from the same simulation |
 | Confidence | High = exact school + major match with 30+ graduates measured; Medium = smaller or broader match; Low = no match |
 
 If left blank:
