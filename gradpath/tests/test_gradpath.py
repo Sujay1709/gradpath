@@ -108,6 +108,74 @@ class PlanTests(unittest.TestCase):
         self.assertEqual(r["savings_coverage_pct"], 100.0)
 
 
+class RepaymentAgentTests(unittest.TestCase):
+    def setUp(self):
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+        from pipeline.agents.repayment_timeline_agent import RepaymentTimelineAgent
+        self.agent = RepaymentTimelineAgent()
+        self.inputs = PlanInputs(start_year=2027, grad_year=2031, current_year=2026, current_month=11,
+                                 annual_borrowing=5500, rate_pct=6.52, salary_conservative=32000,
+                                 salary_expected=45000, salary_aspirational=60000)
+        self.plan = compute_plan(self.inputs)
+        self.out = self.agent.handle(self.inputs, self.plan)
+
+    def test_timeline_reaches_zero_at_final_payment(self):
+        rows = self.out["schedule"]
+        self.assertEqual(rows[0]["month"], "Oct 2031")                       # month before the first payment
+        for s in self.plan["scenarios"]:
+            first_zero = next(r["month"] for r in rows if r[s["scenario"]] == 0)
+            self.assertEqual(first_zero, s["debt_free_date"], s["scenario"])
+        self.assertEqual(self.out["schedule"][-1]["Standard 10-year plan"], 0)
+
+    def test_milestones_in_order_and_consistent(self):
+        for s in self.plan["scenarios"]:
+            ms = [m for m in self.out["milestones"] if m["scenario"] == s["scenario"]]
+            self.assertEqual([m["milestone"] for m in ms],
+                             ["First payment", "25% of starting balance repaid", "Half repaid", "75% repaid",
+                              "Debt-free (final payment)"])
+            self.assertEqual(ms[-1]["date"], s["debt_free_date"])
+            nums = [m["payment_number"] for m in ms]
+            self.assertEqual(nums, sorted(nums))
+            self.assertAlmostEqual(ms[-1]["interest_paid_so_far"], s["total_interest"], delta=0.05)
+
+    def test_explanation_uses_the_students_numbers(self):
+        text = " ".join(st["detail"] for st in self.out["explanation"])
+        self.assertIn(f"${self.plan['debt_at_repayment_start']:,.2f}", text)
+        self.assertIn(f"${self.plan['standard_monthly_payment']:,.2f}", text)
+        self.assertIn(self.plan["debt_free_range"], text)
+        self.assertIn("Nov 2031", text)
+
+    def test_no_loans(self):
+        inputs = PlanInputs(start_year=2027, grad_year=2031, current_year=2026)
+        out = self.agent.handle(inputs, compute_plan(inputs))
+        self.assertEqual(out["schedule"], [])
+        self.assertEqual(out["explanation"][0]["title"], "No loans")
+
+
+class SmartFilterTests(unittest.TestCase):
+    def test_selected_school_sets_the_only_state(self):
+        from app_routes import options_states
+        from data_store import get_df
+        row = get_df().dropna(subset=["institution_id", "state"]).iloc[0]
+        opts = options_states(Filters(school=row["institution_id"]))
+        self.assertEqual([o["value"] for o in opts], [row["state"]])
+
+    def test_no_school_offers_all_first(self):
+        from app_routes import options_states
+        opts = options_states(Filters())
+        self.assertEqual(opts[0], {"text": "All", "value": "__all"})
+        self.assertGreater(len(opts), 50)
+
+    def test_majors_follow_the_school(self):
+        from app_routes import options_majors
+        from data_store import get_df
+        df = get_df().dropna(subset=["institution_id"])
+        iid = df["institution_id"].value_counts().index[0]
+        school_majors = {o["value"] for o in options_majors(Filters(school=iid))}
+        self.assertEqual(school_majors, set(df[df.institution_id == iid]["cip_title"]))
+        self.assertGreater(len(options_majors(Filters())), 300)              # 320 majors overall
+
+
 class FilterTests(unittest.TestCase):
     df = pd.DataFrame({
         "institution_id": ["1", "2", "3"], "state": ["CA", "NY", "CA"],

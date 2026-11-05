@@ -67,20 +67,28 @@ def round_up_cents(amount: float) -> float:
     return math.ceil(round(amount * 100, 6)) / 100
 
 
+def amortization_rows(principal: float, annual_rate_pct: float, payment: float):
+    """Yield (payment number, interest, amount paid, balance after) for each monthly payment."""
+    r = annual_rate_pct / 100 / 12
+    bal, n = principal, 0
+    while bal > 0.005 and n < 1200:
+        interest = bal * r
+        bal += interest
+        pay = min(payment, bal)
+        bal -= pay
+        n += 1
+        yield n, interest, pay, max(bal, 0.0)
+
+
 def _schedule(principal: float, annual_rate_pct: float, payment: float) -> tuple[int | None, float | None]:
     """Simulate the exact payments shown to the student: (months, total interest)."""
     if principal <= 0:
         return 0, 0.0
-    r = annual_rate_pct / 100 / 12
-    if payment <= 0 or payment <= principal * r:
+    if payment <= 0 or payment <= principal * annual_rate_pct / 100 / 12:
         return None, None
-    bal, paid, months = principal, 0.0, 0
-    while bal > 0.005 and months < 1200:
-        bal += bal * r
-        pay = min(payment, bal)
-        bal -= pay
+    months, paid = 0, 0.0
+    for months, _, pay, _ in amortization_rows(principal, annual_rate_pct, payment):
         paid += pay
-        months += 1
     return months, round(paid - principal, 2)
 
 
@@ -122,20 +130,30 @@ def _month_index(year: int, month: int) -> int:
     return year * 12 + (month - 1)
 
 
-def debt_at_graduation(p: PlanInputs) -> dict:
-    """Balance when repayment starts (graduation + grace), with simple interest accrued so far."""
+def accrual_breakdown(p: PlanInputs) -> list[dict]:
+    """Each loan, how long it accrues simple interest before repayment starts, and the interest it adds."""
     years = years_in_school(p.start_year, p.grad_year)
     rate = p.rate_pct / 100
     repay_idx = _month_index(*repayment_start(p.grad_year))
+    items = []
+    if p.existing_balance > 0:
+        months = max(0, repay_idx - _month_index(p.current_year, p.current_month))
+        items.append({"loan": "Existing balance", "amount": p.existing_balance, "months": months,
+                      "interest": p.existing_balance * rate * months / 12})
+    if p.annual_borrowing > 0:
+        for i in range(years):
+            months = max(0, repay_idx - _month_index(p.start_year + i, SCHOOL_START_MONTH))
+            items.append({"loan": f"Sep {p.start_year + i} loan", "amount": p.annual_borrowing, "months": months,
+                          "interest": p.annual_borrowing * rate * months / 12})
+    return items
+
+
+def debt_at_graduation(p: PlanInputs) -> dict:
+    """Balance when repayment starts (graduation + grace), with simple interest accrued so far."""
+    years = years_in_school(p.start_year, p.grad_year)
     new_principal = p.annual_borrowing * years
-    accrued_new = sum(
-        p.annual_borrowing * rate * max(0, repay_idx - _month_index(p.start_year + i, SCHOOL_START_MONTH)) / 12
-        for i in range(years)
-    )
-    existing_months = max(0, repay_idx - _month_index(p.current_year, p.current_month))
-    accrued_existing = p.existing_balance * rate * existing_months / 12
+    accrued = sum(item["interest"] for item in accrual_breakdown(p))
     principal = p.existing_balance + new_principal
-    accrued = accrued_new + accrued_existing
     return {
         "new_borrowing_total": round(new_principal, 2),
         "existing_balance": round(p.existing_balance, 2),

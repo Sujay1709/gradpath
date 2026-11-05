@@ -33,7 +33,7 @@ from metrics import add_metrics
 
 NUMERIC_COLS = [
     "median_earnings", "median_earnings_1yr",
-    "median_debt", "median_debt_enrolled",
+    "median_debt", "median_debt_all_schools", "median_parent_plus_debt",
     "cohort_size", "ipeds_count",
 ]
 

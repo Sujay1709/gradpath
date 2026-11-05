@@ -18,7 +18,9 @@ Four checks, exit code 1 if any fails:
    payment, month count, final-payment month, interest total and date range is
    checked against an independent month-by-month loan simulator written here
    (it does not import plan_calc.py). Auto-filled tuition and salary must match
-   the source data, and no standard plan may exceed 120 payments.
+   the source data, and no standard plan may exceed 120 payments. The Repayment Timeline
+   Agent's chart and milestones must hit $0 in the same month as the scenario table.
+   Smart filters: picking a school must leave only its state and its own majors.
 3. Cache and gzip — a cached response must be identical to a fresh one, and large
    responses must be compressed.
 4. Performance budgets — single-request latency per endpoint and throughput when
@@ -293,6 +295,9 @@ def check_plan(api, per_category, seed):
                 elif est["debt_free_range"] != "No loan balance":
                     rep.flag("zero_range", f"{where}: {est['debt_free_range']}")
 
+                if pname in ("typical", "heavy") and P > 0:
+                    check_agent(api, q, scen, rep, where)
+
                 if pname == "blank":
                     d = directory.loc[iid] if iid in directory.index else None
                     col = "tuition_fees_in_state" if q["in_state"] == "yes" else "tuition_fees_out_of_state"
@@ -310,6 +315,49 @@ def check_plan(api, per_category, seed):
     print("  typical profile ($5,500/yr borrowed) — years of payments, median by category:")
     for (stype, cred), yrs in sorted(payoff_years.items()):
         print(f"     {stype:20s} {cred:38s} {statistics.median(yrs):4.1f} yr")
+    return rep
+
+
+def check_agent(api, q, scen, rep, where):
+    """Repayment Timeline Agent output must agree with the scenario table."""
+    timeline, *_ = get(api, "/plan/timeline", q)
+    milestones, *_ = get(api, "/plan/milestones", q)
+    explain, *_ = get(api, "/plan/explain", q)
+    cols = {"Conservative": "balance_conservative", "Expected": "balance_expected",
+            "Aspirational": "balance_aspirational"}
+    for s in scen:
+        if not s.get("months_to_debt_free"):
+            continue
+        col = cols[s["scenario"]]
+        zero = next((r["month"] for r in timeline if r[col] == 0), None)
+        if zero != s["debt_free_date"]:
+            rep.flag("agent_timeline", f"{where} {s['scenario']}: chart hits $0 in {zero}, table says {s['debt_free_date']}")
+        final = [m for m in milestones if m["scenario"] == s["scenario"] and m["milestone"].startswith("Debt-free")]
+        if not final or final[0]["date"] != s["debt_free_date"]:
+            rep.flag("agent_milestone", f"{where} {s['scenario']}: {final[0]['date'] if final else None}")
+    if len(explain) < 5:
+        rep.flag("agent_explain", f"{where}: only {len(explain)} steps")
+
+
+def check_smart_filters(api, seed, n=40):
+    """Picking a school must leave exactly its own state, and only its own majors."""
+    rep = Report()
+    roi = pd.read_parquet(ROI).dropna(subset=["institution_id"])
+    rnd = random.Random(seed)
+    ids = sorted(roi["institution_id"].unique())
+    for iid in rnd.sample(ids, min(n, len(ids))):
+        rows = roi[roi.institution_id == iid]
+        states, *_ = get(api, "/options/states", {"school": iid})
+        want = sorted(rows["state"].dropna().unique()) or ["__all"]
+        if [o["value"] for o in states] != want:
+            rep.flag("state_not_auto", f"{iid}: {[o['value'] for o in states]} vs {want}")
+        majors, *_ = get(api, "/options/majors", {"school": iid})
+        if {o["value"] for o in majors} != set(rows["cip_title"]):
+            rep.flag("majors_not_narrowed", f"{iid}: {len(majors)} vs {rows['cip_title'].nunique()}")
+    states, *_ = get(api, "/options/states")
+    if states[0] != {"text": "All", "value": "__all"}:
+        rep.flag("state_all_missing", str(states[:1]))
+    print(f"  {n} random schools: State auto-fills and Major narrows to the school's programs")
     return rep
 
 
@@ -382,7 +430,10 @@ def main():
     print("1. Dashboard queries")
     reports.append(("dashboard queries", check_dashboards(args.api, sample_school)))
     reports[-1][1].print_issues("dashboard queries")
-    print("2. Repayment oracle")
+    print("1b. Smart filters")
+    reports.append(("smart filters", check_smart_filters(args.api, args.seed)))
+    reports[-1][1].print_issues("smart filters")
+    print("2. Repayment oracle + Repayment Timeline Agent")
     reports.append(("repayment oracle", check_plan(args.api, 3 if args.quick else args.per_category, args.seed)))
     reports[-1][1].print_issues("repayment oracle")
     if not args.skip_perf:

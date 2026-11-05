@@ -137,6 +137,22 @@ cd gradpath && python3 -m uvicorn api:app --app-dir src --port 8000
 
 ---
 
+## How the debt-free timeline is calculated
+
+1. **Borrowing.** Your yearly loan is paid out each September you're in school, plus any existing balance.
+2. **Interest before repayment.** Each loan builds simple interest from the month it is paid out until
+   repayment starts: `amount × rate × months ÷ 12`.
+3. **Starting balance.** Borrowed + that interest, in the November after a May graduation (6-month grace).
+4. **Standard payment.** `P × r ÷ (1 − (1 + r)^−120)`, with `r` = yearly rate ÷ 12, rounded up to the cent.
+5. **Payment per salary scenario.** The larger of the standard payment and your chosen share of salary ÷ 12
+   (10% by default).
+6. **Month by month.** Each month, interest (`balance × r`) is added and the payment subtracted until the
+   balance hits zero. That final payment month is your debt-free date.
+7. **Range.** The earliest to latest final payment across your scenarios.
+
+My Plan shows this as a chart, milestones and these steps filled in with your numbers.
+`tests/stress_plan.py` re-checks every step against an independent simulator.
+
 ## How it works
 
 ```
@@ -153,7 +169,20 @@ Official state pages ───► state_tax_reference.csv (hand-verified) ──
 - **Shared filters.** Every API endpoint takes the same optional query params, and `filters.py` applies
   them. "All" never filters anything, so the Classic dashboards return exactly what they did before.
 - **School search.** The School variable lists `Name — City, ST` and stores the IPEDS institution ID,
-  because 18 school names repeat across states.
+  because 46 school names repeat across states. You can type a name or a state code (`TX`).
+- **Smart filters.** Picking a school switches **State** to that school's state, and narrows **Major** and
+  **CIP code** to its programs. Under the hood, State's only remaining option is the school's state; the
+  dependency order is school → state → major → CIP.
+- **Debt measure.** "Median debt" is the median **federal student-loan debt (Stafford + Grad PLUS) borrowed
+  at the school** (`DEBT_ALL_STGP_EVAL_MDN`). Earlier versions used `DEBT_ALL_PP_ANY_MDN`, which the
+  Scorecard data dictionary defines as **Parent PLUS** debt. That was corrected in Nov 2026; see
+  `gradpath/docs/methodology.md`.
+- **Repayment Timeline Agent.** `pipeline/agents/repayment_timeline_agent.py` builds each student's payoff
+  timeline: a month-by-month balance per salary scenario, milestones (25/50/75% repaid, final payment) and a
+  step-by-step explanation with the student's own numbers. It is deterministic (no AI) and is served at
+  `/plan/timeline`, `/plan/milestones` and `/plan/explain`.
+- **Look.** A bright theme: Grafana's light theme (`cfg:users.default_theme=light` in `start.sh`) with
+  burnt-orange and red accents chosen for WCAG AA contrast.
 - **My Plan inputs.** Grafana has no built-in form, so a small HTML form served by FastAPI collects the
   inputs. It validates them, saves them in the browser's `localStorage` and opens the My Plan dashboard
   with the values in the URL. No bank connections, no credentials and no server-side storage.
@@ -161,7 +190,7 @@ Official state pages ───► state_tax_reference.csv (hand-verified) ──
   in any calculation.
 - **Performance.**
   - pandas writes JSON responses directly.
-  - Responses over 2 KB are gzipped. The full 8,266-point scatter drops from 3.0 MB to 0.27 MB.
+  - Responses over 2 KB are gzipped, which cuts the full 32,551-point scatter by about 90%.
   - Read-only GET responses are cached in memory (`src/response_cache.py`). `/plan/*` is never cached
     because its answers depend on today's date.
   - Cache statistics are at http://localhost:8000/meta/health.
@@ -170,7 +199,7 @@ Official state pages ───► state_tax_reference.csv (hand-verified) ──
 
 | File | Built by | Contents |
 |---|---|---|
-| `data/processed/degree_roi_clean.parquet` | `prepare_data.py` (unchanged) | 8,266 programs with earnings, debt and ratios |
+| `data/processed/degree_roi_clean.parquet` | `prepare_data.py` | 32,551 programs (320 majors, 4,043 schools, 8 credential levels) with earnings, student debt and ratios |
 | `data/processed/degree_roi_latest.csv` | `build_reference_data.py` | The same rows plus address, city, ZIP and source year |
 | `data/processed/school_directory.csv` | `build_reference_data.py` | 6,272 institutions with address, city, state, ZIP, type, latitude/longitude and source year (plus published tuition, used to pre-fill My Plan) |
 | `data/processed/state_tax_reference.csv` | **hand-verified** | 10 states, tax year 2025, with source URL and verified date |
@@ -193,7 +222,7 @@ Student-loan-interest treatment could not be verified for any state, so that fie
 1. Historical earnings do not guarantee future salary.
 2. Median debt is not the same as cost of attendance.
 3. School and major do not cause a particular income.
-4. Some records are suppressed for privacy (~96% of raw rows).
+4. Some records are suppressed for privacy (~85% of raw rows).
 5. The data lags current market conditions.
 6. State tax rules change over time.
 7. Company, occupation, location and experience all affect earnings.

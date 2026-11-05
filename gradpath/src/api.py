@@ -75,8 +75,10 @@ def _find_cache():
 @app.get("/meta/health")
 def meta_health():
     """Record count and cache statistics (tests/stress_plan.py reads this)."""
+    from app_routes import timeline_agent
     cache = _find_cache()
-    return {"records": len(get_df()), "cache": cache.stats() if cache else None}
+    return {"records": len(get_df()), "cache": cache.stats() if cache else None,
+            "agents": {timeline_agent.name: timeline_agent.stats}}
 
 
 # ── Health / datasource test ──────────────────────────────────────────────────

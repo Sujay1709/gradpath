@@ -34,9 +34,9 @@ A row is kept only if all of the following are non-null:
 - `cip_code`
 - `credential_level`
 - `median_earnings` (EARN_MDN_HI_2YR)
-- `median_debt` (DEBT_ALL_PP_ANY_MDN)
+- `median_debt` (DEBT_ALL_STGP_EVAL_MDN)
 
-This removes ~96% of rows, which is expected. The Scorecard suppresses
+This removes ~85% of rows, which is expected. The Scorecard suppresses
 earnings and debt for any program where the student count is below the
 privacy threshold (~30 students for most fields).
 
@@ -106,15 +106,30 @@ used as a primary metric, as it often reflects partial-year employment.
 
 ## Debt Field Selection
 
-`DEBT_ALL_PP_ANY_MDN` was selected because:
-- "PP" = post-program (completers only, not dropouts).
-- "ALL" = all loan types combined.
-- "ANY" = any loan, not limited to a specific evaluation period.
-- Median (MDN) rather than mean reduces sensitivity to outliers.
+`DEBT_ALL_STGP_EVAL_MDN` is the primary debt measure. In the College Scorecard data dictionary:
+- **STGP** = Stafford and Grad PLUS loans, the student's own federal loans.
+- **EVAL** = disbursed **at this institution** (`ANY` would add debt carried in from other schools).
+- **MDN** = median among borrowers, which is less sensitive to outliers than the mean.
 
-This is the same definition used by the College Scorecard's public-facing tool.
+**Correction (Nov 2026).** The original pipeline used `DEBT_ALL_PP_ANY_MDN` and described it as
+"post-program, any loan". The dictionary defines it as **Parent PLUS** debt, a different borrower
+group (a median of 36 parent borrowers per program, against 170 student borrowers). Switching
+to the student measure also raised coverage from 8,266 to 32,551 programs and from 205 to
+320 majors, and it adds graduate credentials, because Grad PLUS is included. Parent PLUS
+debt is kept only as the supplemental column `median_parent_plus_debt`.
 
 ---
+
+## Repayment Timeline Agent
+
+`pipeline/agents/repayment_timeline_agent.py` follows the pipeline's `BaseAgent` contract and
+builds each student's payoff timeline from `plan_calc` (no AI):
+- **schedule**: the remaining balance each month for every salary scenario and the standard plan
+- **milestones**: first payment, 25% / 50% / 75% of the starting balance repaid, final payment
+- **explanation**: numbered steps with the student's own numbers
+
+The API serves these at `/plan/timeline`, `/plan/milestones` and `/plan/explain`, and My Plan shows
+them as a chart and two tables.
 
 ## My Plan Calculations (deterministic — `src/plan_calc.py`)
 

@@ -14,7 +14,7 @@ CACHEABLE_PREFIXES = ("/metrics/", "/options/", "/schools/", "/states/", "/meta/
 
 
 class ResponseCache:
-    def __init__(self, app, max_bytes: int = 96 * 1024 * 1024, max_entry_bytes: int = 8 * 1024 * 1024):
+    def __init__(self, app, max_bytes: int = 192 * 1024 * 1024, max_entry_bytes: int = 24 * 1024 * 1024):
         self.app = app
         self.max_bytes = max_bytes
         self.max_entry_bytes = max_entry_bytes

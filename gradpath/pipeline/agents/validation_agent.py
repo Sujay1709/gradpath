@@ -41,12 +41,16 @@ COLUMN_RENAME = {
     "EARN_COUNT_WNE_HI_2YR":"cohort_size",
     "EARN_MDN_HI_2YR":      "median_earnings",
     "EARN_MDN_HI_1YR":      "median_earnings_1yr",
-    "DEBT_ALL_PP_ANY_MDN":  "median_debt",
-    "DEBT_ALL_STGP_ANY_MDN":"median_debt_enrolled",
+    # Per the Scorecard data dictionary: STGP = Stafford + Grad PLUS (student loans),
+    # EVAL = borrowed at this institution, PP = Parent PLUS (borrowed by parents)
+    "DEBT_ALL_STGP_EVAL_MDN":"median_debt",
+    "DEBT_ALL_STGP_ANY_MDN": "median_debt_all_schools",
+    "DEBT_ALL_PP_ANY_MDN":   "median_parent_plus_debt",
 }
 
 REQUIRED_COLS = ["institution_name", "cip_code", "credential_level", "median_earnings", "median_debt"]
-NUMERIC_COLS  = ["median_earnings", "median_earnings_1yr", "median_debt", "median_debt_enrolled",
+NUMERIC_COLS  = ["median_earnings", "median_earnings_1yr", "median_debt", "median_debt_all_schools",
+                 "median_parent_plus_debt",
                  "cohort_size", "ipeds_count"]
 
 

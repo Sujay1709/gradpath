@@ -38,8 +38,10 @@ FOS_COLS = [
     "IPEDSCOUNT1",
     "EARN_COUNT_WNE_HI_2YR", "EARN_MDN_HI_2YR",
     "EARN_MDN_HI_1YR",
-    "DEBT_ALL_PP_ANY_MDN",    # post-program, any loan — primary debt measure
-    "DEBT_ALL_STGP_ANY_MDN",  # still-enrolled subgroup (supplemental)
+    # Debt columns, per the Scorecard data dictionary (data.yaml):
+    "DEBT_ALL_STGP_EVAL_MDN", # PRIMARY: median Stafford + Grad PLUS debt borrowed at this institution
+    "DEBT_ALL_STGP_ANY_MDN",  # same loans, including debt carried in from other institutions
+    "DEBT_ALL_PP_ANY_MDN",    # Parent PLUS loans (borrowed by parents) — supplemental only
 ]
 
 # Institution file columns to join
@@ -62,11 +64,13 @@ COLUMN_RENAME = {
     "EARN_COUNT_WNE_HI_2YR":"cohort_size",
     "EARN_MDN_HI_2YR":      "median_earnings",       # PRIMARY: 2yr post-completion
     "EARN_MDN_HI_1YR":      "median_earnings_1yr",
-    "DEBT_ALL_PP_ANY_MDN":  "median_debt",           # PRIMARY: post-program any loan
-    "DEBT_ALL_STGP_ANY_MDN":"median_debt_enrolled",
+    "DEBT_ALL_STGP_EVAL_MDN":"median_debt",           # PRIMARY: student's federal loans at this school
+    "DEBT_ALL_STGP_ANY_MDN": "median_debt_all_schools",
+    "DEBT_ALL_PP_ANY_MDN":   "median_parent_plus_debt",
 }
 
 # Earnings source year (derived from filename — most-recent cohort)
 EARNINGS_COHORT = "2021–22 completers, measured 2023–24"
-DEBT_DEFINITION = "Completers who received federal loans — post-program median cumulative debt"
+DEBT_DEFINITION = ("Median federal student-loan debt (Stafford + Grad PLUS) borrowed at this institution, "
+                   "among completers who borrowed — DEBT_ALL_STGP_EVAL_MDN")
 DATA_SOURCE_FILE = "Most-Recent-Cohorts-Field-of-Study.csv (College Scorecard, Nov 2026 release)"

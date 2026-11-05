@@ -77,8 +77,9 @@ def build_source_registry(processed_at: str) -> pd.DataFrame:
             "processed_at": processed_at,
             "important_limitations": (
                 "Covers federal-aid recipients only; small cohorts are privacy-suppressed "
-                "(~96% of rows removed); earnings are 2 years after completion; "
-                "median debt is federal loan debt, not cost of attendance."
+                "(~85% of rows removed); earnings are 2 years after completion; "
+                "median debt is federal student-loan debt (Stafford + Grad PLUS) borrowed at the school, "
+                "not cost of attendance."
             ),
         },
         {

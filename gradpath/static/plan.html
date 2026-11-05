@@ -6,34 +6,30 @@
 <title>GradPath — My Plan inputs</title>
 <style>
   :root {
-    --bg: #f6f7f9; --panel: #ffffff; --ink: #1d2330; --muted: #5a6475; --line: #d9dee7;
-    --accent: #2f5fd0; --accent-ink: #ffffff; --warn: #9a5b00; --warn-bg: #fff4e0; --ok: #1d7a46;
+    /* Bright GradPath theme: warm red/orange accents, AA contrast on white */
+    --bg: #fffaf5; --panel: #ffffff; --ink: #1f1a17; --muted: #5b4f47; --line: #f3d9c4;
+    --accent: #c2410c; --accent-ink: #ffffff; --title: #9a3412; --pill: #ffedd5; --pill-ink: #7c2d12;
+    --warn: #b91c1c; --warn-bg: #fef2f2; --ok: #c2410c;
     color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #111217; --panel: #181b23; --ink: #e6e9ef; --muted: #a2abbb; --line: #2c313d;
-      --accent: #5b8cff; --accent-ink: #0b0e14; --warn: #ffb547; --warn-bg: #2b2112; --ok: #5fd18f;
-      color-scheme: dark;
-    }
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink);
          font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   nav.gp { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 16px;
            background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
-  nav.gp a { color: var(--ink); text-decoration: none; padding: 6px 12px; border-radius: 999px; font-size: 14px; }
+  nav.gp a { color: var(--pill-ink); background: var(--pill); text-decoration: none; padding: 6px 12px; border-radius: 999px; font-size: 14px; }
   nav.gp a:hover, nav.gp a:focus-visible { background: var(--line); outline: none; }
-  nav.gp a.home { font-weight: 700; margin-right: 8px; }
+  nav.gp a.home { font-weight: 800; margin-right: 8px; color: var(--title); background: none; }
   nav.gp a.active { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
   main { max-width: 920px; margin: 0 auto; padding: 24px 16px 64px; }
-  h1 { font-size: 30px; margin: 4px 0 4px; letter-spacing: -0.01em; }
+  h1 { font-size: 30px; margin: 4px 0 4px; letter-spacing: -0.01em; color: var(--title);
+       border-left: 6px solid #f97316; padding-left: 12px; }
   .lede { color: var(--muted); margin: 0 0 20px; max-width: 65ch; }
   .privacy { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--ok);
              padding: 10px 14px; border-radius: 8px; font-size: 14px; color: var(--muted); margin-bottom: 20px; }
-  fieldset { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 18px 8px;
+  fieldset { background: var(--panel); border: 1px solid var(--line); border-top: 4px solid #f97316; border-radius: 12px; padding: 18px 18px 8px;
              margin: 0 0 18px; min-width: 0; }
-  legend { font-weight: 700; font-size: 18px; padding: 0 6px; }
+  legend { font-weight: 700; font-size: 18px; padding: 0 6px; color: var(--title); }
   .hint { color: var(--muted); font-size: 13px; margin: -4px 0 12px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 4px 18px; }
   label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
@@ -128,7 +124,8 @@
         <div class="field"><label for="occupation">Intended occupation</label>
           <input name="occupation" id="occupation" maxlength="80" placeholder="e.g. Registered nurse"></div>
         <div class="field"><label for="work_state">State you expect to work in</label>
-          <select name="work_state" id="work_state"><option value="">Not sure yet</option></select></div>
+          <select name="work_state" id="work_state"><option value="">Not sure yet</option></select>
+          <div class="auto" id="work_state_auto"></div></div>
         <div class="field"><label for="salary_low">Conservative starting salary</label>
           <input name="salary_low" id="salary_low" inputmode="decimal" data-min="0" data-max="2000000"><div class="err"></div></div>
         <div class="field"><label for="salary_mid">Expected starting salary</label>
@@ -255,6 +252,12 @@
     if (!id) { card.textContent = "No school selected yet."; fillSelect($("major"), []); refreshAutoFill(); return; }
     try {
       const [detail] = await getJSON(`/schools/detail?school=${encodeURIComponent(id)}`);
+      // smart default: expect to work where the school is, unless the student already chose
+      const schoolState = (detail && detail.city_state_zip.match(/, ([A-Z]{2})\b/) || [])[1];
+      if (schoolState && !$("work_state").value) {
+        $("work_state").value = schoolState;
+        $("work_state_auto").textContent = `Pre-filled with the school's state (${schoolState}) — change it if you plan to work elsewhere.`;
+      }
       card.innerHTML = detail
         ? `<strong>${escapeHtml(detail.school_name)}</strong><br>${escapeHtml(detail.address)}<br>` +
           `${escapeHtml(detail.city_state_zip)} · ${escapeHtml(detail.school_type || "")}<br>` +
@@ -324,7 +327,7 @@
       const dl = $("school_list");
       schools.forEach((s) => { const o = document.createElement("option"); o.value = s.text; dl.appendChild(o); });
       fillSelect($("credential"), creds);
-      fillSelect($("work_state"), states);
+      fillSelect($("work_state"), states.filter((st) => st.value !== "__all"));
     } catch {
       $("summary").hidden = false;
       $("summary").textContent = "Could not load school lists from the GradPath API. Is it running on port 8000?";

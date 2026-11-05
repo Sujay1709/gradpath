@@ -67,6 +67,7 @@ grafana server \
   cfg:default.paths.plugins=/opt/homebrew/var/lib/grafana/plugins \
   cfg:auth.anonymous.enabled=true \
   cfg:auth.anonymous.org_role=Viewer \
+  cfg:users.default_theme=light \
   cfg:dashboards.default_home_dashboard_path="$GRADPATH/grafana/dashboards/gradpath-overview.json" \
   > "$GRAFANA_LOG" 2>&1 &
 GRAFANA_PID=$!

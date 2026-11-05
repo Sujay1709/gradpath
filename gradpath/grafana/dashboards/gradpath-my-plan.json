@@ -43,7 +43,7 @@
     "list": [
       {
         "name": "school",
-        "label": "School (type to search)",
+        "label": "School (type name or state code)",
         "type": "query",
         "datasource": {
           "type": "marcusolsson-json-datasource",
@@ -55,10 +55,6 @@
           "cacheDurationSeconds": 300,
           "params": [
             [
-              "state",
-              "${state}"
-            ],
-            [
               "school_type",
               "${school_type}"
             ],
@@ -67,12 +63,8 @@
               "${credential}"
             ],
             [
-              "major",
-              "${major}"
-            ],
-            [
-              "cip",
-              "${cip}"
+              "data_year",
+              "${data_year}"
             ]
           ],
           "fields": [
@@ -91,8 +83,8 @@
         "definition": "/options/schools",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -118,6 +110,10 @@
           "cacheDurationSeconds": 300,
           "params": [
             [
+              "school",
+              "${school}"
+            ],
+            [
               "school_type",
               "${school_type}"
             ],
@@ -141,13 +137,12 @@
         },
         "definition": "/options/states",
         "refresh": 1,
-        "includeAll": true,
-        "allValue": "__all",
+        "includeAll": false,
         "multi": false,
         "current": {
           "selected": true,
           "text": "All",
-          "value": "$__all"
+          "value": "__all"
         },
         "options": [],
         "sort": 0,
@@ -168,6 +163,10 @@
           "urlPath": "/options/majors",
           "cacheDurationSeconds": 300,
           "params": [
+            [
+              "school",
+              "${school}"
+            ],
             [
               "state",
               "${state}"
@@ -197,8 +196,8 @@
         "definition": "/options/majors",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -223,6 +222,10 @@
           "urlPath": "/options/cips",
           "cacheDurationSeconds": 300,
           "params": [
+            [
+              "school",
+              "${school}"
+            ],
             [
               "state",
               "${state}"
@@ -256,8 +259,8 @@
         "definition": "/options/cips",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -298,8 +301,8 @@
         "definition": "/options/credentials",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -340,8 +343,8 @@
         "definition": "/options/school_types",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -382,8 +385,8 @@
         "definition": "/options/data_years",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -711,7 +714,7 @@
       "description": "",
       "options": {
         "mode": "html",
-        "content": "<nav aria-label=\"GradPath pages\" style=\"display:flex;flex-wrap:wrap;gap:6px;align-items:center;\"><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"font-weight:700;font-size:17px;text-decoration:none;color:inherit;margin-right:10px;white-space:nowrap;\">🎓 GradPath</a><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🏠 Overview</a><a href=\"http://localhost:8000/plan?school=${school:percentencode}&state=${state:percentencode}&major=${major:percentencode}&cip=${cip:percentencode}&credential=${credential:percentencode}&school_type=${school_type:percentencode}&data_year=${data_year:percentencode}&resume=1\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#2F5FD0;color:#ffffff;font-weight:600;\" aria-current=\"page\">🧭 My Plan</a><a href=\"/d/gradpath-schools?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🏫 Schools</a><a href=\"/d/gradpath-states?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🗺️ States & Taxes</a><a href=\"/d/gradpath-graphs?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">📊 Graphs</a><a href=\"/d/gradpath-help?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">❓ Help</a></nav>",
+        "content": "<nav aria-label=\"GradPath pages\" style=\"display:flex;flex-wrap:wrap;gap:6px;align-items:center;\"><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"font-weight:800;font-size:18px;text-decoration:none;color:#9A3412;margin-right:10px;white-space:nowrap;\">🎓 GradPath</a><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">🏠 Overview</a><a href=\"http://localhost:8000/plan?school=${school:percentencode}&state=${state:percentencode}&major=${major:percentencode}&cip=${cip:percentencode}&credential=${credential:percentencode}&school_type=${school_type:percentencode}&data_year=${data_year:percentencode}&resume=1\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#C2410C;color:#ffffff;font-weight:600;\" aria-current=\"page\">🧭 My Plan</a><a href=\"/d/gradpath-schools?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">🏫 Schools</a><a href=\"/d/gradpath-states?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">🗺️ States & Taxes</a><a href=\"/d/gradpath-graphs?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">📊 Graphs</a><a href=\"/d/gradpath-help?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">❓ Help</a></nav>",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
@@ -733,7 +736,7 @@
       "description": "",
       "options": {
         "mode": "html",
-        "content": "<div style=\"display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;\"><div><h1 style=\"font-size:30px;margin:2px 0 4px;\">My Plan</h1><p style=\"font-size:15px;opacity:.8;margin:0;max-width:70ch;\">Estimates from your own answers plus historical College Scorecard data. Nothing here is stored on a server.</p></div><a href=\"http://localhost:8000/plan?school=${school:percentencode}&state=${state:percentencode}&major=${major:percentencode}&cip=${cip:percentencode}&credential=${credential:percentencode}&school_type=${school_type:percentencode}&data_year=${data_year:percentencode}&in_state=${in_state:percentencode}&start_year=${start_year:percentencode}&grad_year=${grad_year:percentencode}&savings=${savings:percentencode}&contribution=${contribution:percentencode}&grants=${grants:percentencode}&existing_debt=${existing_debt:percentencode}&borrowing=${borrowing:percentencode}&rate=${rate:percentencode}&tuition=${tuition:percentencode}&living=${living:percentencode}&occupation=${occupation:percentencode}&work_state=${work_state:percentencode}&salary_low=${salary_low:percentencode}&salary_mid=${salary_mid:percentencode}&salary_high=${salary_high:percentencode}&repay_pct=${repay_pct:percentencode}\" style=\"display:inline-block;padding:9px 18px;border-radius:8px;background:#2F5FD0;color:#fff;text-decoration:none;font-weight:600;\">✏️ Edit my inputs</a></div>",
+        "content": "<div style=\"display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;\"><div><h1 style=\"font-size:30px;margin:2px 0 4px;\">My Plan</h1><p style=\"font-size:15px;opacity:.8;margin:0;max-width:70ch;\">Estimates from your own answers plus historical College Scorecard data. Nothing here is stored on a server.</p></div><a href=\"http://localhost:8000/plan?school=${school:percentencode}&state=${state:percentencode}&major=${major:percentencode}&cip=${cip:percentencode}&credential=${credential:percentencode}&school_type=${school_type:percentencode}&data_year=${data_year:percentencode}&in_state=${in_state:percentencode}&start_year=${start_year:percentencode}&grad_year=${grad_year:percentencode}&savings=${savings:percentencode}&contribution=${contribution:percentencode}&grants=${grants:percentencode}&existing_debt=${existing_debt:percentencode}&borrowing=${borrowing:percentencode}&rate=${rate:percentencode}&tuition=${tuition:percentencode}&living=${living:percentencode}&occupation=${occupation:percentencode}&work_state=${work_state:percentencode}&salary_low=${salary_low:percentencode}&salary_mid=${salary_mid:percentencode}&salary_high=${salary_high:percentencode}&repay_pct=${repay_pct:percentencode}\" style=\"display:inline-block;padding:9px 18px;border-radius:8px;background:#C2410C;color:#fff;text-decoration:none;font-weight:600;\">✏️ Edit my inputs</a></div>",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
@@ -901,6 +904,11 @@
           "cacheDurationSeconds": 60,
           "fields": [
             {
+              "jsonPath": "$[*].card",
+              "name": "card",
+              "type": "string"
+            },
+            {
               "jsonPath": "$[*].school_name",
               "name": "school_name",
               "type": "string"
@@ -960,12 +968,13 @@
           "id": "organize",
           "options": {
             "indexByName": {
-              "school_name": 0,
-              "school_address": 1,
-              "school_city_state_zip": 2,
-              "residency": 3,
-              "occupation": 4,
-              "confidence": 5
+              "card": 0,
+              "school_name": 1,
+              "school_address": 2,
+              "school_city_state_zip": 3,
+              "residency": 4,
+              "occupation": 5,
+              "confidence": 6
             },
             "renameByName": {
               "school_name": "School",
@@ -4281,6 +4290,916 @@
       }
     },
     {
+      "type": "row",
+      "title": "🧭 Your payoff timeline — built by the Repayment Timeline Agent",
+      "collapsed": false,
+      "panels": [],
+      "id": 27,
+      "gridPos": {
+        "x": 0,
+        "y": 46,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "xychart",
+      "title": "🧮 Loan balance over time — when you could be debt-free",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "description": "Each line is one salary scenario; the dashed grey line is the standard 10-year plan. A line reaching zero is that scenario's final payment. When a scenario can only afford the standard payment, its line sits on the dashed line.",
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/plan/timeline",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ],
+            [
+              "in_state",
+              "${in_state}"
+            ],
+            [
+              "start_year",
+              "${start_year}"
+            ],
+            [
+              "grad_year",
+              "${grad_year}"
+            ],
+            [
+              "savings",
+              "${savings}"
+            ],
+            [
+              "contribution",
+              "${contribution}"
+            ],
+            [
+              "grants",
+              "${grants}"
+            ],
+            [
+              "existing_debt",
+              "${existing_debt}"
+            ],
+            [
+              "borrowing",
+              "${borrowing}"
+            ],
+            [
+              "rate",
+              "${rate}"
+            ],
+            [
+              "tuition",
+              "${tuition}"
+            ],
+            [
+              "living",
+              "${living}"
+            ],
+            [
+              "occupation",
+              "${occupation}"
+            ],
+            [
+              "work_state",
+              "${work_state}"
+            ],
+            [
+              "salary_low",
+              "${salary_low}"
+            ],
+            [
+              "salary_mid",
+              "${salary_mid}"
+            ],
+            [
+              "salary_high",
+              "${salary_high}"
+            ],
+            [
+              "repay_pct",
+              "${repay_pct}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].year",
+              "name": "year",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].balance_conservative",
+              "name": "balance_conservative",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].balance_expected",
+              "name": "balance_expected",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].balance_aspirational",
+              "name": "balance_aspirational",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].balance_standard",
+              "name": "balance_standard",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].month",
+              "name": "month"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0,
+          "noValue": "Enter borrowing to see a timeline",
+          "custom": {
+            "show": "lines",
+            "lineWidth": 3,
+            "pointSize": {
+              "fixed": 1
+            },
+            "axisPlacement": "auto",
+            "fillOpacity": 0,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "balance_conservative"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#991B1B"
+                }
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Loan balance left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "balance_expected"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#EA580C"
+                }
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Loan balance left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "balance_aspirational"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F59E0B"
+                }
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Loan balance left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "balance_standard"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#6B7280"
+                }
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Loan balance left"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "dash",
+                  "dash": [
+                    8,
+                    6
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "year"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Year"
+              },
+              {
+                "id": "displayName",
+                "value": "Year"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "month"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Month"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "mapping": "manual",
+        "series": [
+          {
+            "name": {
+              "fixed": "Conservative"
+            },
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "year"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "balance_conservative"
+              }
+            }
+          },
+          {
+            "name": {
+              "fixed": "Expected"
+            },
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "year"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "balance_expected"
+              }
+            }
+          },
+          {
+            "name": {
+              "fixed": "Aspirational"
+            },
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "year"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "balance_aspirational"
+              }
+            }
+          },
+          {
+            "name": {
+              "fixed": "Standard 10-year plan"
+            },
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "year"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "balance_standard"
+              }
+            }
+          }
+        ],
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 28,
+      "gridPos": {
+        "x": 0,
+        "y": 47,
+        "w": 24,
+        "h": 11
+      }
+    },
+    {
+      "type": "table",
+      "title": "Milestones",
+      "description": "When each scenario reaches 25%, 50% and 75% of the starting balance repaid, and its final payment.",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/plan/milestones",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ],
+            [
+              "in_state",
+              "${in_state}"
+            ],
+            [
+              "start_year",
+              "${start_year}"
+            ],
+            [
+              "grad_year",
+              "${grad_year}"
+            ],
+            [
+              "savings",
+              "${savings}"
+            ],
+            [
+              "contribution",
+              "${contribution}"
+            ],
+            [
+              "grants",
+              "${grants}"
+            ],
+            [
+              "existing_debt",
+              "${existing_debt}"
+            ],
+            [
+              "borrowing",
+              "${borrowing}"
+            ],
+            [
+              "rate",
+              "${rate}"
+            ],
+            [
+              "tuition",
+              "${tuition}"
+            ],
+            [
+              "living",
+              "${living}"
+            ],
+            [
+              "occupation",
+              "${occupation}"
+            ],
+            [
+              "work_state",
+              "${work_state}"
+            ],
+            [
+              "salary_low",
+              "${salary_low}"
+            ],
+            [
+              "salary_mid",
+              "${salary_mid}"
+            ],
+            [
+              "salary_high",
+              "${salary_high}"
+            ],
+            [
+              "repay_pct",
+              "${repay_pct}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].date",
+              "name": "date"
+            },
+            {
+              "jsonPath": "$[*].scenario",
+              "name": "scenario"
+            },
+            {
+              "jsonPath": "$[*].milestone",
+              "name": "milestone"
+            },
+            {
+              "jsonPath": "$[*].balance_left",
+              "name": "balance_left",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].interest_paid_so_far",
+              "name": "interest_paid_so_far",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].payment_number",
+              "name": "payment_number",
+              "type": "number"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Enter borrowing to see your milestones.",
+          "custom": {
+            "align": "auto",
+            "filterable": true,
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "scenario"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Scenario"
+              },
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "milestone"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Milestone"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "date"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "When"
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "balance_left"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Balance left ($)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "interest_paid_so_far"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "displayName",
+                "value": "Interest paid so far ($)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "payment_number"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Payment #"
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "transformations": [],
+      "id": 29,
+      "gridPos": {
+        "x": 0,
+        "y": 58,
+        "w": 24,
+        "h": 10
+      }
+    },
+    {
+      "type": "table",
+      "title": "🧮 How your timeline was calculated — step by step, with your numbers",
+      "description": "Generated by the Repayment Timeline Agent from your inputs. Deterministic — no AI.",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/plan/explain",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ],
+            [
+              "in_state",
+              "${in_state}"
+            ],
+            [
+              "start_year",
+              "${start_year}"
+            ],
+            [
+              "grad_year",
+              "${grad_year}"
+            ],
+            [
+              "savings",
+              "${savings}"
+            ],
+            [
+              "contribution",
+              "${contribution}"
+            ],
+            [
+              "grants",
+              "${grants}"
+            ],
+            [
+              "existing_debt",
+              "${existing_debt}"
+            ],
+            [
+              "borrowing",
+              "${borrowing}"
+            ],
+            [
+              "rate",
+              "${rate}"
+            ],
+            [
+              "tuition",
+              "${tuition}"
+            ],
+            [
+              "living",
+              "${living}"
+            ],
+            [
+              "occupation",
+              "${occupation}"
+            ],
+            [
+              "work_state",
+              "${work_state}"
+            ],
+            [
+              "salary_low",
+              "${salary_low}"
+            ],
+            [
+              "salary_mid",
+              "${salary_mid}"
+            ],
+            [
+              "salary_high",
+              "${salary_high}"
+            ],
+            [
+              "repay_pct",
+              "${repay_pct}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].step",
+              "name": "step",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].title",
+              "name": "title"
+            },
+            {
+              "jsonPath": "$[*].detail",
+              "name": "detail"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No matching records — try widening the filters.",
+          "custom": {
+            "align": "auto",
+            "filterable": true,
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "step"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "#"
+              },
+              {
+                "id": "custom.width",
+                "value": 50
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "title"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Step"
+              },
+              {
+                "id": "custom.width",
+                "value": 240
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "detail"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "How"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "transformations": [],
+      "id": 30,
+      "gridPos": {
+        "x": 0,
+        "y": 68,
+        "w": 24,
+        "h": 13
+      }
+    },
+    {
       "type": "table",
       "title": "⚙️ Assumptions, ❔ missing information and ⚠️ input checks",
       "description": "",
@@ -4460,10 +5379,10 @@
         "sortBy": []
       },
       "transformations": [],
-      "id": 27,
+      "id": 31,
       "gridPos": {
         "x": 0,
-        "y": 46,
+        "y": 81,
         "w": 24,
         "h": 12
       }
@@ -4482,10 +5401,10 @@
           "showMiniMap": false
         }
       },
-      "id": 28,
+      "id": 32,
       "gridPos": {
         "x": 0,
-        "y": 58,
+        "y": 93,
         "w": 24,
         "h": 2
       }
@@ -4504,10 +5423,10 @@
           "showMiniMap": false
         }
       },
-      "id": 29,
+      "id": 33,
       "gridPos": {
         "x": 0,
-        "y": 60,
+        "y": 95,
         "w": 24,
         "h": 2
       }

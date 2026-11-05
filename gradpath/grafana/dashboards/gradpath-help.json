@@ -43,7 +43,7 @@
     "list": [
       {
         "name": "school",
-        "label": "School (type to search)",
+        "label": "School (type name or state code)",
         "type": "query",
         "datasource": {
           "type": "marcusolsson-json-datasource",
@@ -55,10 +55,6 @@
           "cacheDurationSeconds": 300,
           "params": [
             [
-              "state",
-              "${state}"
-            ],
-            [
               "school_type",
               "${school_type}"
             ],
@@ -67,12 +63,8 @@
               "${credential}"
             ],
             [
-              "major",
-              "${major}"
-            ],
-            [
-              "cip",
-              "${cip}"
+              "data_year",
+              "${data_year}"
             ]
           ],
           "fields": [
@@ -91,8 +83,8 @@
         "definition": "/options/schools",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -118,6 +110,10 @@
           "cacheDurationSeconds": 300,
           "params": [
             [
+              "school",
+              "${school}"
+            ],
+            [
               "school_type",
               "${school_type}"
             ],
@@ -141,13 +137,12 @@
         },
         "definition": "/options/states",
         "refresh": 1,
-        "includeAll": true,
-        "allValue": "__all",
+        "includeAll": false,
         "multi": false,
         "current": {
           "selected": true,
           "text": "All",
-          "value": "$__all"
+          "value": "__all"
         },
         "options": [],
         "sort": 0,
@@ -168,6 +163,10 @@
           "urlPath": "/options/majors",
           "cacheDurationSeconds": 300,
           "params": [
+            [
+              "school",
+              "${school}"
+            ],
             [
               "state",
               "${state}"
@@ -197,8 +196,8 @@
         "definition": "/options/majors",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -223,6 +222,10 @@
           "urlPath": "/options/cips",
           "cacheDurationSeconds": 300,
           "params": [
+            [
+              "school",
+              "${school}"
+            ],
             [
               "state",
               "${state}"
@@ -256,8 +259,8 @@
         "definition": "/options/cips",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -298,8 +301,8 @@
         "definition": "/options/credentials",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -340,8 +343,8 @@
         "definition": "/options/school_types",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -382,8 +385,8 @@
         "definition": "/options/data_years",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -405,7 +408,7 @@
       "description": "",
       "options": {
         "mode": "html",
-        "content": "<nav aria-label=\"GradPath pages\" style=\"display:flex;flex-wrap:wrap;gap:6px;align-items:center;\"><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"font-weight:700;font-size:17px;text-decoration:none;color:inherit;margin-right:10px;white-space:nowrap;\">🎓 GradPath</a><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🏠 Overview</a><a href=\"http://localhost:8000/plan?school=${school:percentencode}&state=${state:percentencode}&major=${major:percentencode}&cip=${cip:percentencode}&credential=${credential:percentencode}&school_type=${school_type:percentencode}&data_year=${data_year:percentencode}&resume=1\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🧭 My Plan</a><a href=\"/d/gradpath-schools?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🏫 Schools</a><a href=\"/d/gradpath-states?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🗺️ States & Taxes</a><a href=\"/d/gradpath-graphs?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">📊 Graphs</a><a href=\"/d/gradpath-help?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#2F5FD0;color:#ffffff;font-weight:600;\" aria-current=\"page\">❓ Help</a></nav>",
+        "content": "<nav aria-label=\"GradPath pages\" style=\"display:flex;flex-wrap:wrap;gap:6px;align-items:center;\"><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"font-weight:800;font-size:18px;text-decoration:none;color:#9A3412;margin-right:10px;white-space:nowrap;\">🎓 GradPath</a><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">🏠 Overview</a><a href=\"http://localhost:8000/plan?school=${school:percentencode}&state=${state:percentencode}&major=${major:percentencode}&cip=${cip:percentencode}&credential=${credential:percentencode}&school_type=${school_type:percentencode}&data_year=${data_year:percentencode}&resume=1\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">🧭 My Plan</a><a href=\"/d/gradpath-schools?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">🏫 Schools</a><a href=\"/d/gradpath-states?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">🗺️ States & Taxes</a><a href=\"/d/gradpath-graphs?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">📊 Graphs</a><a href=\"/d/gradpath-help?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#C2410C;color:#ffffff;font-weight:600;\" aria-current=\"page\">❓ Help</a></nav>",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
@@ -427,7 +430,7 @@
       "description": "",
       "options": {
         "mode": "html",
-        "content": "<div><h1 style=\"font-size:30px;line-height:1.2;margin:2px 0 4px;font-weight:700;\">Help & Methodology</h1><p style=\"font-size:15px;opacity:0.8;margin:0;max-width:75ch;\">How to use GradPath, where the numbers come from, and what they cannot tell you.</p></div>",
+        "content": "<div style=\"border-left:6px solid #F97316;padding-left:14px;\"><h1 style=\"font-size:30px;line-height:1.2;margin:2px 0 4px;font-weight:800;color:#9A3412;\">Help & Methodology</h1><p style=\"font-size:15px;opacity:0.8;margin:0;max-width:75ch;\">How to use GradPath, where the numbers come from, and what they cannot tell you.</p></div>",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
@@ -449,7 +452,7 @@
       "description": "",
       "options": {
         "mode": "markdown",
-        "content": "### How to use each page\n| Page | What it is for |\n|---|---|\n| 🏠 **Overview** | A summary of everything matching your filters, with shortcuts to each page. |\n| 🧭 **My Plan** | Enter savings, aid, borrowing and salary guesses; see cost, debt and payoff estimates. |\n| 🏫 **Schools** | Search schools, rank programs, and open a school's address and program details. |\n| 🗺️ **States & Taxes** | Verified income-tax facts for 10 states, with tax year and official source. |\n| 📊 **Graphs** | Five charts; each opens on its own page with an explanation. |\n| ❓ **Help** | This page. |\n\n### Search and filters\n- The boxes at the top (School, State, Major, CIP code, Credential, School type, Data year) are **shared**: your choices follow you to every page through the navigation bar.\n- **School** is searchable: click it and type part of a name, e.g. *\"state univ\"*. The list narrows to schools matching your other filters.\n- Choose **All** to remove a filter. If a page says *No data*, that filter combination has no published records — widen it.\n- In the Schools table, click a school's name to open its details.",
+        "content": "### How to use each page\n| Page | What it is for |\n|---|---|\n| 🏠 **Overview** | A summary of everything matching your filters, with shortcuts to each page. |\n| 🧭 **My Plan** | Enter savings, aid, borrowing and salary guesses; see cost, debt and payoff estimates. |\n| 🏫 **Schools** | Search schools, rank programs, and open a school's address and program details. |\n| 🗺️ **States & Taxes** | Verified income-tax facts for 10 states, with tax year and official source. |\n| 📊 **Graphs** | Five charts; each opens on its own page with an explanation. |\n| ❓ **Help** | This page. |\n\n### Search and filters\n- The boxes at the top (School, State, Major, CIP code, Credential, School type, Data year) are **shared**: your choices follow you to every page through the navigation bar.\n- **School** is searchable: click it and type part of a name (*\"state univ\"*) or a state code (*\"TX\"*). Every school is labelled with its city and state.\n- **Picking a school is smart:** the **State** box switches to that school's state, and **Major** and **CIP code** list only that school's programs. Set School back to *All* to choose other states again.\n- **320 majors** with published earnings and student debt are available, across certificates, associate's, bachelor's and graduate credentials.\n- Choose **All** to remove a filter. If a page says *No data*, that filter combination has no published records — widen it.\n- In the Schools table, click a school's name to open its details.",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
@@ -503,12 +506,12 @@
     },
     {
       "type": "text",
-      "title": "",
+      "title": "Repayment timeline",
       "transparent": false,
       "description": "",
       "options": {
         "mode": "markdown",
-        "content": "### Median earnings\nThe middle salary of graduates who were working and not enrolled, measured **2 years after completion** (`EARN_MDN_HI_2YR`). Half earned more, half less.\n\n### Median debt\nThe middle amount of **federal** student-loan debt at completion (`DEBT_ALL_PP_ANY_MDN`). It is **not** the cost of attendance and leaves out private loans and Parent PLUS loans.\n\n### Debt-to-earnings ratio\n`median debt ÷ median earnings`. **0.5** means debt equal to half a year of earnings. Colour bands: 🟢 under 0.5 · 🟡 0.5–1.0 · 🔴 1.0 or more. They help scanning; they are not a grade.\n\n### Data years\n- Program outcomes: **2021–22 completers (earnings measured 2023–24)** (College Scorecard release 2026-10-05, downloaded 2026-11-02).\n- School addresses: College Scorecard Institution file, same release.\n- State taxes: **tax year 2025**, verified 2026-11-04.\n- Default loan rate: **6.52%**, federal undergraduate Direct Loans first disbursed July 1, 2026–June 30, 2027.",
+        "content": "### How your debt-free timeline is calculated\nGradPath's **Repayment Timeline Agent** (`pipeline/agents/repayment_timeline_agent.py`) builds the timeline on **My Plan** in seven deterministic steps:\n\n1. **Borrowing** — your yearly loan is paid out each September you are in school, plus any existing balance.\n2. **Interest before repayment** — each loan builds *simple* interest from the month it is paid out until repayment starts: `amount × rate × months ÷ 12`.\n3. **Starting balance** — borrowed + that interest, in the **November after a May graduation** (6-month grace period).\n4. **Standard payment** — `P × r ÷ (1 − (1 + r)^−120)`, with `r` = yearly rate ÷ 12, rounded **up** to the cent.\n5. **Your payment per scenario** — the larger of the standard payment and your chosen share of salary ÷ 12.\n6. **Month by month** — each month, interest (`balance × r`) is added and the payment subtracted, until the balance reaches zero. The **final payment month** is the debt-free date; milestones mark when 25%, 50% and 75% of the starting balance is repaid.\n7. **Range** — the earliest to latest final payment across your salary scenarios.\n\nMy Plan shows the balance chart, the milestones and these steps **with your own numbers**. No AI is used; the same inputs always give the same dates. Not modelled: income-driven plans, forgiveness, missed or extra payments, rate changes and daily interest.",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
@@ -517,8 +520,30 @@
       },
       "id": 6,
       "gridPos": {
-        "x": 12,
-        "y": 20,
+        "x": 0,
+        "y": 27,
+        "w": 24,
+        "h": 11
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "### Median earnings\nThe middle salary of graduates who were working and not enrolled, measured **2 years after completion** (`EARN_MDN_HI_2YR`). Half earned more, half less.\n\n### Median debt\nThe middle amount of **federal student-loan debt** (Stafford + Grad PLUS) that completers who borrowed took out **at this school** (`DEBT_ALL_STGP_EVAL_MDN`). It is **not** the cost of attendance, and it leaves out private loans and Parent PLUS loans that parents take out.\n\n*Correction (Nov 2026):* earlier versions of GradPath used `DEBT_ALL_PP_ANY_MDN`, which the College Scorecard data dictionary defines as **Parent PLUS** debt, a different group of borrowers. All debt figures now use the student's own federal loans.\n\n### Debt-to-earnings ratio\n`median debt ÷ median earnings`. **0.5** means debt equal to half a year of earnings. Colour bands: 🟢 under 0.5 · 🟡 0.5–1.0 · 🔴 1.0 or more. They help scanning; they are not a grade.\n\n### Data years\n- Program outcomes: **2021–22 completers (earnings measured 2023–24)** (College Scorecard release 2026-10-05, downloaded 2026-11-02).\n- School addresses: College Scorecard Institution file, same release.\n- State taxes: **tax year 2025**, verified 2026-11-04.\n- Default loan rate: **6.52%**, federal undergraduate Direct Loans first disbursed July 1, 2026–June 30, 2027.",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 7,
+      "gridPos": {
+        "x": 0,
+        "y": 38,
         "w": 12,
         "h": 15
       }
@@ -537,10 +562,10 @@
           "showMiniMap": false
         }
       },
-      "id": 7,
+      "id": 8,
       "gridPos": {
-        "x": 0,
-        "y": 35,
+        "x": 12,
+        "y": 38,
         "w": 12,
         "h": 12
       }
@@ -727,16 +752,16 @@
         "sortBy": []
       },
       "transformations": [],
-      "id": 8,
+      "id": 9,
       "gridPos": {
         "x": 0,
-        "y": 47,
+        "y": 53,
         "w": 24,
         "h": 10
       }
     },
     {
-      "id": 9,
+      "id": 10,
       "type": "text",
       "title": "Important caveats",
       "options": {
@@ -745,7 +770,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 57,
+        "y": 63,
         "w": 12,
         "h": 10
       }
@@ -757,17 +782,17 @@
       "description": "",
       "options": {
         "mode": "markdown",
-        "content": "### Known limitations\n- Historical earnings **do not guarantee** future salary.\n- Median debt is **not the same as cost of attendance**.\n- School and major **do not cause** a particular income.\n- Some records are **suppressed for privacy** (about 96% of raw rows have no published earnings or debt).\n- Data **lags** current market conditions by several years.\n- **State tax rules change** over time; only 10 states are verified.\n- **Company, occupation, location and experience** affect earnings.\n- Estimates are **educational planning information**, not personalized financial or tax advice.\n- Only undergraduate credentials appear in the cleaned data.\n- 74 schools in the Field of Study file are missing from the Institution file, so their state and address show as *Not reported*.",
+        "content": "### Known limitations\n- Historical earnings **do not guarantee** future salary.\n- Median debt is **not the same as cost of attendance**.\n- School and major **do not cause** a particular income.\n- Some records are **suppressed for privacy** (about 85% of raw rows have no published earnings or debt).\n- Data **lags** current market conditions by several years.\n- **State tax rules change** over time; only 10 states are verified.\n- **Company, occupation, location and experience** affect earnings.\n- Estimates are **educational planning information**, not personalized financial or tax advice.\n- About 85% of raw program rows have no published earnings or student debt and are left out.\n- 157 schools in the Field of Study file are missing from the Institution file, so their state and address show as *Not reported*.",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
           "showMiniMap": false
         }
       },
-      "id": 10,
+      "id": 11,
       "gridPos": {
         "x": 12,
-        "y": 57,
+        "y": 63,
         "w": 12,
         "h": 10
       }
@@ -786,10 +811,10 @@
           "showMiniMap": false
         }
       },
-      "id": 11,
+      "id": 12,
       "gridPos": {
         "x": 0,
-        "y": 67,
+        "y": 73,
         "w": 24,
         "h": 9
       }
@@ -808,10 +833,10 @@
           "showMiniMap": false
         }
       },
-      "id": 12,
+      "id": 13,
       "gridPos": {
         "x": 0,
-        "y": 76,
+        "y": 82,
         "w": 24,
         "h": 2
       }

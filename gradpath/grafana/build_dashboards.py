@@ -52,9 +52,16 @@ GRAPHS = [  # (uid, title, icon, one-line description)
 ]
 
 # Okabe–Ito colour-blind-safe palette
-C_PUBLIC, C_NONPROFIT, C_FORPROFIT, C_REF = "#0072B2", "#E69F00", "#CC79A7", "#8C8C8C"
-C_EARN, C_DEBT = "#0072B2", "#D55E00"
-ACTIVE_BG = "#2F5FD0"
+# Bright theme: warm red/orange accents. Series are separated by lightness as well as hue,
+# so they stay distinguishable for colour-blind readers.
+C_PUBLIC, C_NONPROFIT, C_FORPROFIT, C_REF = "#F59E0B", "#DC2626", "#7C2D12", "#6B7280"
+C_EARN, C_DEBT = "#EA580C", "#991B1B"
+ACTIVE_BG = "#C2410C"          # burnt orange: white text contrast 5.2:1
+TITLE_INK = "#9A3412"          # deep orange headings: 7.3:1 on white
+PILL_BG, PILL_INK = "#FFEDD5", "#7C2D12"
+CARD_EDGE = "#F97316"
+C_TIMELINE = {"Conservative": "#991B1B", "Expected": "#EA580C", "Aspirational": "#F59E0B",
+              "Standard 10-year plan": "#6B7280"}
 
 GREEN_YELLOW_RED = {"mode": "absolute", "steps": [
     {"color": "green", "value": None}, {"color": "#EAB839", "value": 0.5}, {"color": "red", "value": 1.0}]}
@@ -194,9 +201,12 @@ def table(title, path, fields, overrides, description="", plan=False, extra_para
 def facts_table(title, path, fields_labels, description="", plan=False, no_value="Nothing selected yet.",
                 extra_params=()):
     """One API row shown as a two-column 'Detail | Value' card (Transpose)."""
+    # Transpose turns the first field into column headers, so a constant "card" field goes first;
+    # otherwise the first real detail (e.g. the school name) would vanish into the hidden header.
+    fields_labels = [("card", "card")] + list(fields_labels)
     organize = {"id": "organize", "options": {
         "indexByName": {f: i for i, (f, _) in enumerate(fields_labels)},
-        "renameByName": {f: label for f, label in fields_labels}}}
+        "renameByName": {f: label for f, label in fields_labels if f != "card"}}}
     transpose = {"id": "transpose", "options": {"firstFieldName": "Detail", "restFieldsName": "Value"}}
     p = table(title, path, [(f, "string") for f, _ in fields_labels], [], description=description, plan=plan,
               transformations=[organize, transpose], no_value=no_value, wrap=True, extra_params=extra_params)
@@ -229,7 +239,7 @@ def barchart(title, path, x_field, series, description="", horizontal=True, extr
 def nav_panel(active_uid):
     pill = ("display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;"
             "line-height:20px;white-space:nowrap;")
-    off = pill + "background:rgba(128,128,128,0.16);color:inherit;"
+    off = pill + f"background:{PILL_BG};color:{PILL_INK};"
     on = pill + f"background:{ACTIVE_BG};color:#ffffff;font-weight:600;"
     links = []
     for label, uid, icon in PAGES:
@@ -238,17 +248,19 @@ def nav_panel(active_uid):
         links.append(f'<a href="{nav_href(uid)}" style="{style}"{cur}>{icon} {label}</a>')
     html = (
         '<nav aria-label="GradPath pages" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">'
-        f'<a href="{page_url("gradpath-overview")}" style="font-weight:700;font-size:17px;text-decoration:none;'
-        'color:inherit;margin-right:10px;white-space:nowrap;">🎓 GradPath</a>'
+        f'<a href="{page_url("gradpath-overview")}" style="font-weight:800;font-size:18px;text-decoration:none;'
+        f'color:{TITLE_INK};margin-right:10px;white-space:nowrap;">🎓 GradPath</a>'
         + "".join(links) + "</nav>"
     )
     return text(html, mode="html", transparent=True)
 
 
 def header(title, subtitle, back_to_graphs=False):
-    back = (f'<a href="{page_url("gradpath-graphs")}" style="text-decoration:none;font-size:14px;">← Back to Graphs</a>'
+    back = (f'<a href="{page_url("gradpath-graphs")}" style="text-decoration:none;font-size:14px;color:{ACTIVE_BG};'
+            f'font-weight:600;">← Back to Graphs</a>'
             if back_to_graphs else "")
-    html = (f'<div>{back}<h1 style="font-size:30px;line-height:1.2;margin:2px 0 4px;font-weight:700;">{title}</h1>'
+    html = (f'<div style="border-left:6px solid {CARD_EDGE};padding-left:14px;">{back}'
+            f'<h1 style="font-size:30px;line-height:1.2;margin:2px 0 4px;font-weight:800;color:{TITLE_INK};">{title}</h1>'
             f'<p style="font-size:15px;opacity:0.8;margin:0;max-width:75ch;">{subtitle}</p></div>')
     return text(html, mode="html", transparent=True)
 
@@ -266,25 +278,31 @@ def footer(extra=""):
                 f"not guarantees. [How these numbers work →]({page_url('gradpath-help')})</small>", transparent=True)
 
 
-def option_var(name, label, path, deps=(), hide=0):
+def option_var(name, label, path, deps=(), hide=0, include_all=True):
     query = {"method": "GET", "urlPath": path, "cacheDurationSeconds": 300,
              "params": [[d, f"${{{d}}}"] for d in deps],
              "fields": [{"jsonPath": "$[*].text", "name": "text"}, {"jsonPath": "$[*].value", "name": "value"}],
              "experimentalVariableTextField": "text", "experimentalVariableValueField": "value"}
     return {"name": name, "label": label, "type": "query", "datasource": DS, "query": query,
-            "definition": path, "refresh": 1, "includeAll": True, "allValue": "__all", "multi": False,
-            "current": {"selected": True, "text": "All", "value": "$__all"}, "options": [], "sort": 0,
+            "definition": path, "refresh": 1, "includeAll": include_all, "multi": False,
+            **({"allValue": "__all"} if include_all else {}),
+            "current": {"selected": True, "text": "All", "value": "$__all" if include_all else "__all"},
+            "options": [], "sort": 0,
             "hide": hide, "skipUrlSync": False, "allowCustomValue": False}
 
 
 def shared_variables():
-    # Dependency order has no cycles: credential, school_type → state → major → cip → school
+    # Dependency order has no cycles: credential, school_type → school → state → major → cip.
+    # Picking a school leaves its own state as the only State option, so Grafana switches State to it;
+    # "All" is a real option returned by the API (includeAll off) so that switch can happen.
     return [
-        option_var("school", "School (type to search)", "/options/schools",
-                   deps=("state", "school_type", "credential", "major", "cip")),
-        option_var("state", "State", "/options/states", deps=("school_type", "credential")),
-        option_var("major", "Major", "/options/majors", deps=("state", "school_type", "credential")),
-        option_var("cip", "CIP code", "/options/cips", deps=("state", "school_type", "credential", "major")),
+        option_var("school", "School (type name or state code)", "/options/schools",
+                   deps=("school_type", "credential", "data_year")),
+        option_var("state", "State", "/options/states", deps=("school", "school_type", "credential"),
+                   include_all=False),
+        option_var("major", "Major", "/options/majors", deps=("school", "state", "school_type", "credential")),
+        option_var("cip", "CIP code", "/options/cips",
+                   deps=("school", "state", "school_type", "credential", "major")),
         option_var("credential", "Credential", "/options/credentials"),
         option_var("school_type", "School type", "/options/school_types"),
         option_var("data_year", "Data year", "/options/data_years"),
@@ -312,10 +330,11 @@ def dashboard(uid, title, page: Page, extra_vars=(), description=""):
 
 
 def card_html(icon, title, body, preview, href, cta="Open"):
-    return (f'<div style="display:flex;flex-direction:column;height:100%;gap:6px;">'
-            f'<div style="font-size:18px;font-weight:700;">{icon} {title}</div>'
+    return (f'<div style="display:flex;flex-direction:column;height:100%;gap:6px;border-top:4px solid {CARD_EDGE};'
+            f'padding-top:8px;">'
+            f'<div style="font-size:18px;font-weight:700;color:{TITLE_INK};">{icon} {title}</div>'
             f'<div style="font-size:14px;opacity:0.85;">{body}</div>'
-            f'<div style="font-size:13px;padding:6px 10px;border-radius:6px;background:rgba(128,128,128,0.12);">'
+            f'<div style="font-size:13px;padding:6px 10px;border-radius:6px;background:{PILL_BG};color:{PILL_INK};">'
             f'{preview}</div>'
             f'<div style="margin-top:auto;"><a href="{href}" style="display:inline-block;padding:7px 16px;'
             f'border-radius:8px;background:{ACTIVE_BG};color:#ffffff;text-decoration:none;font-weight:600;'
@@ -506,7 +525,7 @@ def debt_earnings_page():
                "program had when they finished. It is *not* the cost of attendance.\n"
                "- **Y-axis — Median earnings:** the middle salary of graduates who were working, measured 2 years "
                "after completion.\n"
-               "- **Colour — School type:** 🔵 Public · 🟠 Private, nonprofit · 🟣 Private, for-profit.\n"
+               "- **Colour — School type:** 🟡 amber = Public · 🔴 red = Private, nonprofit · 🟤 dark brown = Private, for-profit.\n"
                "- **Dot size — Cohort size:** how many graduates were measured. Small dots are less reliable.\n"
                "- **Dashed grey line — earnings = debt.** Dots above the line earned more in a year than they owed.\n"
                "- **Credential level** is a filter (box at the top) rather than a marker shape: Grafana's scatter "
@@ -549,7 +568,7 @@ def programs_page():
         pg.add(moved(10), 8, 8, container=nested)
         pg.add(moved(14), 8, 8, container=nested)
         pg.newline()
-    explain = ("- **Bars:** 🔵 median earnings 2 years after completion and 🟠 median federal debt at completion, "
+    explain = ("- **Bars:** 🟠 orange = median earnings 2 years after completion, 🟥 dark red = median federal student-loan debt, "
                "for each major.\n- Only majors offered by at least 3 matching programs are shown, so a single school "
                "cannot dominate.\n- Pick a State, Credential or School type at the top to compare majors within that "
                "group. Open the collapsed row below for the school-type comparison.")
@@ -579,7 +598,7 @@ def states_graph_page():
         pg.add(group_table("State comparison table", "state", "State"), 12, 12, container=nested)
         pg.add(moved(13, "Median earnings by state (Classic chart)"), 12, 12, container=nested)
         pg.newline()
-    explain = ("- **Bars:** 🔵 median earnings and 🟠 median debt for matching programs in each state, highest "
+    explain = ("- **Bars:** 🟠 orange = median earnings and 🟥 dark red = median debt for matching programs in each state, highest "
                "earnings first.\n- A state's figure mixes many schools and majors; it does not mean a school in that "
                "state will pay more.\n- Earnings are not adjusted for cost of living or state taxes — see **States & "
                "Taxes** for verified tax facts.")
@@ -599,20 +618,21 @@ def credentials_page():
         pg.add(moved(9), 8, 8, container=nested)
         pg.add(moved(15), 8, 8, container=nested)
         pg.newline()
-    explain = ("- **Bars:** 🔵 median earnings and 🟠 median debt for each credential level among matching "
+    explain = ("- **Bars:** 🟠 orange = median earnings and 🟥 dark red = median debt for each credential level among matching "
                "programs.\n- Credentials take different amounts of time, so compare debt with that in mind: a "
-               "certificate can take under a year; a bachelor's degree usually four.\n- This data covers "
-               "undergraduate credentials only.")
+               "certificate can take under a year; a bachelor's degree usually four.\n- Graduate credentials "
+               "(master's, doctoral, professional) are included; their debt covers Grad PLUS loans too.")
     return graph_page("gradpath-graph-credentials", "Credential-Level Comparison",
-                      "How do certificates, associate's and bachelor's degrees compare on earnings and debt?",
+                      "How do certificates, degrees and graduate credentials compare on earnings and debt?",
                       explain, main, extras)
 
 
 def schools_page():
     pg = Page()
     pg.add(nav_panel("gradpath-schools"), 24, 2)
-    pg.add(header("Schools", "Type part of a school's name in the <b>School</b> box, or click a school name in the "
-                             "table below to open its details."), 24, 3)
+    pg.add(header("Schools", "Type part of a school's name (or a state code such as <b>TX</b>) in the <b>School</b> "
+                             "box, or click a school name below. Picking a school fills in its <b>State</b> and "
+                             "narrows <b>Major</b> to that school's programs."), 24, 3)
     pg.row("🏫 School details — ${school:text}")
     detail = "/schools/detail"
     pg.add(facts_table("School", detail, [
@@ -714,6 +734,42 @@ def states_page():
                      extra_vars=[textbox("example_income", "Example salary for tax estimate ($)", "50000", hide=0)])
 
 
+def timeline_chart():
+    """Remaining balance by month for each salary scenario and the standard plan."""
+    cols = {"Conservative": "balance_conservative", "Expected": "balance_expected",
+            "Aspirational": "balance_aspirational", "Standard 10-year plan": "balance_standard"}
+    series = [{"name": {"fixed": name}, "frame": {"matcher": {"id": "byIndex", "options": 0}},
+               "x": {"matcher": {"id": "byName", "options": "year"}},
+               "y": {"matcher": {"id": "byName", "options": col}}} for name, col in cols.items()]
+    overrides = [{"matcher": {"id": "byName", "options": col},
+                  "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": C_TIMELINE[name]}},
+                                 {"id": "custom.axisLabel", "value": "Loan balance left"}]
+                  + ([{"id": "custom.lineStyle", "value": {"fill": "dash", "dash": [8, 6]}}]
+                     if name.startswith("Standard") else [])}
+                 for name, col in cols.items()]
+    overrides.append({"matcher": {"id": "byName", "options": "year"},
+                      "properties": [{"id": "unit", "value": "none"}, {"id": "decimals", "value": 0},
+                                     {"id": "custom.axisLabel", "value": "Year"}, {"id": "displayName", "value": "Year"}]})
+    overrides.append(rename("month", "Month"))
+    return {
+        "type": "xychart", "title": "🧮 Loan balance over time — when you could be debt-free", "datasource": DS,
+        "description": "Each line is one salary scenario; the dashed grey line is the standard 10-year plan. "
+                       "A line reaching zero is that scenario's final payment. When a scenario can only afford the "
+                       "standard payment, its line sits on the dashed line.",
+        "targets": [target("/plan/timeline", [("year", "number"), ("balance_conservative", "number"),
+                                             ("balance_expected", "number"), ("balance_aspirational", "number"),
+                                             ("balance_standard", "number"), ("month", None)], plan=True)],
+        "fieldConfig": {"defaults": {"unit": "currencyUSD", "decimals": 0, "noValue": "Enter borrowing to see a timeline",
+                                     "custom": {"show": "lines", "lineWidth": 3, "pointSize": {"fixed": 1},
+                                                "axisPlacement": "auto", "fillOpacity": 0,
+                                                "hideFrom": {"legend": False, "tooltip": False, "viz": False}}},
+                        "overrides": overrides},
+        "options": {"mapping": "manual", "series": series,
+                    "legend": {"showLegend": True, "displayMode": "list", "placement": "bottom", "calcs": []},
+                    "tooltip": {"mode": "multi", "sort": "desc"}},
+    }
+
+
 def plan_page():
     pg = Page()
     pg.add(nav_panel("gradpath-my-plan"), 24, 2)
@@ -805,6 +861,24 @@ def plan_page():
                  description="Payment = the larger of the 10-year standard payment and your chosen share of salary. "
                              "Final payment = month of the last payment; payments start 6 months after graduation.",
                  plan=True, wrap=True), 24, 8)
+    pg.row("🧭 Your payoff timeline — built by the Repayment Timeline Agent")
+    pg.add(timeline_chart(), 24, 11)
+    pg.add(table("Milestones", "/plan/milestones",
+                 [("date", None), ("scenario", None), ("milestone", None), ("balance_left", "number"),
+                  ("interest_paid_so_far", "number"), ("payment_number", "number")],
+                 [rename("scenario", "Scenario", {"id": "custom.width", "value": 200}),
+                  rename("milestone", "Milestone"), rename("date", "When", {"id": "custom.width", "value": 110}),
+                  money("balance_left", "Balance left"), money("interest_paid_so_far", "Interest paid so far"),
+                  rename("payment_number", "Payment #", {"id": "custom.width", "value": 90})],
+                 description="When each scenario reaches 25%, 50% and 75% of the starting balance repaid, and its "
+                             "final payment.", plan=True, wrap=True,
+                 no_value="Enter borrowing to see your milestones."), 24, 10)
+    pg.add(table("🧮 How your timeline was calculated — step by step, with your numbers", "/plan/explain",
+                 [("step", "number"), ("title", None), ("detail", None)],
+                 [rename("step", "#", {"id": "custom.width", "value": 50}),
+                  rename("title", "Step", {"id": "custom.width", "value": 240}), rename("detail", "How")],
+                 description="Generated by the Repayment Timeline Agent from your inputs. Deterministic — no AI.",
+                 plan=True, wrap=True), 24, 13)
     pg.add(table("⚙️ Assumptions, ❔ missing information and ⚠️ input checks", "/plan/notes",
                  [("type", None), ("detail", None)],
                  [rename("type", "Type", {"id": "custom.width", "value": 220}), rename("detail", "Detail")],
@@ -843,7 +917,9 @@ def help_page():
 
 ### Search and filters
 - The boxes at the top (School, State, Major, CIP code, Credential, School type, Data year) are **shared**: your choices follow you to every page through the navigation bar.
-- **School** is searchable: click it and type part of a name, e.g. *"state univ"*. The list narrows to schools matching your other filters.
+- **School** is searchable: click it and type part of a name (*"state univ"*) or a state code (*"TX"*). Every school is labelled with its city and state.
+- **Picking a school is smart:** the **State** box switches to that school's state, and **Major** and **CIP code** list only that school's programs. Set School back to *All* to choose other states again.
+- **320 majors** with published earnings and student debt are available, across certificates, associate's, bachelor's and graduate credentials.
 - Choose **All** to remove a filter. If a page says *No data*, that filter combination has no published records — widen it.
 - In the Schools table, click a school's name to open its details."""), 12, 15)
     pg.add(moved(17, "How the metrics are calculated"), 12, 8)
@@ -853,11 +929,26 @@ def help_page():
 - **Aspirational** — a strong outcome, not a promise.
 
 Monthly payment is the larger of the 10-year standard payment and the share of salary you choose (10% by default). Payoff dates are worked out month by month with a fixed interest rate."""), 12, 7)
+    pg.add(text("""### How your debt-free timeline is calculated
+GradPath's **Repayment Timeline Agent** (`pipeline/agents/repayment_timeline_agent.py`) builds the timeline on **My Plan** in seven deterministic steps:
+
+1. **Borrowing** — your yearly loan is paid out each September you are in school, plus any existing balance.
+2. **Interest before repayment** — each loan builds *simple* interest from the month it is paid out until repayment starts: `amount × rate × months ÷ 12`.
+3. **Starting balance** — borrowed + that interest, in the **November after a May graduation** (6-month grace period).
+4. **Standard payment** — `P × r ÷ (1 − (1 + r)^−120)`, with `r` = yearly rate ÷ 12, rounded **up** to the cent.
+5. **Your payment per scenario** — the larger of the standard payment and your chosen share of salary ÷ 12.
+6. **Month by month** — each month, interest (`balance × r`) is added and the payment subtracted, until the balance reaches zero. The **final payment month** is the debt-free date; milestones mark when 25%, 50% and 75% of the starting balance is repaid.
+7. **Range** — the earliest to latest final payment across your salary scenarios.
+
+My Plan shows the balance chart, the milestones and these steps **with your own numbers**. No AI is used; the same inputs always give the same dates. Not modelled: income-driven plans, forgiveness, missed or extra payments, rate changes and daily interest.""",
+                title="Repayment timeline"), 24, 11)
     pg.add(text(f"""### Median earnings
 The middle salary of graduates who were working and not enrolled, measured **2 years after completion** (`EARN_MDN_HI_2YR`). Half earned more, half less.
 
 ### Median debt
-The middle amount of **federal** student-loan debt at completion (`DEBT_ALL_PP_ANY_MDN`). It is **not** the cost of attendance and leaves out private loans and Parent PLUS loans.
+The middle amount of **federal student-loan debt** (Stafford + Grad PLUS) that completers who borrowed took out **at this school** (`DEBT_ALL_STGP_EVAL_MDN`). It is **not** the cost of attendance, and it leaves out private loans and Parent PLUS loans that parents take out.
+
+*Correction (Nov 2026):* earlier versions of GradPath used `DEBT_ALL_PP_ANY_MDN`, which the College Scorecard data dictionary defines as **Parent PLUS** debt, a different group of borrowers. All debt figures now use the student's own federal loans.
 
 ### Debt-to-earnings ratio
 `median debt ÷ median earnings`. **0.5** means debt equal to half a year of earnings. Colour bands: 🟢 under 0.5 · 🟡 0.5–1.0 · 🔴 1.0 or more. They help scanning; they are not a grade.
@@ -891,13 +982,13 @@ The middle amount of **federal** student-loan debt at completion (`DEBT_ALL_PP_A
 - Historical earnings **do not guarantee** future salary.
 - Median debt is **not the same as cost of attendance**.
 - School and major **do not cause** a particular income.
-- Some records are **suppressed for privacy** (about 96% of raw rows have no published earnings or debt).
+- Some records are **suppressed for privacy** (about 85% of raw rows have no published earnings or debt).
 - Data **lags** current market conditions by several years.
 - **State tax rules change** over time; only 10 states are verified.
 - **Company, occupation, location and experience** affect earnings.
 - Estimates are **educational planning information**, not personalized financial or tax advice.
-- Only undergraduate credentials appear in the cleaned data.
-- 74 schools in the Field of Study file are missing from the Institution file, so their state and address show as *Not reported*."""),
+- About 85% of raw program rows have no published earnings or student debt and are left out.
+- 157 schools in the Field of Study file are missing from the Institution file, so their state and address show as *Not reported*."""),
            12, 10)
     pg.add(text("""### Frequently asked questions
 **Why is my school missing?** It may have no programs with published earnings *and* debt, or it is filtered out — set the filters to *All*.

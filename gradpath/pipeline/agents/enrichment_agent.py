@@ -24,7 +24,8 @@ from pipeline.agents.base_agent import BaseAgent
 from pipeline.bus.message_bus import Bus, Message
 
 EARNINGS_COHORT  = "2021–22 completers, measured 2023–24"
-DEBT_DEFINITION  = "Completers — federal loans, post-program median cumulative debt"
+DEBT_DEFINITION  = ("Median federal student-loan debt (Stafford + Grad PLUS) borrowed at this institution, "
+                    "among completers who borrowed — DEBT_ALL_STGP_EVAL_MDN")
 
 # Normalize any legacy numeric CONTROL codes to strings (if raw data has codes)
 CONTROL_MAP = {

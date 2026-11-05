@@ -43,7 +43,7 @@
     "list": [
       {
         "name": "school",
-        "label": "School (type to search)",
+        "label": "School (type name or state code)",
         "type": "query",
         "datasource": {
           "type": "marcusolsson-json-datasource",
@@ -55,10 +55,6 @@
           "cacheDurationSeconds": 300,
           "params": [
             [
-              "state",
-              "${state}"
-            ],
-            [
               "school_type",
               "${school_type}"
             ],
@@ -67,12 +63,8 @@
               "${credential}"
             ],
             [
-              "major",
-              "${major}"
-            ],
-            [
-              "cip",
-              "${cip}"
+              "data_year",
+              "${data_year}"
             ]
           ],
           "fields": [
@@ -91,8 +83,8 @@
         "definition": "/options/schools",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -118,6 +110,10 @@
           "cacheDurationSeconds": 300,
           "params": [
             [
+              "school",
+              "${school}"
+            ],
+            [
               "school_type",
               "${school_type}"
             ],
@@ -141,13 +137,12 @@
         },
         "definition": "/options/states",
         "refresh": 1,
-        "includeAll": true,
-        "allValue": "__all",
+        "includeAll": false,
         "multi": false,
         "current": {
           "selected": true,
           "text": "All",
-          "value": "$__all"
+          "value": "__all"
         },
         "options": [],
         "sort": 0,
@@ -168,6 +163,10 @@
           "urlPath": "/options/majors",
           "cacheDurationSeconds": 300,
           "params": [
+            [
+              "school",
+              "${school}"
+            ],
             [
               "state",
               "${state}"
@@ -197,8 +196,8 @@
         "definition": "/options/majors",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -223,6 +222,10 @@
           "urlPath": "/options/cips",
           "cacheDurationSeconds": 300,
           "params": [
+            [
+              "school",
+              "${school}"
+            ],
             [
               "state",
               "${state}"
@@ -256,8 +259,8 @@
         "definition": "/options/cips",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -298,8 +301,8 @@
         "definition": "/options/credentials",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -340,8 +343,8 @@
         "definition": "/options/school_types",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -382,8 +385,8 @@
         "definition": "/options/data_years",
         "refresh": 1,
         "includeAll": true,
-        "allValue": "__all",
         "multi": false,
+        "allValue": "__all",
         "current": {
           "selected": true,
           "text": "All",
@@ -405,7 +408,7 @@
       "description": "",
       "options": {
         "mode": "html",
-        "content": "<nav aria-label=\"GradPath pages\" style=\"display:flex;flex-wrap:wrap;gap:6px;align-items:center;\"><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"font-weight:700;font-size:17px;text-decoration:none;color:inherit;margin-right:10px;white-space:nowrap;\">🎓 GradPath</a><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🏠 Overview</a><a href=\"http://localhost:8000/plan?school=${school:percentencode}&state=${state:percentencode}&major=${major:percentencode}&cip=${cip:percentencode}&credential=${credential:percentencode}&school_type=${school_type:percentencode}&data_year=${data_year:percentencode}&resume=1\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🧭 My Plan</a><a href=\"/d/gradpath-schools?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🏫 Schools</a><a href=\"/d/gradpath-states?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🗺️ States & Taxes</a><a href=\"/d/gradpath-graphs?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#2F5FD0;color:#ffffff;font-weight:600;\" aria-current=\"page\">📊 Graphs</a><a href=\"/d/gradpath-help?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">❓ Help</a></nav>",
+        "content": "<nav aria-label=\"GradPath pages\" style=\"display:flex;flex-wrap:wrap;gap:6px;align-items:center;\"><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"font-weight:800;font-size:18px;text-decoration:none;color:#9A3412;margin-right:10px;white-space:nowrap;\">🎓 GradPath</a><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">🏠 Overview</a><a href=\"http://localhost:8000/plan?school=${school:percentencode}&state=${state:percentencode}&major=${major:percentencode}&cip=${cip:percentencode}&credential=${credential:percentencode}&school_type=${school_type:percentencode}&data_year=${data_year:percentencode}&resume=1\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">🧭 My Plan</a><a href=\"/d/gradpath-schools?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">🏫 Schools</a><a href=\"/d/gradpath-states?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">🗺️ States & Taxes</a><a href=\"/d/gradpath-graphs?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#C2410C;color:#ffffff;font-weight:600;\" aria-current=\"page\">📊 Graphs</a><a href=\"/d/gradpath-help?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#FFEDD5;color:#7C2D12;\">❓ Help</a></nav>",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
@@ -427,7 +430,7 @@
       "description": "",
       "options": {
         "mode": "html",
-        "content": "<div><a href=\"/d/gradpath-graphs?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"text-decoration:none;font-size:14px;\">← Back to Graphs</a><h1 style=\"font-size:30px;line-height:1.2;margin:2px 0 4px;font-weight:700;\">Degree ROI Rankings</h1><p style=\"font-size:15px;opacity:0.8;margin:0;max-width:75ch;\">Which kinds of programs left graduates with the least debt relative to what they earned?</p></div>",
+        "content": "<div style=\"border-left:6px solid #F97316;padding-left:14px;\"><a href=\"/d/gradpath-graphs?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"text-decoration:none;font-size:14px;color:#C2410C;font-weight:600;\">← Back to Graphs</a><h1 style=\"font-size:30px;line-height:1.2;margin:2px 0 4px;font-weight:800;color:#9A3412;\">Degree ROI Rankings</h1><p style=\"font-size:15px;opacity:0.8;margin:0;max-width:75ch;\">Which kinds of programs left graduates with the least debt relative to what they earned?</p></div>",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,

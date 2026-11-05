@@ -6,6 +6,7 @@ marcusolsson-json-datasource plugin maps to Grafana fields. Shared dashboard
 filters arrive as query params and are applied by filters.apply_filters.
 """
 import os
+import sys
 from datetime import date
 from functools import lru_cache
 
@@ -20,6 +21,11 @@ from data_store import (
 )
 from filters import Filters, apply_filters, parse_multi, parse_number
 from plan_calc import ASSUMPTIONS, PlanInputs, compute_plan
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))   # gradpath/ → pipeline pkg
+from pipeline.agents.repayment_timeline_agent import RepaymentTimelineAgent  # noqa: E402
+
+timeline_agent = RepaymentTimelineAgent()
 
 router = APIRouter()
 
@@ -42,11 +48,24 @@ def _dir_lookup() -> pd.DataFrame:
 # ── Variable option lists ────────────────────────────────────────────────────
 # Dependency order (no cycles): state, school_type, credential → major → cip → school
 
+ALL_OPTION = {"text": "All", "value": "__all"}
+
+
 @router.get("/options/states")
 def options_states(flt: Filters = Depends()):
+    """
+    With a school selected, the only option is that school's state, so Grafana switches the
+    State box to it automatically. Otherwise "All" plus every state with matching programs.
+    """
+    iid = _selected_school(flt)
+    if iid:
+        states = get_df().loc[get_df()["institution_id"] == iid, "state"].dropna().unique()
+        if len(states):
+            return [{"text": f"{c} — {STATE_NAMES.get(c, c)}", "value": c} for c in sorted(states)]
+        return [ALL_OPTION]
     df = apply_filters(get_df(), flt.without("state", "school", "major", "cip"))
     codes = sorted(df["state"].dropna().unique())
-    return [{"text": f"{c} — {STATE_NAMES.get(c, c)}", "value": c} for c in codes]
+    return [ALL_OPTION] + [{"text": f"{c} — {STATE_NAMES.get(c, c)}", "value": c} for c in codes]
 
 
 @router.get("/options/school_types")
@@ -61,13 +80,13 @@ def options_credentials():
 
 @router.get("/options/majors")
 def options_majors(flt: Filters = Depends()):
-    df = apply_filters(get_df(), flt.without("school", "major", "cip"))
+    df = apply_filters(get_df(), flt.without("major", "cip"))      # a selected school narrows its majors
     return [{"text": v.rstrip("."), "value": v} for v in sorted(df["cip_title"].dropna().unique())]
 
 
 @router.get("/options/cips")
 def options_cips(flt: Filters = Depends()):
-    df = apply_filters(get_df(), flt.without("school", "cip"))
+    df = apply_filters(get_df(), flt.without("cip"))
     pairs = df[["cip_code", "cip_title"]].drop_duplicates().sort_values("cip_code")
     return [{"text": f"{_cip_label(c)} — {t.rstrip('.')}", "value": c} for c, t in pairs.itertuples(index=False)]
 
@@ -218,7 +237,7 @@ def school_detail(flt: Filters = Depends()):
     iid = _selected_school(flt)
     if iid is None:
         hint = "No school selected — type a name in the School box, or click a school in the table below."
-        return [{"school_name": hint, "address": "—", "city_state_zip": "—", "school_type": "—",
+        return [{"card": "Value", "school_name": hint, "address": "—", "city_state_zip": "—", "school_type": "—",
                  "matching_programs": "—", "address_source": "—", "outcomes_source": "—"}]
     progs = apply_filters(get_df(), flt)
     base = get_df()[get_df()["institution_id"] == iid]
@@ -233,7 +252,7 @@ def school_detail(flt: Filters = Depends()):
 
     name = val("school_name") or (base["institution_name"].iloc[0] if len(base) else "Unknown school")
     city, st, zp = val("city"), val("state"), val("zip")
-    return [{
+    return [{"card": "Value", 
         "school_name": name,
         "address": val("address") or NOT_REPORTED,
         "city_state_zip": " ".join(x for x in [", ".join(y for y in [city, st] if y), zp] if x) or NOT_REPORTED,
@@ -286,12 +305,12 @@ def _single_state(flt: Filters) -> str | None:
 def state_tax(flt: Filters = Depends()):
     code = _single_state(flt)
     if code is None:
-        return [{**{f: "" for f in TAX_FIELDS}, "supported": "Select one state",
+        return [{"card": "Value", **{f: "" for f in TAX_FIELDS}, "supported": "Select one state",
                  "rate_summary": "Choose a single state in the State box to see its tax facts."}]
     ref = get_tax_reference()
     hit = ref[ref["state_code"] == code] if len(ref) else ref
     if hit.empty:
-        return [{**{f: "" for f in TAX_FIELDS}, "state_code": code, "state_name": STATE_NAMES.get(code, code),
+        return [{"card": "Value", **{f: "" for f in TAX_FIELDS}, "state_code": code, "state_name": STATE_NAMES.get(code, code),
                  "supported": "Not yet verified",
                  "rate_summary": (f"{STATE_NAMES.get(code, code)} is not in GradPath's verified demonstration set yet. "
                                   "Check the state's department of revenue for current rules."),
@@ -303,7 +322,7 @@ def state_tax(flt: Filters = Depends()):
     elif r["standard_deduction_single"]:
         shown["standard_deduction_single"] = f"${float(r['standard_deduction_single']):,.0f}"
     status = "Verified" if r.get("verification_method", "").startswith("official page read") else "Verified — confirm manually"
-    return [{**shown, "supported": status, "rate_summary": _rate_summary(r)}]
+    return [{"card": "Value", **shown, "supported": status, "rate_summary": _rate_summary(r)}]
 
 
 def _rate_summary(r: dict) -> str:
@@ -365,7 +384,7 @@ def state_tax_estimate(income: str | None = None, flt: Filters = Depends()):
     wages = parse_number(income, "Example salary", 0, 2_000_000, 50000.0, msgs)
     est = estimate_state_tax(code, wages) if code else None
     if est is None:
-        return [{"example_salary": wages, "estimated_state_tax": None, "effective_rate_pct": None,
+        return [{"card": "Value", "example_salary": wages, "estimated_state_tax": None, "effective_rate_pct": None,
                  "taxable_income": None, "tax_year": "",
                  "assumptions": ("Select one verified state to see an example." if code is None else
                                  f"No estimate: {STATE_NAMES.get(code, code)} is not in the verified set "
@@ -373,7 +392,7 @@ def state_tax_estimate(income: str | None = None, flt: Filters = Depends()):
                  "input_check": " ".join(msgs) or "OK"}]
     std_note = (f"minus the ${est['standard_deduction_used']:,.0f} standard deduction" if est["standard_deduction_used"]
                 else "with no standard deduction applied")
-    return [{
+    return [{"card": "Value", 
         "example_salary": wages,
         "estimated_state_tax": est["tax"],
         "effective_rate_pct": round(est["tax"] / wages * 100, 2) if wages else 0.0,
@@ -531,7 +550,7 @@ def plan_estimate(pp: PlanParams = Depends(), flt: Filters = Depends()):
     flat.update({"historical_median_earnings": c["hist_earn"], "historical_median_debt": c["hist_debt"]})
     # Grafana shortens $6,456 to "$6K"; ready-made strings keep the tiles exact
     display = {f"{k}_display": _dollars(flat.get(k), cents=k == "standard_monthly_payment") for k in PLAN_MONEY}
-    return [{
+    return [{"card": "Value", 
         **display,
         **flat,
         "school_name": name,
@@ -587,6 +606,31 @@ def plan_notes(pp: PlanParams = Depends(), flt: Filters = Depends()):
     rows.append({"type": "📘 Historical data", "detail": f"Program outcomes: {SOURCE_LABEL}, {DATA_YEAR_LABEL}. "
                                                         "Historical earnings do not guarantee future salary."})
     return rows
+
+
+def _timeline(pp: PlanParams, flt: Filters) -> dict:
+    c = _plan_context(pp, flt)
+    return timeline_agent.handle(c["inputs"], c["result"])
+
+
+@router.get("/plan/timeline")
+def plan_timeline(pp: PlanParams = Depends(), flt: Filters = Depends()):
+    """Month-by-month remaining balance per scenario (Repayment Timeline Agent)."""
+    rows = _timeline(pp, flt)["schedule"]
+    keys = {"Conservative": "balance_conservative", "Expected": "balance_expected",
+            "Aspirational": "balance_aspirational", "Standard 10-year plan": "balance_standard"}
+    return [{"month": r["month"], "year": r["year"], **{v: r.get(k) for k, v in keys.items()}} for r in rows]
+
+
+@router.get("/plan/milestones")
+def plan_milestones(pp: PlanParams = Depends(), flt: Filters = Depends()):
+    return _timeline(pp, flt)["milestones"]
+
+
+@router.get("/plan/explain")
+def plan_explain(pp: PlanParams = Depends(), flt: Filters = Depends()):
+    """Step-by-step explanation of how the repayment timeline was calculated."""
+    return _timeline(pp, flt)["explanation"]
 
 
 @router.get("/plan")
