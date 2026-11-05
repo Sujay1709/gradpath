@@ -65,6 +65,9 @@ grafana server \
   cfg:default.paths.logs=/opt/homebrew/var/log/grafana \
   cfg:default.paths.data=/opt/homebrew/var/lib/grafana \
   cfg:default.paths.plugins=/opt/homebrew/var/lib/grafana/plugins \
+  cfg:auth.anonymous.enabled=true \
+  cfg:auth.anonymous.org_role=Viewer \
+  cfg:dashboards.default_home_dashboard_path="$GRADPATH/grafana/dashboards/gradpath-overview.json" \
   > "$GRAFANA_LOG" 2>&1 &
 GRAFANA_PID=$!
 echo "        PID: $GRAFANA_PID  |  Log: $GRAFANA_LOG"
@@ -81,12 +84,12 @@ echo ""
 echo "============================================================"
 echo "  GradPath is running!"
 echo ""
-echo "  GradPath Overview:     http://localhost:3000/d/gradpath-overview"
+echo "  GradPath home:         http://localhost:3000   (no login needed)"
 echo "  My Plan form:          http://localhost:8000/plan"
 echo "  Classic dashboards:    http://localhost:3000/d/gradpath-main  ·  /d/gradpath-tax"
 echo "  API docs:              http://localhost:8000/docs"
 echo ""
-echo "  Login: admin / admin"
+echo "  Visitors are read-only viewers; admins can still sign in at http://localhost:3000/login"
 echo "  Ctrl+C to stop both services"
 echo "============================================================"
 

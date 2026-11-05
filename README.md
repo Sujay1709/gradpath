@@ -12,11 +12,14 @@ and loan payoff.
 
 **Repository:** https://github.com/Sujay1709/gradpath
 
+**Open GradPath:** http://localhost:3000 — goes straight to the GradPath home page (no login needed).
+
 After you run `./start.sh`, open these in your browser:
 
 | Page | Link |
 |---|---|
-| 🏠 GradPath home (Overview) | http://localhost:3000/d/gradpath-overview |
+| 🏠 GradPath home | http://localhost:3000 |
+| 🏠 Overview | http://localhost:3000/d/gradpath-overview |
 | 🧭 My Plan form | http://localhost:8000/plan |
 | 🧭 My Plan results | http://localhost:3000/d/gradpath-my-plan |
 | 🏫 Schools | http://localhost:3000/d/gradpath-schools |
@@ -27,6 +30,10 @@ After you run `./start.sh`, open these in your browser:
 | API docs | http://localhost:8000/docs |
 
 The `localhost` links only work on the computer running GradPath.
+
+**No login.** `start.sh` turns on Grafana's anonymous access with the read-only *Viewer* role and makes the
+Overview the home page. Visitors can use every page and filter, but they can't edit or delete dashboards.
+To edit, use **Sign in** (top right) or go to http://localhost:3000/login with your Grafana admin account.
 
 ---
 
@@ -99,7 +106,7 @@ To use a newer College Scorecard download, put the files in `dataset/…` and up
 
 ```bash
 ./start.sh
-open http://localhost:3000/d/gradpath-overview
+open http://localhost:3000
 ```
 
 `start.sh` builds any missing data, starts the FastAPI backend on port 8000 and starts Grafana on port 3000.

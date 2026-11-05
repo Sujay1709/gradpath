@@ -340,6 +340,10 @@ def moved(panel_id, title=None, description=None):
         t["urlPath"] = path
         fixed = [kv.split("=", 1) for kv in query.split("&") if "=" in kv]
         t["params"] = [[v, f"${{{v}}}"] for v in SHARED] + fixed
+        # Classic stats used "$.field", which matches nothing because the API returns a list
+        for fl in t.get("fields", []):
+            if fl.get("jsonPath", "").startswith("$.") and not fl["jsonPath"].startswith("$.["):
+                fl["jsonPath"] = "$[*]." + fl["jsonPath"][2:]
     if title:
         p["title"] = title
     if description:

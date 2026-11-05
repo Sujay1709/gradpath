@@ -695,7 +695,7 @@
           },
           "fields": [
             {
-              "jsonPath": "$.median_earnings_overall"
+              "jsonPath": "$[*].median_earnings_overall"
             }
           ],
           "method": "GET",
@@ -797,7 +797,7 @@
           },
           "fields": [
             {
-              "jsonPath": "$.median_debt_overall"
+              "jsonPath": "$[*].median_debt_overall"
             }
           ],
           "method": "GET",
@@ -900,7 +900,7 @@
           },
           "fields": [
             {
-              "jsonPath": "$.median_debt_to_earnings"
+              "jsonPath": "$[*].median_debt_to_earnings"
             }
           ],
           "method": "GET",
