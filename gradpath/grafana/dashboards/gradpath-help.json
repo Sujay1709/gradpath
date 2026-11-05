@@ -1,0 +1,813 @@
+{
+  "uid": "gradpath-help",
+  "title": "GradPath — Help & Methodology",
+  "description": "",
+  "tags": [
+    "gradpath",
+    "gradpath-app"
+  ],
+  "editable": true,
+  "graphTooltip": 0,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": true
+  },
+  "timezone": "browser",
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "weekStart": "",
+  "annotations": {
+    "list": []
+  },
+  "links": [
+    {
+      "title": "All GradPath pages",
+      "type": "dashboards",
+      "tags": [
+        "gradpath-app"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": false,
+      "targetBlank": false,
+      "icon": "external link"
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "school",
+        "label": "School (type to search)",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/schools",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/schools",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "state",
+        "label": "State",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/states",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/states",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "major",
+        "label": "Major",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/majors",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/majors",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "cip",
+        "label": "CIP code",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/cips",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "major",
+              "${major}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/cips",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "credential",
+        "label": "Credential",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/credentials",
+          "cacheDurationSeconds": 300,
+          "params": [],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/credentials",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "school_type",
+        "label": "School type",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/school_types",
+          "cacheDurationSeconds": 300,
+          "params": [],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/school_types",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "data_year",
+        "label": "Data year",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/data_years",
+          "cacheDurationSeconds": 300,
+          "params": [],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/data_years",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "description": "",
+      "options": {
+        "mode": "html",
+        "content": "<nav aria-label=\"GradPath pages\" style=\"display:flex;flex-wrap:wrap;gap:6px;align-items:center;\"><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"font-weight:700;font-size:17px;text-decoration:none;color:inherit;margin-right:10px;white-space:nowrap;\">🎓 GradPath</a><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🏠 Overview</a><a href=\"http://localhost:8000/plan?school=${school:percentencode}&state=${state:percentencode}&major=${major:percentencode}&cip=${cip:percentencode}&credential=${credential:percentencode}&school_type=${school_type:percentencode}&data_year=${data_year:percentencode}&resume=1\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🧭 My Plan</a><a href=\"/d/gradpath-schools?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🏫 Schools</a><a href=\"/d/gradpath-states?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🗺️ States & Taxes</a><a href=\"/d/gradpath-graphs?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">📊 Graphs</a><a href=\"/d/gradpath-help?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#2F5FD0;color:#ffffff;font-weight:600;\" aria-current=\"page\">❓ Help</a></nav>",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "description": "",
+      "options": {
+        "mode": "html",
+        "content": "<div><h1 style=\"font-size:30px;line-height:1.2;margin:2px 0 4px;font-weight:700;\">Help & Methodology</h1><p style=\"font-size:15px;opacity:0.8;margin:0;max-width:75ch;\">How to use GradPath, where the numbers come from, and what they cannot tell you.</p></div>",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 2,
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 24,
+        "h": 3
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "### How to use each page\n| Page | What it is for |\n|---|---|\n| 🏠 **Overview** | A summary of everything matching your filters, with shortcuts to each page. |\n| 🧭 **My Plan** | Enter savings, aid, borrowing and salary guesses; see cost, debt and payoff estimates. |\n| 🏫 **Schools** | Search schools, rank programs, and open a school's address and program details. |\n| 🗺️ **States & Taxes** | Verified income-tax facts for 10 states, with tax year and official source. |\n| 📊 **Graphs** | Five charts; each opens on its own page with an explanation. |\n| ❓ **Help** | This page. |\n\n### Search and filters\n- The boxes at the top (School, State, Major, CIP code, Credential, School type, Data year) are **shared**: your choices follow you to every page through the navigation bar.\n- **School** is searchable: click it and type part of a name, e.g. *\"state univ\"*. The list narrows to schools matching your other filters.\n- Choose **All** to remove a filter. If a page says *No data*, that filter combination has no published records — widen it.\n- In the Schools table, click a school's name to open its details.",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 3,
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 12,
+        "h": 15
+      }
+    },
+    {
+      "id": 4,
+      "type": "text",
+      "title": "How the metrics are calculated",
+      "options": {
+        "content": "### Metric Formulas\n\n| Metric | Formula | Interpretation |\n|--------|---------|----------------|\n| **Debt / Earnings** | `median_debt ÷ median_earnings` | Lower = less debt relative to one year of income |\n| **Earnings / Debt** | `median_earnings ÷ median_debt` | Higher = more annual income relative to total debt |\n| **Earnings − Debt** | `median_earnings − median_debt` | Positive = annual earnings exceed total cumulative debt |\n\n**Color thresholds (Debt/Earnings):** 🟢 < 0.5 · 🟡 0.5–1.0 · 🔴 ≥ 1.0\n\nAll values are medians — half of completers were above, half below.",
+        "mode": "markdown"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 5,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "### The three career scenarios (My Plan)\n- **Conservative** — a starting salary you are fairly sure you could beat.\n- **Expected** — your best guess. If blank, GradPath uses the historical median for your school and major, labelled as such.\n- **Aspirational** — a strong outcome, not a promise.\n\nMonthly payment is the larger of the 10-year standard payment and the share of salary you choose (10% by default). Payoff dates are worked out month by month with a fixed interest rate.",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 5,
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 7
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "### Median earnings\nThe middle salary of graduates who were working and not enrolled, measured **2 years after completion** (`EARN_MDN_HI_2YR`). Half earned more, half less.\n\n### Median debt\nThe middle amount of **federal** student-loan debt at completion (`DEBT_ALL_PP_ANY_MDN`). It is **not** the cost of attendance and leaves out private loans and Parent PLUS loans.\n\n### Debt-to-earnings ratio\n`median debt ÷ median earnings`. **0.5** means debt equal to half a year of earnings. Colour bands: 🟢 under 0.5 · 🟡 0.5–1.0 · 🔴 1.0 or more. They help scanning; they are not a grade.\n\n### Data years\n- Program outcomes: **2021–22 completers (earnings measured 2023–24)** (College Scorecard release 2026-10-05, downloaded 2026-11-02).\n- School addresses: College Scorecard Institution file, same release.\n- State taxes: **tax year 2025**, verified 2026-11-04.\n- Default loan rate: **6.52%**, federal undergraduate Direct Loans first disbursed July 1, 2026–June 30, 2027.",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 6,
+      "gridPos": {
+        "x": 12,
+        "y": 20,
+        "w": 12,
+        "h": 15
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "### Tax-data methodology\n- Each state's facts were checked on that state's **official revenue website** (or official booklet). The URL and date are stored with every row in `state_tax_reference.csv`.\n- A field is filled only when the official page states it; otherwise it shows **Not verified**. GradPath never copies one state's rules to another.\n- California and Massachusetts official pages block automated downloads, so their figures were read through a search index of those official pages. Open their source links to confirm.\n- Estimates assume a single filer with wage income only, use the verified standard deduction, and ignore credits and local taxes.\n\n### Privacy\n- GradPath does not ask for bank accounts, logins or account numbers.\n- **My Plan** answers are kept in your browser (localStorage) and in the page address. The API computes estimates on request and does not save them. Use *Clear my answers* on the form to remove them.\n- Sharing a My Plan link shares the numbers in it.",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 7,
+      "gridPos": {
+        "x": 0,
+        "y": 35,
+        "w": 12,
+        "h": 12
+      }
+    },
+    {
+      "type": "table",
+      "title": "Data sources",
+      "description": "From data/processed/data_source_registry.csv",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/meta/sources",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].dataset_name",
+              "name": "dataset_name"
+            },
+            {
+              "jsonPath": "$[*].source_organization",
+              "name": "source_organization"
+            },
+            {
+              "jsonPath": "$[*].source_year",
+              "name": "source_year"
+            },
+            {
+              "jsonPath": "$[*].downloaded_at",
+              "name": "downloaded_at"
+            },
+            {
+              "jsonPath": "$[*].source_url",
+              "name": "source_url"
+            },
+            {
+              "jsonPath": "$[*].important_limitations",
+              "name": "important_limitations"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No matching records — try widening the filters.",
+          "custom": {
+            "align": "auto",
+            "filterable": true,
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dataset_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Dataset"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "source_organization"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Organization"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "source_year"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Year"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "downloaded_at"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Downloaded / verified"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "source_url"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Link"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open source",
+                    "url": "${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "important_limitations"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Limitations"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "transformations": [],
+      "id": 8,
+      "gridPos": {
+        "x": 0,
+        "y": 47,
+        "w": 24,
+        "h": 10
+      }
+    },
+    {
+      "id": 9,
+      "type": "text",
+      "title": "Important caveats",
+      "options": {
+        "content": "### Important Caveats\n\n- **Median earnings are historical outcomes for past completers, not salary guarantees.**\n- **Median debt ≠ total cost of attendance.** Debt reflects federal loans taken, not tuition.\n- Data represents only students who received **federal financial aid**.\n- **Privacy suppression** removes programs with small cohorts (~96% of raw rows removed).\n- Data may be **several years behind** current labor-market conditions.\n- Programs with the same CIP code can differ significantly between institutions.\n- School, major, and credential do **not cause** a particular salary outcome.\n- Location, occupation, experience, internships, economic conditions, and individual circumstances all affect earnings.\n- This dashboard provides **educational scenario information** and does not provide personalized financial advice.",
+        "mode": "markdown"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 57,
+        "w": 12,
+        "h": 10
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "### Known limitations\n- Historical earnings **do not guarantee** future salary.\n- Median debt is **not the same as cost of attendance**.\n- School and major **do not cause** a particular income.\n- Some records are **suppressed for privacy** (about 96% of raw rows have no published earnings or debt).\n- Data **lags** current market conditions by several years.\n- **State tax rules change** over time; only 10 states are verified.\n- **Company, occupation, location and experience** affect earnings.\n- Estimates are **educational planning information**, not personalized financial or tax advice.\n- Only undergraduate credentials appear in the cleaned data.\n- 74 schools in the Field of Study file are missing from the Institution file, so their state and address show as *Not reported*.",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 10,
+      "gridPos": {
+        "x": 12,
+        "y": 57,
+        "w": 12,
+        "h": 10
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "### Frequently asked questions\n**Why is my school missing?** It may have no programs with published earnings *and* debt, or it is filtered out — set the filters to *All*.\n\n**Why are two schools with the same name listed?** Some names repeat across states; the list shows city and state to tell them apart.\n\n**Why does My Plan say \"Low\" confidence?** No published record matches your school and major, so the comparison uses a broader group or none.\n\n**Can I save my plan?** It is saved in this browser automatically. Bookmark the My Plan page to keep a copy of the numbers.\n\n**Where did the old dashboard go?** It still works: [GradPath — Classic](/d/gradpath-main) and [Tax Bracket AI — Classic](/d/gradpath-tax). The Classic tax dashboard uses 2024 rates and a model trained on synthetic data, so the new pages do not rely on it.",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 11,
+      "gridPos": {
+        "x": 0,
+        "y": 67,
+        "w": 24,
+        "h": 9
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "<small>📘 **Source:** U.S. Department of Education, [College Scorecard](https://collegescorecard.ed.gov/data/) — Field of Study and Institution files (release 2026-10-05). **Data year:** 2021–22 completers (earnings measured 2023–24).  Historical outcomes, not guarantees. [How these numbers work →](/d/gradpath-help?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam})</small>",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 12,
+      "gridPos": {
+        "x": 0,
+        "y": 76,
+        "w": 24,
+        "h": 2
+      }
+    }
+  ]
+}

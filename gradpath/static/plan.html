@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GradPath — My Plan inputs</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --ink: #1d2330; --muted: #5a6475; --line: #d9dee7;
+    --accent: #2f5fd0; --accent-ink: #ffffff; --warn: #9a5b00; --warn-bg: #fff4e0; --ok: #1d7a46;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111217; --panel: #181b23; --ink: #e6e9ef; --muted: #a2abbb; --line: #2c313d;
+      --accent: #5b8cff; --accent-ink: #0b0e14; --warn: #ffb547; --warn-bg: #2b2112; --ok: #5fd18f;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  nav.gp { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 16px;
+           background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  nav.gp a { color: var(--ink); text-decoration: none; padding: 6px 12px; border-radius: 999px; font-size: 14px; }
+  nav.gp a:hover, nav.gp a:focus-visible { background: var(--line); outline: none; }
+  nav.gp a.home { font-weight: 700; margin-right: 8px; }
+  nav.gp a.active { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  main { max-width: 920px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 30px; margin: 4px 0 4px; letter-spacing: -0.01em; }
+  .lede { color: var(--muted); margin: 0 0 20px; max-width: 65ch; }
+  .privacy { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--ok);
+             padding: 10px 14px; border-radius: 8px; font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+  fieldset { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 18px 8px;
+             margin: 0 0 18px; min-width: 0; }
+  legend { font-weight: 700; font-size: 18px; padding: 0 6px; }
+  .hint { color: var(--muted); font-size: 13px; margin: -4px 0 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 4px 18px; }
+  label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .field { margin-bottom: 14px; }
+  input, select { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px;
+                  background: var(--bg); color: var(--ink); font: inherit; }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  input[aria-invalid="true"] { border-color: var(--warn); }
+  .err { color: var(--warn); font-size: 13px; min-height: 1em; margin-top: 2px; }
+  .auto { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .school-card { border: 1px dashed var(--line); border-radius: 8px; padding: 10px 12px; font-size: 14px;
+                 margin-bottom: 14px; color: var(--muted); }
+  .school-card strong { color: var(--ink); }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; }
+  button { font: inherit; border-radius: 8px; padding: 10px 18px; cursor: pointer; border: 1px solid var(--line);
+           background: var(--panel); color: var(--ink); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .summary { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 10px 14px; margin: 12px 0;
+             font-size: 14px; }
+  .small { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<nav class="gp" aria-label="GradPath pages" id="nav"></nav>
+<main>
+  <h1>My Plan — your inputs</h1>
+  <p class="lede">Enter what you know. Leave a box blank if you are unsure: GradPath fills tuition and expected
+    salary from College Scorecard where it can and labels every auto-filled value. Results open in the
+    GradPath <strong>My Plan</strong> dashboard.</p>
+  <div class="privacy" role="note">🔒 <strong>Stays on this device.</strong> Your answers are saved only in this
+    browser (localStorage) and passed to the dashboard in the page address. Nothing is stored on a server, and
+    GradPath never asks for bank accounts or login details.</div>
+
+  <form id="plan" novalidate>
+    <fieldset>
+      <legend>🎓 School</legend>
+      <div class="field">
+        <label for="school_search">School <span class="small">(type part of the name)</span></label>
+        <input id="school_search" list="school_list" autocomplete="off" placeholder="e.g. Rutgers">
+        <datalist id="school_list"></datalist>
+        <input type="hidden" name="school" id="school">
+        <div class="err" id="err-school"></div>
+      </div>
+      <div class="school-card" id="school_card" aria-live="polite">No school selected yet.</div>
+      <div class="grid">
+        <div class="field"><label for="major">Major / program</label>
+          <select name="major" id="major"><option value="">Any program at this school</option></select></div>
+        <div class="field"><label for="credential">Credential level</label>
+          <select name="credential" id="credential"><option value="">Any credential</option></select></div>
+        <div class="field"><label for="in_state">Residency</label>
+          <select name="in_state" id="in_state"><option value="yes">In-state</option><option value="no">Out-of-state</option></select></div>
+        <div class="field"><label for="start_year">Start year</label>
+          <input name="start_year" id="start_year" inputmode="numeric" data-min="2000" data-max="2045" data-int>
+          <div class="err"></div></div>
+        <div class="field"><label for="grad_year">Expected graduation year</label>
+          <input name="grad_year" id="grad_year" inputmode="numeric" data-min="2000" data-max="2055" data-int>
+          <div class="err"></div></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>💵 Money</legend>
+      <p class="hint">Dollar amounts. Per-year amounts repeat every year you are in school.</p>
+      <div class="grid">
+        <div class="field"><label for="savings">Current savings balance</label>
+          <input name="savings" id="savings" inputmode="decimal" data-min="0" data-max="2000000"><div class="err"></div></div>
+        <div class="field"><label for="contribution">Savings you add each year</label>
+          <input name="contribution" id="contribution" inputmode="decimal" data-min="0" data-max="500000"><div class="err"></div></div>
+        <div class="field"><label for="grants">Scholarships &amp; grants per year</label>
+          <input name="grants" id="grants" inputmode="decimal" data-min="0" data-max="500000"><div class="err"></div></div>
+        <div class="field"><label for="existing_debt">Existing student-loan balance</label>
+          <input name="existing_debt" id="existing_debt" inputmode="decimal" data-min="0" data-max="2000000"><div class="err"></div></div>
+        <div class="field"><label for="borrowing">Expected borrowing per year</label>
+          <input name="borrowing" id="borrowing" inputmode="decimal" data-min="0" data-max="500000"><div class="err"></div></div>
+        <div class="field"><label for="rate">Loan interest rate (%)</label>
+          <input name="rate" id="rate" inputmode="decimal" data-min="0" data-max="25" placeholder="6.52">
+          <div class="auto">Blank = 6.52%, the 2026–27 federal undergraduate Direct Loan rate.</div><div class="err"></div></div>
+        <div class="field"><label for="tuition">Tuition &amp; fees per year</label>
+          <input name="tuition" id="tuition" inputmode="decimal" data-min="0" data-max="500000">
+          <div class="auto" id="tuition_auto"></div><div class="err"></div></div>
+        <div class="field"><label for="living">Living expenses per year</label>
+          <input name="living" id="living" inputmode="decimal" data-min="0" data-max="500000">
+          <div class="auto">Housing, food, books, transport. Not in Scorecard — please estimate.</div><div class="err"></div></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>💼 Career assumptions</legend>
+      <p class="hint">Three starting salaries let you see a range instead of one guess.</p>
+      <div class="grid">
+        <div class="field"><label for="occupation">Intended occupation</label>
+          <input name="occupation" id="occupation" maxlength="80" placeholder="e.g. Registered nurse"></div>
+        <div class="field"><label for="work_state">State you expect to work in</label>
+          <select name="work_state" id="work_state"><option value="">Not sure yet</option></select></div>
+        <div class="field"><label for="salary_low">Conservative starting salary</label>
+          <input name="salary_low" id="salary_low" inputmode="decimal" data-min="0" data-max="2000000"><div class="err"></div></div>
+        <div class="field"><label for="salary_mid">Expected starting salary</label>
+          <input name="salary_mid" id="salary_mid" inputmode="decimal" data-min="0" data-max="2000000">
+          <div class="auto" id="salary_auto"></div><div class="err"></div></div>
+        <div class="field"><label for="salary_high">Aspirational starting salary</label>
+          <input name="salary_high" id="salary_high" inputmode="decimal" data-min="0" data-max="2000000"><div class="err"></div></div>
+        <div class="field"><label for="repay_pct">Share of salary for loan payments (%)</label>
+          <input name="repay_pct" id="repay_pct" inputmode="decimal" data-min="1" data-max="50" placeholder="10">
+          <div class="auto">Never less than the 10-year standard payment.</div><div class="err"></div></div>
+      </div>
+    </fieldset>
+
+    <div class="summary" id="summary" hidden></div>
+    <div class="actions">
+      <button type="submit" class="primary">See my plan in GradPath →</button>
+      <button type="button" id="demo">Load demo student (fictional)</button>
+      <button type="button" id="reset">Clear my answers</button>
+    </div>
+    <p class="small">Educational estimates only — not financial or tax advice. Historical earnings do not guarantee future salary.</p>
+  </form>
+</main>
+
+<script>
+(() => {
+  const API = window.location.origin;
+  const params = new URLSearchParams(window.location.search);
+  const GRAFANA = "http://localhost:3000";
+  const STORE_KEY = "gradpath.plan.v1";
+  const SHARED = ["school", "state", "major", "cip", "credential", "school_type", "data_year"];
+  const PLAN_FIELDS = ["in_state", "start_year", "grad_year", "savings", "contribution", "grants", "existing_debt",
+    "borrowing", "rate", "tuition", "living", "occupation", "work_state", "salary_low", "salary_mid", "salary_high", "repay_pct"];
+  const form = document.getElementById("plan");
+  const $ = (id) => document.getElementById(id);
+  let schoolOptions = [];
+
+  const PAGES = [
+    ["Overview", "gradpath-overview", "🏠"], ["My Plan", "gradpath-my-plan", "🧭"], ["Schools", "gradpath-schools", "🏫"],
+    ["States & Taxes", "gradpath-states", "🗺️"], ["Graphs", "gradpath-graphs", "📊"], ["Help", "gradpath-help", "❓"],
+  ];
+
+  const load = () => { try { return JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch { return {}; } };
+  const save = (v) => { try { localStorage.setItem(STORE_KEY, JSON.stringify(v)); } catch {} };
+  const clear = () => { try { localStorage.removeItem(STORE_KEY); } catch {} };
+  const isAll = (v) => !v || v === "__all" || v === "$__all" || v === "All";
+
+  function sharedQuery(values) {
+    const q = new URLSearchParams();
+    SHARED.forEach((k) => { if (!isAll(values[k])) q.append("var-" + k, values[k]); });
+    return q;
+  }
+  function renderNav(values) {
+    const qs = sharedQuery(values).toString();
+    $("nav").innerHTML = `<a class="home" href="${GRAFANA}/d/gradpath-overview?${qs}">🎓 GradPath</a>` +
+      PAGES.map(([label, uid, icon]) =>
+        `<a href="${GRAFANA}/d/${uid}?${qs}" ${uid === "gradpath-my-plan" ? 'class="active" aria-current="page"' : ""}>${icon} ${label}</a>`
+      ).join("");
+  }
+
+  function dashboardUrl(values) {
+    const q = sharedQuery(values);
+    PLAN_FIELDS.forEach((k) => { if (values[k] !== undefined && values[k] !== "") q.append("var-" + k, values[k]); });
+    return `${GRAFANA}/d/gradpath-my-plan?${q.toString()}`;
+  }
+
+  function currentValues() {
+    const v = {};
+    new FormData(form).forEach((val, key) => { v[key] = String(val).trim(); });
+    // keep page-level filters (state, school type, …) that the form does not edit
+    SHARED.forEach((k) => { if (!(k in v) && params.get(k)) v[k] = params.get(k); });
+    return v;
+  }
+
+  function validate() {
+    let problems = 0;
+    form.querySelectorAll("input[data-min]").forEach((el) => {
+      const err = el.parentElement.querySelector(".err");
+      const raw = el.value.trim().replace(/[$,%\s]/g, "");
+      let msg = "";
+      if (raw !== "") {
+        const n = Number(raw);
+        if (!Number.isFinite(n)) msg = "Please enter a number.";
+        else if (n < Number(el.dataset.min) || n > Number(el.dataset.max)) msg = `Use a value from ${Number(el.dataset.min).toLocaleString()} to ${Number(el.dataset.max).toLocaleString()}.`;
+        else if (el.hasAttribute("data-int") && !Number.isInteger(n)) msg = "Please enter a whole year.";
+        else el.value = raw;
+      }
+      el.setAttribute("aria-invalid", msg ? "true" : "false");
+      if (err) err.textContent = msg;
+      if (msg) problems++;
+    });
+    const s = Number($("start_year").value), g = Number($("grad_year").value);
+    if ($("start_year").value && $("grad_year").value && g <= s) {
+      $("grad_year").parentElement.querySelector(".err").textContent = "Graduation must be after the start year.";
+      $("grad_year").setAttribute("aria-invalid", "true");
+      problems++;
+    }
+    const box = $("summary");
+    box.hidden = problems === 0;
+    box.textContent = problems ? `${problems} answer${problems > 1 ? "s need" : " needs"} a fix before continuing.` : "";
+    return problems === 0;
+  }
+
+  async function getJSON(path) {
+    const r = await fetch(API + path);
+    if (!r.ok) throw new Error(path);
+    return r.json();
+  }
+
+  function fillSelect(sel, rows, keep) {
+    const first = sel.options[0];
+    sel.innerHTML = "";
+    sel.appendChild(first);
+    rows.forEach((r) => { const o = document.createElement("option"); o.value = r.value; o.textContent = r.text; sel.appendChild(o); });
+    if (keep) sel.value = keep;
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  async function onSchoolChosen(id, keepMajor) {
+    $("school").value = id || "";
+    const card = $("school_card");
+    if (!id) { card.textContent = "No school selected yet."; fillSelect($("major"), []); refreshAutoFill(); return; }
+    try {
+      const [detail] = await getJSON(`/schools/detail?school=${encodeURIComponent(id)}`);
+      card.innerHTML = detail
+        ? `<strong>${escapeHtml(detail.school_name)}</strong><br>${escapeHtml(detail.address)}<br>` +
+          `${escapeHtml(detail.city_state_zip)} · ${escapeHtml(detail.school_type || "")}<br>` +
+          `<span class="small">📘 Address from ${escapeHtml(detail.address_source)}</span>`
+        : "School details not found in the College Scorecard directory.";
+      const progs = await getJSON(`/schools/programs?school=${encodeURIComponent(id)}`);
+      const seen = new Set();
+      const majors = progs.filter((p) => !seen.has(p.major_value) && seen.add(p.major_value))
+        .map((p) => ({ value: p.major_value, text: `${p.program} (${p.credential})` }));
+      fillSelect($("major"), majors, keepMajor);
+      await refreshAutoFill();
+    } catch { card.textContent = "Could not reach the GradPath API at " + API + "."; }
+  }
+
+  async function refreshAutoFill() {
+    const v = currentValues();
+    if (!v.school) {
+      $("tuition_auto").textContent = "Pick a school to pre-fill published tuition & fees.";
+      $("salary_auto").textContent = "Pick a school and major to see historical earnings.";
+      return;
+    }
+    const q = new URLSearchParams({ school: v.school, in_state: v.in_state || "yes" });
+    if (v.major) q.set("major", v.major);
+    if (v.credential) q.set("credential", v.credential);
+    try {
+      const [est] = await getJSON(`/plan/estimate?${q}`);
+      $("tuition_auto").textContent = est.tuition_source.startsWith("Scorecard")
+        ? `Blank = $${Math.round(est.annual_tuition_used).toLocaleString()} (${est.tuition_source}).`
+        : "No published tuition for this school — please estimate.";
+      $("salary_auto").textContent = est.expected_salary_source.startsWith("Scorecard")
+        ? `Blank = $${Math.round(est.expected_salary_used).toLocaleString()} (historical median for matching programs).`
+        : "No matching Scorecard earnings — please estimate.";
+    } catch {}
+  }
+
+  function applyValues(v) {
+    PLAN_FIELDS.concat(["credential"]).forEach((k) => {
+      if (v[k] !== undefined && form.elements[k] && !isAll(v[k])) form.elements[k].value = v[k];
+    });
+    if (!isAll(v.school)) {
+      const match = schoolOptions.find((o) => o.value === v.school);
+      $("school_search").value = match ? match.text : "";
+      onSchoolChosen(v.school, isAll(v.major) ? "" : v.major);
+    } else {
+      refreshAutoFill();
+    }
+  }
+
+  async function init() {
+    const saved = load();
+    // values passed back from the Grafana dashboard win over saved ones
+    const fromUrl = {};
+    SHARED.concat(PLAN_FIELDS).forEach((k) => { if (params.get(k)) fromUrl[k] = params.get(k); });
+    const start = { ...saved, ...fromUrl };
+    renderNav(start);
+
+    // "My Plan" in the nav lands here with resume=1: reopen saved answers straight away
+    if (params.get("resume") === "1" && Object.keys(saved).length) {
+      window.location.replace(dashboardUrl(start));
+      return;
+    }
+
+    try {
+      const [schools, creds, states] = await Promise.all([
+        getJSON("/options/schools"), getJSON("/options/credentials"), getJSON("/options/states")]);
+      schoolOptions = schools;
+      const dl = $("school_list");
+      schools.forEach((s) => { const o = document.createElement("option"); o.value = s.text; dl.appendChild(o); });
+      fillSelect($("credential"), creds);
+      fillSelect($("work_state"), states);
+    } catch {
+      $("summary").hidden = false;
+      $("summary").textContent = "Could not load school lists from the GradPath API. Is it running on port 8000?";
+    }
+    applyValues(start);
+  }
+
+  $("school_search").addEventListener("change", (e) => {
+    const match = schoolOptions.find((o) => o.text === e.target.value);
+    $("err-school").textContent = e.target.value && !match ? "Pick a school from the suggestions list." : "";
+    onSchoolChosen(match ? match.value : "");
+  });
+  ["in_state", "major", "credential"].forEach((id) => $(id).addEventListener("change", refreshAutoFill));
+  form.addEventListener("input", () => renderNav(currentValues()));
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+    const v = currentValues();
+    save(v);
+    window.location.href = dashboardUrl(v);
+  });
+  $("reset").addEventListener("click", () => {
+    clear(); form.reset(); $("school_search").value = ""; onSchoolChosen("");
+    $("summary").hidden = false; $("summary").textContent = "Your saved answers were cleared from this browser.";
+  });
+  $("demo").addEventListener("click", () => {
+    // fictional persona "Demo A" from data/samples/student_plan_demo.csv
+    applyValues({ in_state: "yes", start_year: "2027", grad_year: "2031", savings: "4000", contribution: "1500",
+      grants: "6000", existing_debt: "0", borrowing: "5500", rate: "6.52", tuition: "11000", living: "13000",
+      occupation: "Demo student (fictional)", work_state: "TX", salary_low: "42000", salary_mid: "55000",
+      salary_high: "72000", repay_pct: "10" });
+    $("summary").hidden = false;
+    $("summary").textContent = "Loaded a fictional demo student. Pick a school to see real Scorecard data alongside it.";
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>

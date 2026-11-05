@@ -1,0 +1,9 @@
+# Raw College Scorecard downloads (4+ GB) — re-download from https://collegescorecard.ed.gov/data/
+dataset/
+# Runtime logs
+*.log
+gradpath/pipeline/logs/
+# Python
+__pycache__/
+*.pyc
+.DS_Store

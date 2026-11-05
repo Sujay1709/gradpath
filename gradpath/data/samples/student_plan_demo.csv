@@ -1,0 +1,4 @@
+is_synthetic,note,persona,in_state,start_year,grad_year,current_savings,annual_savings_contribution,annual_grants,existing_loan_balance,annual_borrowing,loan_interest_rate_pct,annual_tuition,annual_living,expected_work_state,salary_conservative,salary_expected,salary_aspirational
+True,"DEMONSTRATION DATA — fictional student, not a real person","Demo A — in-state public, bachelor's",True,2027,2031,4000,1500,6000,0,5500,6.52,11000,13000,TX,42000,55000,72000
+True,"DEMONSTRATION DATA — fictional student, not a real person","Demo B — private nonprofit, bachelor's",False,2027,2031,12000,2000,22000,0,7500,6.52,48000,16000,NY,48000,62000,85000
+True,"DEMONSTRATION DATA — fictional student, not a real person","Demo C — community college, associate's",True,2026,2028,1500,1200,4000,2000,2500,6.52,4200,11000,FL,32000,40000,50000

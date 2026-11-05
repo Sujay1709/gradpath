@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: GradPath
+    orgId: 1
+    folder: GradPath
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /Users/sujaygopal/Desktop/MyProjects/IBM_BOB/gradpath/grafana/dashboards

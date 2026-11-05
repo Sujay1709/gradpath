@@ -1,0 +1,1764 @@
+{
+  "uid": "gradpath-states",
+  "title": "GradPath — States & Taxes",
+  "description": "",
+  "tags": [
+    "gradpath",
+    "gradpath-app"
+  ],
+  "editable": true,
+  "graphTooltip": 0,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": true
+  },
+  "timezone": "browser",
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "weekStart": "",
+  "annotations": {
+    "list": []
+  },
+  "links": [
+    {
+      "title": "All GradPath pages",
+      "type": "dashboards",
+      "tags": [
+        "gradpath-app"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": false,
+      "targetBlank": false,
+      "icon": "external link"
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "school",
+        "label": "School (type to search)",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/schools",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/schools",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "state",
+        "label": "State",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/states",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/states",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "major",
+        "label": "Major",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/majors",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/majors",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "cip",
+        "label": "CIP code",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/cips",
+          "cacheDurationSeconds": 300,
+          "params": [
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "major",
+              "${major}"
+            ]
+          ],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/cips",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "credential",
+        "label": "Credential",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/credentials",
+          "cacheDurationSeconds": 300,
+          "params": [],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/credentials",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "school_type",
+        "label": "School type",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/school_types",
+          "cacheDurationSeconds": 300,
+          "params": [],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/school_types",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "data_year",
+        "label": "Data year",
+        "type": "query",
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "gradpath-api"
+        },
+        "query": {
+          "method": "GET",
+          "urlPath": "/options/data_years",
+          "cacheDurationSeconds": 300,
+          "params": [],
+          "fields": [
+            {
+              "jsonPath": "$[*].text",
+              "name": "text"
+            },
+            {
+              "jsonPath": "$[*].value",
+              "name": "value"
+            }
+          ],
+          "experimentalVariableTextField": "text",
+          "experimentalVariableValueField": "value"
+        },
+        "definition": "/options/data_years",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "sort": 0,
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "example_income",
+        "label": "Example salary for tax estimate ($)",
+        "type": "textbox",
+        "query": "50000",
+        "hide": 0,
+        "current": {
+          "text": "50000",
+          "value": "50000"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "50000",
+            "value": "50000"
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "description": "",
+      "options": {
+        "mode": "html",
+        "content": "<nav aria-label=\"GradPath pages\" style=\"display:flex;flex-wrap:wrap;gap:6px;align-items:center;\"><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"font-weight:700;font-size:17px;text-decoration:none;color:inherit;margin-right:10px;white-space:nowrap;\">🎓 GradPath</a><a href=\"/d/gradpath-overview?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🏠 Overview</a><a href=\"http://localhost:8000/plan?school=${school:percentencode}&state=${state:percentencode}&major=${major:percentencode}&cip=${cip:percentencode}&credential=${credential:percentencode}&school_type=${school_type:percentencode}&data_year=${data_year:percentencode}&resume=1\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🧭 My Plan</a><a href=\"/d/gradpath-schools?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">🏫 Schools</a><a href=\"/d/gradpath-states?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:#2F5FD0;color:#ffffff;font-weight:600;\" aria-current=\"page\">🗺️ States & Taxes</a><a href=\"/d/gradpath-graphs?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">📊 Graphs</a><a href=\"/d/gradpath-help?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam}\" style=\"display:inline-block;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:14px;line-height:20px;white-space:nowrap;background:rgba(128,128,128,0.16);color:inherit;\">❓ Help</a></nav>",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "description": "",
+      "options": {
+        "mode": "html",
+        "content": "<div><h1 style=\"font-size:30px;line-height:1.2;margin:2px 0 4px;font-weight:700;\">States & Taxes</h1><p style=\"font-size:15px;opacity:0.8;margin:0;max-width:75ch;\">Pick <b>one</b> state in the State box. GradPath shows only facts it has verified on the state's official revenue website, with the tax year and source.</p></div>",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 2,
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 24,
+        "h": 3
+      }
+    },
+    {
+      "type": "stat",
+      "title": "State",
+      "description": "",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/states/tax",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].state_name",
+              "name": "state_name"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Select a state",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^state_name$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      },
+      "id": 3,
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Verification status",
+      "description": "",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/states/tax",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].supported",
+              "name": "supported"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^supported$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      },
+      "id": 4,
+      "gridPos": {
+        "x": 6,
+        "y": 5,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Tax year",
+      "description": "",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/states/tax",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].tax_year",
+              "name": "tax_year",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^tax_year$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      },
+      "id": 5,
+      "gridPos": {
+        "x": 12,
+        "y": 5,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Last verified",
+      "description": "Date GradPath last checked the official source.",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/states/tax",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].last_verified",
+              "name": "last_verified"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^last_verified$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      },
+      "id": 6,
+      "gridPos": {
+        "x": 18,
+        "y": 5,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "table",
+      "title": "Tax facts",
+      "description": "'Not verified' means GradPath could not confirm the rule on an official source.",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/states/tax",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].rate_summary",
+              "name": "rate_summary",
+              "type": "string"
+            },
+            {
+              "jsonPath": "$[*].income_tax_type",
+              "name": "income_tax_type",
+              "type": "string"
+            },
+            {
+              "jsonPath": "$[*].minimum_rate",
+              "name": "minimum_rate",
+              "type": "string"
+            },
+            {
+              "jsonPath": "$[*].maximum_rate",
+              "name": "maximum_rate",
+              "type": "string"
+            },
+            {
+              "jsonPath": "$[*].standard_deduction_single",
+              "name": "standard_deduction_single",
+              "type": "string"
+            },
+            {
+              "jsonPath": "$[*].student_loan_interest_treatment",
+              "name": "student_loan_interest_treatment",
+              "type": "string"
+            },
+            {
+              "jsonPath": "$[*].education_credit_summary",
+              "name": "education_credit_summary",
+              "type": "string"
+            },
+            {
+              "jsonPath": "$[*].verification_method",
+              "name": "verification_method",
+              "type": "string"
+            },
+            {
+              "jsonPath": "$[*].notes",
+              "name": "notes",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Nothing selected yet.",
+          "custom": {
+            "align": "auto",
+            "filterable": false,
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": false,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "rate_summary": 0,
+              "income_tax_type": 1,
+              "minimum_rate": 2,
+              "maximum_rate": 3,
+              "standard_deduction_single": 4,
+              "student_loan_interest_treatment": 5,
+              "education_credit_summary": 6,
+              "verification_method": 7,
+              "notes": 8
+            },
+            "renameByName": {
+              "rate_summary": "In plain language",
+              "income_tax_type": "Income tax type",
+              "minimum_rate": "Lowest rate (%)",
+              "maximum_rate": "Highest rate (%)",
+              "standard_deduction_single": "Standard deduction (single filer)",
+              "student_loan_interest_treatment": "Student-loan interest",
+              "education_credit_summary": "Education credits / deductions",
+              "verification_method": "How it was verified",
+              "notes": "Notes and assumptions"
+            }
+          }
+        },
+        {
+          "id": "transpose",
+          "options": {
+            "firstFieldName": "Detail",
+            "restFieldsName": "Value"
+          }
+        }
+      ],
+      "id": 7,
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 14,
+        "h": 11
+      }
+    },
+    {
+      "type": "table",
+      "title": "Official source",
+      "description": "",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/states/tax",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].official_source_url",
+              "name": "official_source_url"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Select a verified state.",
+          "custom": {
+            "align": "auto",
+            "filterable": true,
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": false
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "official_source_url"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Official source (click to open)"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open",
+                    "url": "${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "transformations": [],
+      "id": 8,
+      "gridPos": {
+        "x": 14,
+        "y": 9,
+        "w": 10,
+        "h": 3
+      }
+    },
+    {
+      "type": "stat",
+      "title": "🧮 Example: estimated state income tax",
+      "description": "Wage income only, single filer. Educational estimate.",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/states/tax_estimate",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ],
+            [
+              "income",
+              "${example_income}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].estimated_state_tax",
+              "name": "estimated_state_tax"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "currencyUSD",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^estimated_state_tax$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      },
+      "id": 9,
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "🧮 Effective state rate",
+      "description": "",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/states/tax_estimate",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ],
+            [
+              "income",
+              "${example_income}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].effective_rate_pct",
+              "name": "effective_rate_pct"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "percent",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^effective_rate_pct$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      },
+      "id": 10,
+      "gridPos": {
+        "x": 4,
+        "y": 20,
+        "w": 3,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Tax year used",
+      "description": "",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/states/tax_estimate",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ],
+            [
+              "income",
+              "${example_income}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].tax_year",
+              "name": "tax_year",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^tax_year$/",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      },
+      "id": 11,
+      "gridPos": {
+        "x": 7,
+        "y": 20,
+        "w": 3,
+        "h": 4
+      }
+    },
+    {
+      "type": "table",
+      "title": "Assumptions for this estimate",
+      "description": "",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/states/tax_estimate",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ],
+            [
+              "income",
+              "${example_income}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].example_salary",
+              "name": "example_salary",
+              "type": "string"
+            },
+            {
+              "jsonPath": "$[*].taxable_income",
+              "name": "taxable_income",
+              "type": "string"
+            },
+            {
+              "jsonPath": "$[*].assumptions",
+              "name": "assumptions",
+              "type": "string"
+            },
+            {
+              "jsonPath": "$[*].input_check",
+              "name": "input_check",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Nothing selected yet.",
+          "custom": {
+            "align": "auto",
+            "filterable": false,
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": false,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "example_salary": 0,
+              "taxable_income": 1,
+              "assumptions": 2,
+              "input_check": 3
+            },
+            "renameByName": {
+              "example_salary": "Example salary",
+              "taxable_income": "Taxable income used",
+              "assumptions": "Assumptions",
+              "input_check": "Input check"
+            }
+          }
+        },
+        {
+          "id": "transpose",
+          "options": {
+            "firstFieldName": "Detail",
+            "restFieldsName": "Value"
+          }
+        }
+      ],
+      "id": 12,
+      "gridPos": {
+        "x": 10,
+        "y": 20,
+        "w": 10,
+        "h": 4
+      }
+    },
+    {
+      "type": "table",
+      "title": "States GradPath has verified",
+      "description": "The verified demonstration set. Other states show 'Not yet verified'.",
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gradpath-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "gradpath-api"
+          },
+          "method": "GET",
+          "urlPath": "/states/tax_table",
+          "params": [
+            [
+              "school",
+              "${school}"
+            ],
+            [
+              "state",
+              "${state}"
+            ],
+            [
+              "major",
+              "${major}"
+            ],
+            [
+              "cip",
+              "${cip}"
+            ],
+            [
+              "credential",
+              "${credential}"
+            ],
+            [
+              "school_type",
+              "${school_type}"
+            ],
+            [
+              "data_year",
+              "${data_year}"
+            ]
+          ],
+          "cacheDurationSeconds": 60,
+          "fields": [
+            {
+              "jsonPath": "$[*].state_code",
+              "name": "state_code"
+            },
+            {
+              "jsonPath": "$[*].state_name",
+              "name": "state_name"
+            },
+            {
+              "jsonPath": "$[*].tax_year",
+              "name": "tax_year"
+            },
+            {
+              "jsonPath": "$[*].income_tax_type",
+              "name": "income_tax_type"
+            },
+            {
+              "jsonPath": "$[*].rate_summary",
+              "name": "rate_summary"
+            },
+            {
+              "jsonPath": "$[*].last_verified",
+              "name": "last_verified"
+            },
+            {
+              "jsonPath": "$[*].official_source_url",
+              "name": "official_source_url"
+            }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No matching records — try widening the filters.",
+          "custom": {
+            "align": "auto",
+            "filterable": true,
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "state_code"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Code"
+              },
+              {
+                "id": "custom.width",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "state_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "State"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tax_year"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Tax year"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "income_tax_type"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Type"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate_summary"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Summary"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_verified"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Verified on"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "official_source_url"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Official source"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open",
+                    "url": "${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "transformations": [],
+      "id": 13,
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 24,
+        "h": 10
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "**Important:** tax rules change every year. These are educational summaries for the tax year shown, for a single filer with wage income only — not tax advice. Rules from one state are never applied to another. California and Massachusetts figures were read from official pages through a search index because those sites block automated downloads; open their source links to confirm.",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 14,
+      "gridPos": {
+        "x": 0,
+        "y": 34,
+        "w": 24,
+        "h": 3
+      }
+    },
+    {
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "description": "",
+      "options": {
+        "mode": "markdown",
+        "content": "<small>📘 **Source:** U.S. Department of Education, [College Scorecard](https://collegescorecard.ed.gov/data/) — Field of Study and Institution files (release 2026-10-05). **Data year:** 2021–22 completers (earnings measured 2023–24).  Historical outcomes, not guarantees. [How these numbers work →](/d/gradpath-help?${school:queryparam}&${state:queryparam}&${major:queryparam}&${cip:queryparam}&${credential:queryparam}&${school_type:queryparam}&${data_year:queryparam})</small>",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "id": 15,
+      "gridPos": {
+        "x": 0,
+        "y": 37,
+        "w": 24,
+        "h": 2
+      }
+    }
+  ]
+}
