@@ -8,6 +8,26 @@ and loan payoff.
 > ⚠️ Historical outcomes for past completers who received federal aid — **not salary guarantees** and not
 > financial or tax advice.
 
+## Links
+
+**Repository:** https://github.com/Sujay1709/gradpath
+
+After you run `./start.sh`, open these in your browser:
+
+| Page | Link |
+|---|---|
+| 🏠 GradPath home (Overview) | http://localhost:3000/d/gradpath-overview |
+| 🧭 My Plan form | http://localhost:8000/plan |
+| 🧭 My Plan results | http://localhost:3000/d/gradpath-my-plan |
+| 🏫 Schools | http://localhost:3000/d/gradpath-schools |
+| 🗺️ States & Taxes | http://localhost:3000/d/gradpath-states |
+| 📊 Graphs | http://localhost:3000/d/gradpath-graphs |
+| ❓ Help | http://localhost:3000/d/gradpath-help |
+| Classic dashboards | http://localhost:3000/d/gradpath-main · http://localhost:3000/d/gradpath-tax |
+| API docs | http://localhost:8000/docs |
+
+The `localhost` links only work on the computer running GradPath.
+
 ---
 
 ## The six pages
