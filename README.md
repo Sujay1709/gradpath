@@ -87,11 +87,22 @@ included in the repository.
 
 ### Student app
 
+From the repository root:
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install -r gradpath/requirements.txt
 python3 -m uvicorn api:app --app-dir gradpath/src --host 127.0.0.1 --port 8000
+```
+
+If you are already inside `gradpath/`, use the virtual environment there and the local paths:
+
+```bash
+python3 -m venv .venv       # skip if .venv already exists
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+python3 -m uvicorn api:app --app-dir src --host 127.0.0.1 --port 8000
 ```
 
 Leave that terminal running and open the **Local student app** link below. No login or Grafana setup
@@ -116,9 +127,25 @@ separately running API server first so port 8000 is free. Grafana uses port 3000
 
 ### Validate or refresh
 
+From the repository root:
+
 ```bash
-python3 -m unittest discover -s gradpath/tests -v
-python3 gradpath/tests/stress_plan.py --quick  # with the app running
+(cd gradpath && python3 -m unittest discover -s tests -v)
+(cd gradpath && python3 tests/stress_plan.py --quick)  # with the app running
+```
+
+If your terminal is already inside `gradpath/`, omit the `cd gradpath &&` wrapper:
+
+```bash
+python3 -m unittest discover -s tests -v
+python3 tests/stress_plan.py --quick  # with the app running
+```
+
+Grafana is optional for the student app. If it is not running, skip only the chart embed reachability
+check:
+
+```bash
+python3 tests/stress_plan.py --quick --skip-embeds
 ```
 
 To rebuild datasets after downloading a newer College Scorecard release, put the raw files under

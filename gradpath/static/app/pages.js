@@ -113,10 +113,15 @@ export async function overviewPage(main, ctx) {
   const planLabel = plan === "complete" ? "View my plan" : plan === "draft" ? "Continue my plan" : "Start my plan";
   const planHref = plan === "complete" ? "/plan/results" : "/plan";
   main.innerHTML = `
-    <header class="page-header">
-      <h1>Plan your degree with real outcomes and your own assumptions.</h1>
-      <p class="lead">GradPath uses U.S. Department of Education data on what graduates earned and borrowed, plus the numbers you enter, to help you compare options and plan.</p>
+    <header class="campus-hero">
+      <span class="campus-wordmark" aria-hidden="true">GradPath</span>
+      <div class="campus-intro">
+        <h1>What will your degree cost?</h1>
+        <p>Compare U.S. programs, estimate what you’ll need to borrow, and see what monthly payments could look like after graduation.</p>
+        <a class="button button--primary" href="${planHref}" data-link>${planLabel} &rarr;</a>
+      </div>
     </header>
+    <h2 class="campus-section-title">Explore your options</h2>
     <section aria-label="Main choices" class="grid grid--3">
       ${choice("i-school", "Explore schools and programs", "Search 4,043 schools and 320 majors and rank them by earnings and student debt.", hrefWith("/schools", ctx), "Explore schools")}
       ${choice("i-chart", "Compare debt and earnings", "See whether typical earnings can support typical debt, by program, state or credential.", hrefWith("/graphs", ctx), "Compare outcomes")}
