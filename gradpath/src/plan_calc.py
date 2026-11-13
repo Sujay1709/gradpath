@@ -24,7 +24,8 @@ ASSUMPTIONS = [
     "One fixed interest rate applies to all loans.",
     "You pay at least the 10-year standard payment; if the chosen share of salary is higher, "
     "the extra goes to principal. Income-driven plans and forgiveness are not modelled.",
-    "Salaries are gross and flat (no raises); taxes are not subtracted.",
+    "Starting salaries are flat (no raises). When verified state tax data is available, the chosen salary share uses estimated pay after state income tax only; federal and payroll taxes are not subtracted.",
+    "Verified part-time work savings reduce the estimated education funding gap; if a state's tax data is not verified, work income is shown but not applied to the gap.",
     "Graduation in May of the graduation year; repayment starts in November.",
 ]
 
@@ -47,6 +48,12 @@ class PlanInputs:
     salary_expected: float | None = None
     salary_aspirational: float | None = None
     repay_pct: float = 10.0
+    salary_conservative_net: float | None = None
+    salary_expected_net: float | None = None
+    salary_aspirational_net: float | None = None
+    annual_work_contribution: float = 0.0
+    gross_work_earnings: float = 0.0
+    net_work_earnings: float | None = None
 
 
 def years_in_school(start_year: int, grad_year: int) -> int:
@@ -169,7 +176,8 @@ def compute_plan(p: PlanInputs) -> dict:
     savings_at_enrollment = p.current_savings + p.annual_contribution * pre_enrollment_years
     in_school_contributions = p.annual_contribution * years
     grants_total = p.annual_grants * years
-    own_funds = savings_at_enrollment + in_school_contributions
+    work_contributions = p.annual_work_contribution * years
+    own_funds = savings_at_enrollment + in_school_contributions + work_contributions
     funding_gap = max(0.0, total_cost - grants_total - own_funds)
     coverage = (min(1.0, own_funds / total_cost) * 100) if total_cost > 0 else None
 
@@ -180,15 +188,16 @@ def compute_plan(p: PlanInputs) -> dict:
     start_y, start_m = repayment_start(p.grad_year)
 
     scenarios = []
-    for label, salary in (("Conservative", p.salary_conservative),
-                          ("Expected", p.salary_expected),
-                          ("Aspirational", p.salary_aspirational)):
+    for label, salary, net_salary in (("Conservative", p.salary_conservative, p.salary_conservative_net),
+                                      ("Expected", p.salary_expected, p.salary_expected_net),
+                                      ("Aspirational", p.salary_aspirational, p.salary_aspirational_net)):
         if salary is None or salary <= 0:
             scenarios.append({"scenario": label, "starting_salary": None, "monthly_payment": None,
                               "months_to_debt_free": None, "time_to_repay": "—", "debt_free_date": "Missing salary",
                               "total_interest": None, "payment_share_of_gross_pct": None})
             continue
-        budget = max(std_payment, round_up_cents(salary / 12 * p.repay_pct / 100))
+        budget_income = net_salary if net_salary is not None else salary
+        budget = max(std_payment, round_up_cents(budget_income / 12 * p.repay_pct / 100))
         months = months_to_payoff(principal, p.rate_pct, budget)
         if months is None:
             date = "Not paid off at this payment"
@@ -199,12 +208,14 @@ def compute_plan(p: PlanInputs) -> dict:
         scenarios.append({
             "scenario": label,
             "starting_salary": round(salary, 0),
+            "estimated_net_salary": round(net_salary, 0) if net_salary is not None else None,
             "monthly_payment": round(budget, 2) if principal > 0 else 0.0,
             "months_to_debt_free": months,
             "time_to_repay": duration_label(months) if months else ("—" if months is None else "No loans"),
             "debt_free_date": date,
             "total_interest": total_interest(principal, p.rate_pct, budget),
             "payment_share_of_gross_pct": round(budget * 12 / salary * 100, 1) if principal > 0 else 0.0,
+            "payment_share_of_net_pct": round(budget * 12 / budget_income * 100, 1) if principal > 0 and budget_income > 0 else 0.0,
         })
 
     std_months = months_to_payoff(principal, p.rate_pct, std_payment)
@@ -230,6 +241,10 @@ def compute_plan(p: PlanInputs) -> dict:
         "total_education_cost": round(total_cost, 2),
         "savings_at_enrollment": round(savings_at_enrollment, 2),
         "in_school_contributions": round(in_school_contributions, 2),
+        "part_time_contributions": round(work_contributions, 2),
+        "annual_part_time_contribution": round(p.annual_work_contribution, 2),
+        "annual_part_time_gross": round(p.gross_work_earnings, 2),
+        "annual_part_time_net_after_state_tax": round(p.net_work_earnings, 2) if p.net_work_earnings is not None else None,
         "grants_total": round(grants_total, 2),
         "funding_gap": round(funding_gap, 2),
         "gap_after_planned_borrowing": round(max(0.0, funding_gap - debt["new_borrowing_total"]), 2),

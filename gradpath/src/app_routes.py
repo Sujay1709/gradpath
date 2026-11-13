@@ -114,7 +114,9 @@ def _school_options_json(state, major, cip, credential, school_type, data_year) 
         schools = schools.assign(city=None)
     where = (schools["city"].fillna("") + ", " + schools["state"].fillna("")).str.strip(", ")
     text = schools["institution_name"].where(where == "", schools["institution_name"] + " — " + where)
-    out = pd.DataFrame({"text": text, "value": schools["institution_id"]})
+    fit = _school_financial_fit_map(state, major, cip, credential, school_type, data_year)
+    out = pd.DataFrame({"text": text, "value": schools["institution_id"],
+                        "financial_fit": schools["institution_id"].astype(str).map(fit)})
     out = out.iloc[out["text"].str.lower().argsort(kind="stable")]
     return out.to_json(orient="records", force_ascii=False)
 
@@ -202,11 +204,40 @@ def _with_directory(df: pd.DataFrame) -> pd.DataFrame:
     return df.merge(d[keep] if len(d) else pd.DataFrame(columns=keep), on="institution_id", how="left")
 
 
+FINANCIAL_FIT_LABELS = {
+    "lower": "Lower debt burden (lowest quartile)",
+    "middle": "Middle range",
+    "higher": "Higher debt burden (highest quartile)",
+}
+
+
+@lru_cache(maxsize=256)
+def _school_financial_fit_map(state, major, cip, credential, school_type, data_year) -> dict[str, str]:
+    """Relative tiers from each school's median debt-to-earnings in the matching cohort."""
+    flt = Filters(state=state, major=major, cip=cip, credential=credential, school_type=school_type,
+                  data_year=data_year)
+    df = apply_filters(get_df(), flt).dropna(subset=["institution_id", "debt_to_earnings"])
+    if df.empty:
+        return {}
+    stats = df.groupby("institution_id")["debt_to_earnings"].median()
+    q25, q75 = stats.quantile([0.25, 0.75]).tolist()
+    tiers = {}
+    for iid, value in stats.items():
+        tier = "lower" if value <= q25 else "higher" if value >= q75 else "middle"
+        tiers[str(iid)] = tier
+    return tiers
+
+
 @router.get("/schools/table")
 def schools_table(limit: int = Query(500, ge=1, le=5000),
                   sort: str = Query("debt_to_earnings", pattern="^(debt_to_earnings|median_earnings|median_debt)$"),
+                  financial_fit: str | None = Query(None, pattern="^(lower|middle|higher)$"),
                   flt: Filters = Depends()):
     df = _with_directory(apply_filters(get_df(), flt))
+    tier_map = _school_financial_fit_map(flt.state, flt.major, flt.cip, flt.credential, flt.school_type, flt.data_year)
+    df["financial_fit"] = df["institution_id"].astype(str).map(tier_map)
+    if financial_fit:
+        df = df[df["financial_fit"] == financial_fit]
     df = df.sort_values(sort, ascending=(sort != "median_earnings")).head(limit)
     out = pd.DataFrame({
         "rank": range(1, len(df) + 1),
@@ -221,6 +252,7 @@ def schools_table(limit: int = Query(500, ge=1, le=5000),
         "median_earnings": df["median_earnings"].round(0).values,
         "median_debt": df["median_debt"].round(0).values,
         "debt_to_earnings": df["debt_to_earnings"].round(2).values,
+        "financial_fit": df["financial_fit"].map(FINANCIAL_FIT_LABELS).fillna("Not enough data").values,
         "cohort_size": df["cohort_size"].values,
         "source_year": DATA_YEAR_LABEL,
     })
@@ -410,10 +442,13 @@ PLAN_PARAMS = dict(
     start_year=("Start year", 2000, 2045), grad_year=("Graduation year", 2000, 2055),
     savings=("Current savings", 0, 2_000_000), contribution=("Annual savings contribution", 0, 500_000),
     grants=("Scholarships & grants per year", 0, 500_000), existing_debt=("Existing student-loan balance", 0, 2_000_000),
-    borrowing=("Expected annual borrowing", 0, 500_000), rate=("Loan interest rate %", 0, 25),
+    borrowing=("Planned borrowing amount", 0, 2_000_000), rate=("Loan interest rate %", 0, 25),
     tuition=("Annual tuition", 0, 500_000), living=("Annual living expenses", 0, 500_000),
     salary_low=("Conservative salary", 0, 2_000_000), salary_mid=("Expected salary", 0, 2_000_000),
-    salary_high=("Aspirational salary", 0, 2_000_000), repay_pct=("Share of salary for loans %", 1, 50),
+    salary_high=("Aspirational salary", 0, 2_000_000), repay_pct=("Share of salary for loan payments %", 1, 50),
+    work_amount=("Part-time pay per unit", 0, 100_000), work_hours_week=("Part-time hours per week", 0, 80),
+    work_weeks_year=("Part-time weeks per school year", 0, 52), work_months_year=("Part-time months per school year", 0, 12),
+    work_savings_pct=("Share of part-time take-home saved for school %", 0, 100),
 )
 
 
@@ -423,7 +458,10 @@ class PlanParams:
                  borrowing: str | None = None, rate: str | None = None, tuition: str | None = None,
                  living: str | None = None, salary_low: str | None = None, salary_mid: str | None = None,
                  salary_high: str | None = None, repay_pct: str | None = None, in_state: str | None = None,
-                 work_state: str | None = None, occupation: str | None = None):
+                 work_state: str | None = None, occupation: str | None = None,
+                 borrowing_basis: str | None = None, work_unit: str | None = None,
+                 work_amount: str | None = None, work_hours_week: str | None = None, work_weeks_year: str | None = None,
+                 work_months_year: str | None = None, work_savings_pct: str | None = None):
         self.raw = {k: v for k, v in locals().items() if k != "self"}
 
 
@@ -478,21 +516,85 @@ def _plan_context(pp: PlanParams, flt: Filters) -> dict:
                               "first disbursed July 1, 2026–June 30, 2027 (FSA GENERAL-26-33)")
     repay = num["repay_pct"] if num["repay_pct"] is not None else 10.0
     if num["repay_pct"] is None:
-        provenance["repay_pct"] = "Assumed 10% of gross salary"
+        provenance["repay_pct"] = "Assumed 10% of estimated pay after state income tax, where verified"
+
+    # Convert part-time work into an annual gross amount. These earnings reduce the
+    # education funding gap only when verified state-tax data can produce a net estimate.
+    work_unit = (raw.get("work_unit") or "hourly").strip().lower()
+    if work_unit not in {"hourly", "weekly", "monthly"}:
+        msgs.append("Part-time pay period was unrecognized; using hourly.")
+        work_unit = "hourly"
+    work_state = (raw.get("work_state") or (str(drow["state"]) if drow is not None else "")).strip().upper()[:2] or None
+    work_amount = num["work_amount"] or 0.0
+    work_hours = num["work_hours_week"] if num["work_hours_week"] is not None else 15.0
+    work_weeks = num["work_weeks_year"] if num["work_weeks_year"] is not None else 30.0
+    work_months = num["work_months_year"] if num["work_months_year"] is not None else 9.0
+    if work_unit == "hourly":
+        annual_work_gross = work_amount * work_hours * work_weeks
+        work_schedule = f"${work_amount:,.2f}/hour × {work_hours:g} hours/week × {work_weeks:g} weeks/school year"
+    elif work_unit == "weekly":
+        annual_work_gross = work_amount * work_weeks
+        work_schedule = f"${work_amount:,.2f}/week × {work_weeks:g} weeks/school year"
+    else:
+        annual_work_gross = work_amount * work_months
+        work_schedule = f"${work_amount:,.2f}/month × {work_months:g} months/school year"
+    work_savings_pct = num["work_savings_pct"] if num["work_savings_pct"] is not None else 50.0
+    work_tax = estimate_state_tax(work_state, annual_work_gross) if work_state and annual_work_gross else None
+    work_net = max(0.0, annual_work_gross - work_tax["tax"]) if work_tax else None
+    annual_work_contribution = work_net * work_savings_pct / 100 if work_net is not None else 0.0
+    work_note = ""
+    if annual_work_gross > 0 and work_tax is None:
+        work_note = "State tax is not verified for this work location; part-time earnings are shown but excluded from the estimated funding offset."
+        msgs.append(work_note)
+    elif work_tax:
+        work_note = (f"Estimated state tax only ({work_tax['tax_year']}, single filer, wage income); "
+                     "federal and payroll taxes are not included.")
+
+    # Estimate post-graduation take-home only for states with verified tax data.
+    salary_values = (num["salary_low"], num["salary_mid"], num["salary_high"])
+    salary_net = tuple(
+        max(0.0, salary - estimate_state_tax(work_state, salary)["tax"])
+        if salary is not None and work_state and estimate_state_tax(work_state, salary) else None
+        for salary in salary_values
+    )
+
+    years = max(1, grad - start)
+    base_cost = ((num["tuition"] or 0.0) + (num["living"] or 0.0)) * years
+    base_savings = (num["savings"] or 0.0) + (num["contribution"] or 0.0) * max(0, start - today.year)
+    other_school_funds = base_savings + ((num["contribution"] or 0.0) + (num["grants"] or 0.0) + annual_work_contribution) * years
+    estimated_borrowing_total = max(0.0, base_cost - other_school_funds)
+    borrowing_basis = (raw.get("borrowing_basis") or "annual").strip().lower()
+    if borrowing_basis not in {"estimate", "total", "annual"}:
+        msgs.append("Borrowing option was unrecognized; treating the amount as annual borrowing.")
+        borrowing_basis = "annual"
+    if borrowing_basis == "estimate":
+        annual_borrowing = estimated_borrowing_total / years
+        provenance["borrowing"] = "Estimated from tuition, living costs, grants, savings, and verified part-time net pay"
+    elif borrowing_basis == "total":
+        annual_borrowing = (num["borrowing"] or 0.0) / years
+        estimated_borrowing_total = num["borrowing"] or 0.0
+    else:
+        annual_borrowing = num["borrowing"] or 0.0
+        estimated_borrowing_total = annual_borrowing * years
 
     inputs = PlanInputs(
         start_year=start, grad_year=grad, current_year=today.year, current_month=today.month,
         current_savings=num["savings"] or 0.0, annual_contribution=num["contribution"] or 0.0,
         annual_grants=num["grants"] or 0.0, existing_balance=num["existing_debt"] or 0.0,
-        annual_borrowing=num["borrowing"] or 0.0, rate_pct=rate,
+        annual_borrowing=annual_borrowing, rate_pct=rate,
         annual_tuition=num["tuition"] or 0.0, annual_living=num["living"] or 0.0,
         salary_conservative=num["salary_low"], salary_expected=num["salary_mid"],
         salary_aspirational=num["salary_high"], repay_pct=repay,
+        salary_conservative_net=salary_net[0], salary_expected_net=salary_net[1], salary_aspirational_net=salary_net[2],
+        annual_work_contribution=annual_work_contribution, gross_work_earnings=annual_work_gross,
+        net_work_earnings=work_net,
     )
     result = compute_plan(inputs)
 
-    missing = [PLAN_PARAMS[k][0] for k in ("tuition", "living", "savings", "borrowing", "salary_low", "salary_high")
+    missing = [PLAN_PARAMS[k][0] for k in ("tuition", "living", "savings", "salary_low", "salary_high")
                if num[k] is None]
+    if borrowing_basis != "estimate" and num["borrowing"] is None:
+        missing.append(PLAN_PARAMS["borrowing"][0])
     if iid is None:
         missing.insert(0, "School (pick one in the School box)")
 
@@ -506,7 +608,6 @@ def _plan_context(pp: PlanParams, flt: Filters) -> dict:
     else:
         confidence = "Low — no Scorecard record matches these filters"
 
-    work_state = (raw.get("work_state") or "").strip().upper()[:2] or None
     tax_rows = []
     if work_state:
         for s in result["scenarios"]:
@@ -516,6 +617,10 @@ def _plan_context(pp: PlanParams, flt: Filters) -> dict:
     return dict(inputs=inputs, result=result, msgs=msgs, provenance=provenance, missing=missing, iid=iid,
                 drow=drow, progs=progs, hist_earn=hist_earn, hist_debt=hist_debt, cohort=cohort,
                 confidence=confidence, in_state=in_state, work_state=work_state, tax_rows=tax_rows,
+                work_tax=work_tax, work_net=work_net, annual_work_gross=annual_work_gross,
+                work_schedule=work_schedule,
+                annual_work_contribution=annual_work_contribution, work_note=work_note,
+                borrowing_basis=borrowing_basis, estimated_borrowing_total=estimated_borrowing_total,
                 occupation=(raw.get("occupation") or "").strip()[:80])
 
 
@@ -569,6 +674,14 @@ def plan_estimate(pp: PlanParams = Depends(), flt: Filters = Depends()):
         "tuition_source": c["provenance"].get("tuition", "Missing — enter estimated tuition"),
         "expected_salary_used": c["inputs"].salary_expected,
         "expected_salary_source": c["provenance"].get("salary_mid", "Missing"),
+        "borrowing_basis": c["borrowing_basis"],
+        "planned_borrowing_total": c["estimated_borrowing_total"],
+        "annual_borrowing_used": c["inputs"].annual_borrowing,
+        "part_time_annual_gross": c["annual_work_gross"],
+        "part_time_annual_net_after_state_tax": c["work_net"],
+        "part_time_annual_school_savings": c["annual_work_contribution"],
+        "part_time_schedule": c["work_schedule"],
+        "part_time_tax_note": c["work_note"] or "No part-time work income entered.",
         "start_year_used": c["inputs"].start_year,
         "grad_year_used": c["inputs"].grad_year,
         "input_check": "All inputs OK" if not c["msgs"] else f"{len(c['msgs'])} input(s) need attention — see notes",
@@ -587,7 +700,7 @@ def plan_scenarios(pp: PlanParams = Depends(), flt: Filters = Depends()):
             "salary_source": c["provenance"].get({"Conservative": "salary_low", "Expected": "salary_mid",
                                                   "Aspirational": "salary_high"}[s["scenario"]], "Missing"),
             "est_state_income_tax": est["tax"] if est else None,
-            "state_tax_note": (f"{c['work_state']} tax year {est['tax_year']}, single filer, wages only — educational estimate"
+            "state_tax_note": (f"{c['work_state']} tax year {est['tax_year']}, single filer, wages only — federal and payroll taxes excluded"
                                if est else ("Work state not entered" if not c["work_state"]
                                             else f"{c['work_state']} not in verified tax set")),
         })
@@ -635,7 +748,8 @@ def plan_explain(pp: PlanParams = Depends(), flt: Filters = Depends()):
 
 PLAN_KEYS = ["start_year", "grad_year", "savings", "contribution", "grants", "existing_debt", "borrowing", "rate",
              "tuition", "living", "salary_low", "salary_mid", "salary_high", "repay_pct", "in_state", "work_state",
-             "occupation"]
+             "occupation", "borrowing_basis", "work_unit", "work_amount", "work_hours_week", "work_weeks_year",
+             "work_months_year", "work_savings_pct"]
 
 
 @router.post("/plan/calculate")
