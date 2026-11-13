@@ -1,93 +1,107 @@
-# GradPath — Degree ROI & Student Planning
+# GradPath
 
-GradPath is a FastAPI web app that helps students compare U.S. college programs by
-**median earnings** and **median debt** (U.S. Department of Education College Scorecard). It also shows
-verified **state income-tax facts** and lets students build a **personal plan** for savings, borrowing
-and loan payoff. Grafana provides optional chart embeds for local development; the student app and its
-tables run without Grafana.
+**A clearer path from choosing a U.S. college to paying for it.**
 
-> ⚠️ Historical outcomes for past completers who received federal aid — **not salary guarantees** and not
-> financial or tax advice.
+Choosing a degree can feel like choosing a future while the tuition bill is already due. Students and
+families have to weigh school costs, savings, loans, part-time work and possible earnings, often in
+different places and with different assumptions. GradPath brings those questions together. It helps
+a student ask: *What could this degree cost, how much might I borrow, and what might repayment look
+like after graduation?*
 
-## Links
+GradPath is a U.S.-only student planning app built with FastAPI and U.S. Department of Education
+College Scorecard data. It compares historical program earnings and student debt, shows verified
+state income-tax information where available, and turns a student's own inputs into a funding and
+loan repayment plan. It offers a range of outcomes rather than a promise about anyone's future.
 
-**Repository:** https://github.com/Sujay1709/gradpath
+> Historical earnings are not salary guarantees. GradPath provides educational estimates, not
+> personalized financial or tax advice.
 
-**Open GradPath:** **http://localhost:8000**. This is the student app, and it needs no login.
+## How to use GradPath
 
-**Hosted demo:** Add the Render URL here after the first successful deployment.
+1. **Explore schools and programs.** Search by school, location or major. Compare published median
+   earnings, federal student-loan debt and debt-to-earnings outcomes. The financial outcome groups
+   describe reported debt burden; they do not rank prestige or admission chances.
+2. **Build a plan.** Choose a school and expected graduation year. Enter tuition, living expenses,
+   grants and recurring savings per month or per year. Add current savings and either a known loan
+   amount or let GradPath estimate borrowing from the remaining cost.
+3. **Consider work and career income.** Enter an expected starting salary or use a historical program
+   median where available. Estimate part-time pay by hour, week or month. Where state tax information
+   is verified, the plan uses estimated pay after state income tax for the work contribution; federal
+   and payroll taxes are not included.
+4. **Review the result.** Check the assumptions and see the funding gap, debt when repayment begins,
+   monthly payment, and a month-by-month debt-free timeline under three salary scenarios. Edit any
+   input to see how the plan changes.
 
-| Page | Link | What it's for |
-|---|---|---|
-| Overview | http://localhost:8000/ | Three main choices, plus outcome lookup by school, major or state |
-| My Plan | http://localhost:8000/plan | 4-step walkthrough → review → results (funding gap, debt, payment, debt-free range) |
-| Schools | http://localhost:8000/schools | Search and rank programs; open a school; add it to My Plan |
-| Graphs | http://localhost:8000/graphs | Five questions, each with a chart, a plain-language summary and a table |
-| States | http://localhost:8000/states | Verified tax-year-2025 facts for 10 states, with sources |
-| Help | http://localhost:8000/help | Getting started, metrics, building a plan, sources, privacy, limitations, FAQ |
+If tuition is unknown, the funding step shows published College Scorecard tuition and cost of
+attendance, a 12-month equivalent, its source release and a link to the school's official website.
+The monthly figure is arithmetic, not the school's billing schedule. GradPath does not scrape live
+fees; students can confirm current costs on the official site and enter an updated estimate.
 
-Admin and analyst views are in Grafana at http://localhost:3000, organised into three folders:
+## System design and architecture
 
-| Folder | Contents |
-|---|---|
-| **GradPath** | A "Start here" launcher (Grafana's home page) |
-| **GradPath Detail Views** | The five chart dashboards that the app embeds |
-| **GradPath Legacy** | The earlier Grafana page versions (Overview, My Plan, Schools, States, Graphs, Help) and the Classic dashboards, kept for reference |
-
-API docs: http://localhost:8000/docs. The `localhost` links only work on the computer running GradPath.
-
----
-
-## Architecture (Nov 2026 UX recovery)
-
+```mermaid
+flowchart TD
+    A[College Scorecard data] --> B[Processed school and program datasets]
+    T[Verified state tax references] --> C[FastAPI endpoints]
+    B --> C
+    C --> D[Student web app]
+    C --> E[Optional Grafana charts]
 ```
-Browser ──► GradPath app (FastAPI, port 8000)
-            ├─ static/app/  one app: nav, page-specific filters, empty states, 4-step planner
-            ├─ JSON API     /metrics, /options, /schools, /states, /plan/calculate (POST)
-            └─ embeds charts from Grafana (port 3000) with d-solo: one panel, no Grafana menus
-Grafana ──► JSON API datasource → the same FastAPI endpoints
-```
 
-- **Why an app on port 8000?** Grafana text panels strip `<style>`, `<svg>` and scripts, and kiosk mode still
-  shows every filter box. The student pages need a responsive menu, panels hidden until a selection is made,
-  removable filter chips and focus management, so they live in the app. Grafana stays the chart engine: the
-  app embeds the existing chart queries unchanged.
-- **Privacy.** My Plan answers are stored only in the browser (`localStorage`, key `gradpath.plan.v2`) and are
-  sent to `POST /plan/calculate` in the request body. Financial values never appear in a URL, browser history
-  or a shared link, and the server neither stores nor caches them. The old Grafana My Plan, which put values in
-  the URL, is in **GradPath Legacy** with a warning.
-- **Filters per page.**
+The student app in `gradpath/static/app/` provides the navigation, search, four-step planner and
+accessible results. `gradpath/src/api.py` serves the app and API; `app_routes.py` handles student
+endpoints. Processed datasets in `gradpath/data/processed/` are committed so the app and the Render
+deployment do not need the large raw downloads at startup. Optional Grafana dashboards reuse the
+same API for detailed charts. The app and its tables work without Grafana.
 
-  | Page | Filters |
-  |---|---|
-  | Overview | School, major, state; *More filters*: credential, school type |
-  | Schools | School, major, state, credential; *More filters*: CIP code, school type |
-  | Graphs | Major, state, credential; *More filters*: school, CIP code, school type |
-  | States | State, plus an example income |
-  | Help, My Plan | No dataset filters |
+### Data, calculations and privacy
 
-  There is only one data year, so it is shown as a label rather than a filter. School, major and state carry
-  over between Overview, Schools and Graphs through the page address, and picking a school fills in its state.
-- **Accessibility.**
-  - Skip link; the current page is announced (`aria-current`); focus moves to the heading on every navigation.
-  - Tap targets of at least 44 px; visible focus rings; tables scroll or become cards on phones.
-  - Every chart has a table version; the debt-to-earnings label uses words and a shape, not colour alone.
-  - Respects reduced-motion preferences; text pairs meet WCAG AA contrast.
-- **Checked layouts.** Every page at 1440, 1024, 768 and 390 px, with no horizontal overflow and the nav on
-  one line on desktop or a single menu below 960 px.
+- **Program outcomes:** College Scorecard historical median earnings and median federal student-loan
+  debt. The latter is debt borrowed at the school, not the full cost of attendance. Some small
+  cohorts are suppressed. School or major does not cause a particular future income.
+- **School costs:** the directory stores published tuition, cost of attendance, source release and
+  institution website. The tuition source agent returns these figures and 12-month equivalents.
+  Monthly costs entered by a student are multiplied by 12 for each school year. Current savings is
+  treated as a one-time balance.
+- **State taxes:** tax-year-2025 references cover CA, NY, TX, FL, WA, PA, IL, NC, MA and GA. Detailed
+  single-filer brackets are available for CA and NY. Unverified states are marked as such rather than
+  assigned a guessed rate. State rules can change.
+- **Repayment:** `gradpath/src/plan_calc.py` calculates loan principal, interest accrued during school,
+  a standard 10-year payment and salary-based repayment scenarios. The deterministic repayment
+  timeline agent builds monthly balances, milestones and a step-by-step explanation. See
+  [the methodology](gradpath/docs/methodology.md) for data definitions and assumptions.
+- **Privacy:** draft answers stay in the student's browser storage. Calculations send answers to
+  `POST /plan/calculate` in the request body; the server does not store them, and financial inputs
+  are not placed in the URL. The older Grafana My Plan is retained in the legacy folder with a
+  warning because its behavior differs.
+- **Accessibility:** labeled inputs, visible focus, keyboard navigation, responsive layouts,
+  descriptive chart alternatives and tables support the full journey.
 
-Before and after screenshots are in `gradpath/docs/screenshots/`. The audit and the recovery map are in
-`gradpath/docs/ux_recovery_map.md`.
+The processed data reflects a particular release and can lag current fees, tax rules and job-market
+conditions. Check current school fees and loan terms before making a financial commitment.
 
-## Setup (first time)
+## Install and run
 
-Prerequisites: macOS with [Homebrew](https://brew.sh) and Python 3.11+.
+Run commands from the repository root. Python 3.11+ is required. The processed data is already
+included in the repository.
+
+### Student app
 
 ```bash
-# 1. Python packages
-pip3 install -r gradpath/requirements.txt --break-system-packages
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r gradpath/requirements.txt
+python3 -m uvicorn api:app --app-dir gradpath/src --host 127.0.0.1 --port 8000
+```
 
-# 2. Grafana + JSON API datasource plugin
+Leave that terminal running and open the **Local student app** link below. No login or Grafana setup
+is needed for the app and its result tables. Press `Ctrl+C` to stop the server.
+
+### Optional Grafana charts on macOS
+
+Install [Homebrew](https://brew.sh), Grafana and the JSON API datasource plugin:
+
+```bash
 brew install grafana
 grafana cli \
   --homepath /opt/homebrew/opt/grafana/share/grafana \
@@ -95,207 +109,54 @@ grafana cli \
   plugins install marcusolsson-json-datasource
 ```
 
-In the Grafana config, point `[paths] provisioning` at `gradpath/grafana/provisioning`. The config is
-`/opt/homebrew/etc/grafana/grafana.ini`, which is the one `start.sh` uses. An example is in
-`gradpath/grafana/grafana.ini`.
+Set `[paths] provisioning` in `/opt/homebrew/etc/grafana/grafana.ini` to the repository's
+`gradpath/grafana/provisioning` directory. An example is at `gradpath/grafana/grafana.ini`.
+With the Python dependencies installed, `./start.sh` starts the app and Grafana together. Stop any
+separately running API server first so port 8000 is free. Grafana uses port 3000.
 
----
+### Validate or refresh
 
-## Refresh the data
+```bash
+python3 -m unittest discover -s gradpath/tests -v
+python3 gradpath/tests/stress_plan.py --quick  # with the app running
+```
 
-Run these from the repo root.
+To rebuild datasets after downloading a newer College Scorecard release, put the raw files under
+`dataset/`, update `gradpath/src/config.py`, then run:
 
 ```bash
 cd gradpath
-python3 src/prepare_data.py            # Field of Study CSV → data/processed/degree_roi_clean.parquet
-python3 src/build_reference_data.py    # school_directory, degree_roi_latest, data_source_registry, plan demo
-python3 grafana/build_dashboards.py    # regenerate all dashboard JSON (Grafana reloads within ~10 s)
-python3 -m unittest discover -s tests -v # unit tests
-cd ..
-
-# The API caches responses in memory, so restart it to serve the refreshed data
-pkill -f "uvicorn api:app"
-(cd gradpath && nohup python3 -m uvicorn api:app --app-dir src --port 8000 > api.log 2>&1 &)
-
-# Then stress-test the running API (≈5 seconds; exit code 1 on any problem)
-python3 gradpath/tests/stress_plan.py
+python3 src/prepare_data.py
+python3 src/build_reference_data.py
+python3 grafana/build_dashboards.py
 ```
 
-`tests/stress_plan.py` runs four checks against the running API:
-1. It replays every dashboard query under four filter scenarios.
-2. It runs real schools from all 9 school-type × credential categories through My Plan with five input
-   profiles, and checks every debt, payment, payoff month and date range against an independent loan simulator.
-3. It confirms that cached and compressed responses match fresh ones.
-4. It enforces latency and throughput budgets.
+Restart the app after rebuilding data because it caches read-only datasets in memory. The raw
+College Scorecard downloads are not committed; this rebuild is unnecessary for a normal install.
 
-Options: `--quick` (3 schools per category), `--per-category 40`, `--seed 11`, `--skip-perf`.
+### Deploy to Render
 
-To use a newer College Scorecard download, put the files in `dataset/…` and update the paths and the
-`SCORECARD_*` constants in `gradpath/src/config.py`.
+The repository's `render.yaml` defines one Python web service rooted at `gradpath/`. Push the branch,
+create a **New → Blueprint** in Render, connect the repository and review the configuration. Render
+starts FastAPI on its assigned `$PORT` and checks `/meta/health`. The hosted student app works without
+Grafana or secret environment variables. Add the generated address to **Hosted demo** below after
+verifying the school-to-plan journey. A separately hosted Grafana can be connected with
+`GRADPATH_GRAFANA_URL`.
 
-## Start and open
+## Links
 
-```bash
-./start.sh
-open http://localhost:8000
-```
+- **Local student app:** [http://localhost:8000](http://localhost:8000) (available while the server runs)
+- **Repository:** [Sujay1709/gradpath](https://github.com/Sujay1709/gradpath)
+- **Hosted demo:** Add the Render URL after deployment.
+- **API docs and health:** `/docs` and `/meta/health` on the student app.
 
-`start.sh` builds any missing data, starts the FastAPI backend on port 8000 and starts Grafana on port 3000.
-If Grafana is already running, it keeps the running instance.
+| App page | Path | Purpose |
+| --- | --- | --- |
+| Overview | `/` | Start here and explore outcomes |
+| My Plan | `/plan` | Build, review and calculate a personal plan |
+| Schools | `/schools` | Search schools and programs |
+| Graphs | `/graphs` | Compare outcomes in charts and tables |
+| States | `/states` | Review verified state tax information |
+| Help | `/help` | Understand metrics, sources, privacy and limitations |
 
-If you change the API code, restart it:
-
-```bash
-pkill -f "uvicorn api:app"
-cd gradpath && python3 -m uvicorn api:app --app-dir src --port 8000
-```
-
----
-
-## Deploy the student app to Render
-
-The repository includes a Render Blueprint at `render.yaml`. It deploys one Python web service from
-`gradpath/`; the processed College Scorecard, school directory and tax reference files are already in
-the repository, so the deploy does not need the multi-gigabyte raw downloads or the local data pipeline.
-
-1. Push this branch to GitHub.
-2. In Render, choose **New → Blueprint**, connect the GradPath repository and review `render.yaml`.
-3. Create the service and wait for its deploy to pass the `/meta/health` check.
-4. Open the generated `onrender.com` URL and run through the student flow. Add that URL to **Hosted demo** above.
-
-Render runs FastAPI on the port it provides (`$PORT`). No secret environment variables are required.
-The hosted app serves its student pages, school search, calculator and accessible result tables without
-Grafana. If you later deploy Grafana at a public URL, set `GRADPATH_GRAFANA_URL` in the Render service
-environment to enable the chart embeds. Local development automatically uses `http://localhost:3000`.
-
-My Plan answers remain in browser storage until calculation, then are sent to the API in the request
-body; GradPath does not store them server-side.
-
-On the funding step, tuition, living expenses, grants and recurring savings can be entered per month
-or per year. Monthly figures use 12 months per school year in the calculation; current savings is a
-one-time balance. The tuition source agent reads the versioned College Scorecard directory, shows
-published annual figures and a 12-month equivalent, and links to the school's official website as
-listed by Scorecard. It does not scrape live fees or treat the monthly equivalent as a billing quote.
-Students should verify current tuition on that official site and enter an updated estimate if needed.
-
----
-
-## How the debt-free timeline is calculated
-
-1. **Borrowing.** Your yearly loan is paid out each September you're in school, plus any existing balance.
-2. **Interest before repayment.** Each loan builds simple interest from the month it is paid out until
-   repayment starts: `amount × rate × months ÷ 12`.
-3. **Starting balance.** Borrowed + that interest, in the November after a May graduation (6-month grace).
-4. **Standard payment.** `P × r ÷ (1 − (1 + r)^−120)`, with `r` = yearly rate ÷ 12, rounded up to the cent.
-5. **Payment per salary scenario.** The larger of the standard payment and your chosen share of salary ÷ 12
-   (10% by default).
-6. **Month by month.** Each month, interest (`balance × r`) is added and the payment subtracted until the
-   balance hits zero. That final payment month is your debt-free date.
-7. **Range.** The earliest to latest final payment across your scenarios.
-
-My Plan shows this as a chart, milestones and these steps filled in with your numbers.
-`tests/stress_plan.py` re-checks every step against an independent simulator.
-
-## How it works
-
-```
-College Scorecard CSVs ─► src/prepare_data.py ─► degree_roi_clean.parquet ─┐
-Institution CSV ────────► src/build_reference_data.py ─► school_directory.csv ├─► FastAPI (src/api.py + src/app_routes.py)
-Official state pages ───► state_tax_reference.csv (hand-verified) ──────────┘        │  JSON
-                                                                                     ▼
-                     grafana/build_dashboards.py ─► grafana/dashboards/*.json ─► Grafana (JSON API datasource)
-                     static/app/ (student app at :8000) ─► embeds Detail View charts; My Plan calculates via POST /plan/calculate
-```
-
-- **One source for all dashboards.** `grafana/build_dashboards.py` defines the nav bar, the shared
-  variables and the page layouts once. Don't edit the generated JSON by hand.
-- **Shared filters.** Every API endpoint takes the same optional query params, and `filters.py` applies
-  them. "All" never filters anything, so the Classic dashboards return exactly what they did before.
-- **School search.** The School variable lists `Name — City, ST` and stores the IPEDS institution ID,
-  because 46 school names repeat across states. You can type a name or a state code (`TX`).
-- **Smart filters.** Picking a school switches **State** to that school's state, and narrows **Major** and
-  **CIP code** to its programs. Under the hood, State's only remaining option is the school's state; the
-  dependency order is school → state → major → CIP.
-- **Debt measure.** "Median debt" is the median **federal student-loan debt (Stafford + Grad PLUS) borrowed
-  at the school** (`DEBT_ALL_STGP_EVAL_MDN`). Earlier versions used `DEBT_ALL_PP_ANY_MDN`, which the
-  Scorecard data dictionary defines as **Parent PLUS** debt. That was corrected in Nov 2026; see
-  `gradpath/docs/methodology.md`.
-- **Repayment Timeline Agent.** `pipeline/agents/repayment_timeline_agent.py` builds each student's payoff
-  timeline: a month-by-month balance per salary scenario, milestones (25/50/75% repaid, final payment) and a
-  step-by-step explanation with the student's own numbers. It is deterministic (no AI) and is served at
-  `/plan/timeline`, `/plan/milestones` and `/plan/explain`.
-- **Look.** A bright theme: Grafana's light theme (`cfg:users.default_theme=light` in `start.sh`) with
-  burnt-orange and red accents chosen for WCAG AA contrast.
-- **My Plan inputs.** Grafana has no built-in form, so a small HTML form served by FastAPI collects the
-  inputs. It validates them, saves them in the browser's `localStorage` and opens the My Plan dashboard
-  with the values in the URL. No bank connections, no credentials and no server-side storage.
-- **Deterministic calculations.** `src/plan_calc.py` holds plain formulas with unit tests. No AI is used
-  in any calculation.
-- **Performance.**
-  - pandas writes JSON responses directly.
-  - Responses over 2 KB are gzipped, which cuts the full 32,551-point scatter by about 90%.
-  - Read-only GET responses are cached in memory (`src/response_cache.py`). `/plan/*` is never cached
-    because its answers depend on today's date.
-  - Cache statistics are at http://localhost:8000/meta/health.
-
-## Datasets
-
-| File | Built by | Contents |
-|---|---|---|
-| `data/processed/degree_roi_clean.parquet` | `prepare_data.py` | 32,551 programs (320 majors, 4,043 schools, 8 credential levels) with earnings, student debt and ratios |
-| `data/processed/degree_roi_latest.csv` | `build_reference_data.py` | The same rows plus address, city, ZIP and source year |
-| `data/processed/school_directory.csv` | `build_reference_data.py` | 6,272 institutions with address, city, state, ZIP, type, latitude/longitude, official website from College Scorecard, source year and published tuition |
-| `data/processed/state_tax_reference.csv` | **hand-verified** | 10 states, tax year 2025, with source URL and verified date |
-| `data/processed/state_tax_brackets.csv` | **hand-verified** | CA and NY single-filer brackets for 2025 |
-| `data/processed/data_source_registry.csv` | `build_reference_data.py` | Every source with its URL, year, dates and limitations |
-| `data/samples/student_plan_demo.csv` | `build_reference_data.py` | 3 **fictional** students (`is_synthetic=true`) |
-
-**Addresses are never guessed.** 473 institutions report no street address, and 74 schools in the
-Field of Study file are missing from the Institution file. GradPath shows these as *Not reported*.
-
-## State tax coverage
-
-**Verified (tax year 2025):** CA, NY, TX, FL, WA, PA, IL, NC, MA, GA. CA and MA were read through a
-search index of their official pages, because those sites block automated downloads, so open their
-source links to confirm the figures. Every other state shows **"Not yet verified"** and no tax figures.
-Student-loan-interest treatment could not be verified for any state, so that field shows *Not verified*.
-
-## Data caveats
-
-1. Historical earnings do not guarantee future salary.
-2. Median debt is not the same as cost of attendance.
-3. School and major do not cause a particular income.
-4. Some records are suppressed for privacy (~85% of raw rows).
-5. The data lags current market conditions.
-6. State tax rules change over time.
-7. Company, occupation, location and experience all affect earnings.
-8. These are educational estimates, not personalized financial or tax advice.
-
-## Project layout
-
-```
-IBM_BOB/
-├── start.sh                         one-command launcher
-├── dataset/College_Scorecard_…/     raw downloads (not in git)
-└── gradpath/
-    ├── src/
-    │   ├── config.py                paths and constants
-    │   ├── prepare_data.py          Scorecard cleaning pipeline (unchanged)
-    │   ├── build_reference_data.py  directory, registry and demo datasets
-    │   ├── api.py                   FastAPI app + Classic endpoints (now filter-aware)
-    │   ├── app_routes.py            GradPath app endpoints
-    │   ├── filters.py               shared filters + safe number parsing
-    │   ├── plan_calc.py             deterministic plan formulas
-    │   ├── response_cache.py        in-memory cache for read-only GET endpoints
-    │   └── data_store.py            load-once data access
-    ├── static/app/                  student app (index.html, app.css, app.js, pages.js, plan.js, embed.json)
-    ├── tests/test_gradpath.py       unit tests
-    ├── tests/stress_plan.py         API stress test (rerun after data refresh)
-    ├── data/processed/ · data/samples/
-    ├── docs/                        data mapping + methodology
-    └── grafana/
-        ├── build_dashboards.py      generates every dashboard
-        ├── dashboards/main|detail|legacy/   generated, one directory per Grafana folder
-        ├── backup/                  dashboard JSON before the UX recovery
-        └── provisioning/            datasource + "GradPath" folder provider
-```
+Optional Grafana admin and analyst views run on port 3000 when installed.
