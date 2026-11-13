@@ -189,6 +189,33 @@ class PlanCalculateTests(unittest.TestCase):
         self.assertEqual(set(res), {"estimate", "scenarios", "notes", "timeline", "milestones", "explanation"})
         self.assertNotIn("card", res["estimate"])
 
+    def test_monthly_funding_matches_annual_inputs(self):
+        from app_routes import plan_calculate
+        common = {"school": "186380", "start_year": 2027, "grad_year": 2031,
+                  "salary_mid": 52000, "borrowing_basis": "estimate", "savings": 3000}
+        monthly = plan_calculate({**common, "tuition": 1000, "tuition_unit": "monthly",
+                                  "living": 800, "living_unit": "monthly", "grants": 200,
+                                  "grants_unit": "monthly", "contribution": 100,
+                                  "contribution_unit": "monthly"})["estimate"]
+        annual = plan_calculate({**common, "tuition": 12000, "living": 9600,
+                                 "grants": 2400, "contribution": 1200})["estimate"]
+        for key in ("annual_tuition_used", "total_education_cost", "funding_gap", "debt_at_repayment_start"):
+            self.assertEqual(monthly[key], annual[key], key)
+
+    def test_school_source_has_official_link_and_monthly_arithmetic(self):
+        from app_routes import school_tuition_sources
+        source = school_tuition_sources(Filters(school="186380"))[0]
+        self.assertTrue(source["official_website"].startswith("http"))
+        self.assertAlmostEqual(source["monthly_tuition_in_state"] * 12,
+                               source["tuition_fees_in_state"], delta=0.06)
+        self.assertIn("2026-10-05", source["source_year"])
+
+    def test_school_site_links_reject_non_web_schemes(self):
+        from build_reference_data import official_website
+        self.assertEqual(official_website("www.example.edu/tuition"), "https://www.example.edu/tuition")
+        for unsafe in ("javascript:alert(1)", "file:///etc/passwd", "http://localhost/", "https://user:secret@example.edu/"):
+            self.assertIsNone(official_website(unsafe))
+
 
 class FilterTests(unittest.TestCase):
     df = pd.DataFrame({

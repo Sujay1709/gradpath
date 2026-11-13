@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: gradpath
+    runtime: python
+    plan: free
+    rootDir: gradpath
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api:app --app-dir src --host 0.0.0.0 --port $PORT
+    healthCheckPath: /meta/health

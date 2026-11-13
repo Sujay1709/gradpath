@@ -1,9 +1,10 @@
 # GradPath — Degree ROI & Student Planning
 
-GradPath is a small local app, built on Grafana, that helps students compare U.S. college programs by
+GradPath is a FastAPI web app that helps students compare U.S. college programs by
 **median earnings** and **median debt** (U.S. Department of Education College Scorecard). It also shows
 verified **state income-tax facts** and lets students build a **personal plan** for savings, borrowing
-and loan payoff.
+and loan payoff. Grafana provides optional chart embeds for local development; the student app and its
+tables run without Grafana.
 
 > ⚠️ Historical outcomes for past completers who received federal aid — **not salary guarantees** and not
 > financial or tax advice.
@@ -13,6 +14,8 @@ and loan payoff.
 **Repository:** https://github.com/Sujay1709/gradpath
 
 **Open GradPath:** **http://localhost:8000**. This is the student app, and it needs no login.
+
+**Hosted demo:** Add the Render URL here after the first successful deployment.
 
 | Page | Link | What it's for |
 |---|---|---|
@@ -107,7 +110,7 @@ cd gradpath
 python3 src/prepare_data.py            # Field of Study CSV → data/processed/degree_roi_clean.parquet
 python3 src/build_reference_data.py    # school_directory, degree_roi_latest, data_source_registry, plan demo
 python3 grafana/build_dashboards.py    # regenerate all dashboard JSON (Grafana reloads within ~10 s)
-python3 tests/test_gradpath.py         # unit tests (stdlib unittest, no extra packages)
+python3 -m unittest discover -s tests -v # unit tests
 cd ..
 
 # The API caches responses in memory, so restart it to serve the refreshed data
@@ -146,6 +149,34 @@ If you change the API code, restart it:
 pkill -f "uvicorn api:app"
 cd gradpath && python3 -m uvicorn api:app --app-dir src --port 8000
 ```
+
+---
+
+## Deploy the student app to Render
+
+The repository includes a Render Blueprint at `render.yaml`. It deploys one Python web service from
+`gradpath/`; the processed College Scorecard, school directory and tax reference files are already in
+the repository, so the deploy does not need the multi-gigabyte raw downloads or the local data pipeline.
+
+1. Push this branch to GitHub.
+2. In Render, choose **New → Blueprint**, connect the GradPath repository and review `render.yaml`.
+3. Create the service and wait for its deploy to pass the `/meta/health` check.
+4. Open the generated `onrender.com` URL and run through the student flow. Add that URL to **Hosted demo** above.
+
+Render runs FastAPI on the port it provides (`$PORT`). No secret environment variables are required.
+The hosted app serves its student pages, school search, calculator and accessible result tables without
+Grafana. If you later deploy Grafana at a public URL, set `GRADPATH_GRAFANA_URL` in the Render service
+environment to enable the chart embeds. Local development automatically uses `http://localhost:3000`.
+
+My Plan answers remain in browser storage until calculation, then are sent to the API in the request
+body; GradPath does not store them server-side.
+
+On the funding step, tuition, living expenses, grants and recurring savings can be entered per month
+or per year. Monthly figures use 12 months per school year in the calculation; current savings is a
+one-time balance. The tuition source agent reads the versioned College Scorecard directory, shows
+published annual figures and a 12-month equivalent, and links to the school's official website as
+listed by Scorecard. It does not scrape live fees or treat the monthly equivalent as a billing quote.
+Students should verify current tuition on that official site and enter an updated estimate if needed.
 
 ---
 
@@ -213,7 +244,7 @@ Official state pages ───► state_tax_reference.csv (hand-verified) ──
 |---|---|---|
 | `data/processed/degree_roi_clean.parquet` | `prepare_data.py` | 32,551 programs (320 majors, 4,043 schools, 8 credential levels) with earnings, student debt and ratios |
 | `data/processed/degree_roi_latest.csv` | `build_reference_data.py` | The same rows plus address, city, ZIP and source year |
-| `data/processed/school_directory.csv` | `build_reference_data.py` | 6,272 institutions with address, city, state, ZIP, type, latitude/longitude and source year (plus published tuition, used to pre-fill My Plan) |
+| `data/processed/school_directory.csv` | `build_reference_data.py` | 6,272 institutions with address, city, state, ZIP, type, latitude/longitude, official website from College Scorecard, source year and published tuition |
 | `data/processed/state_tax_reference.csv` | **hand-verified** | 10 states, tax year 2025, with source URL and verified date |
 | `data/processed/state_tax_brackets.csv` | **hand-verified** | CA and NY single-filer brackets for 2025 |
 | `data/processed/data_source_registry.csv` | `build_reference_data.py` | Every source with its URL, year, dates and limitations |

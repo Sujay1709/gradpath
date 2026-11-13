@@ -18,6 +18,7 @@ No address, coordinate or tax value is ever inferred: missing source values stay
 import os
 import sys
 from datetime import datetime, timezone
+from urllib.parse import urlsplit
 
 import pandas as pd
 
@@ -34,8 +35,27 @@ CONTROL_LABELS = {"1": "Public", "2": "Private, nonprofit", "3": "Private, for-p
 DIRECTORY_SOURCE_YEAR = f"Most-Recent-Cohorts-Institution (release {SCORECARD_RELEASE})"
 
 
+def official_website(value: object) -> str | None:
+    """Keep only plausible public HTTP(S) institution links from Scorecard INSTURL."""
+    if pd.isna(value):
+        return None
+    value = str(value).strip()
+    if not value or any(c.isspace() for c in value):
+        return None
+    url = value if "://" in value else f"https://{value}"
+    try:
+        parts = urlsplit(url)
+        if parts.scheme not in {"http", "https"} or not parts.hostname or "." not in parts.hostname:
+            return None
+        if parts.username or parts.password or parts.port or parts.hostname.endswith(".local"):
+            return None
+    except ValueError:
+        return None
+    return url
+
+
 def build_school_directory(inst_path: str) -> pd.DataFrame:
-    cols = ["UNITID", "INSTNM", "ADDR", "CITY", "STABBR", "ZIP", "CONTROL", "LATITUDE", "LONGITUDE",
+    cols = ["UNITID", "INSTNM", "ADDR", "CITY", "STABBR", "ZIP", "CONTROL", "LATITUDE", "LONGITUDE", "INSTURL",
             "TUITIONFEE_IN", "TUITIONFEE_OUT", "COSTT4_A"]
     inst = pd.read_csv(inst_path, usecols=cols, dtype=str, low_memory=False)
     inst = inst.replace(list(SUPPRESSION_VALUES), pd.NA)
@@ -52,6 +72,7 @@ def build_school_directory(inst_path: str) -> pd.DataFrame:
         "latitude": pd.to_numeric(inst["LATITUDE"], errors="coerce"),
         "longitude": pd.to_numeric(inst["LONGITUDE"], errors="coerce"),
         "source_year": DIRECTORY_SOURCE_YEAR,
+        "official_website": inst["INSTURL"].map(official_website),
         "tuition_fees_in_state": pd.to_numeric(inst["TUITIONFEE_IN"], errors="coerce"),
         "tuition_fees_out_of_state": pd.to_numeric(inst["TUITIONFEE_OUT"], errors="coerce"),
         "cost_of_attendance_academic_year": pd.to_numeric(inst["COSTT4_A"], errors="coerce"),

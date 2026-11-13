@@ -337,13 +337,20 @@ export async function graphDetailPage(main, ctx, slug) {
       <details class="accordion" id="gd-table-wrap"><summary>View the data as a table</summary><div id="gd-table"></div></details>
       <p class="meta">Source: U.S. Department of Education, College Scorecard (release Oct 2026). ${DATA_YEAR}.</p>
     </section>`;
-  const manifest = await api("/static/app/embed.json");
+  const [manifest, appConfig] = await Promise.all([api("/static/app/embed.json"), api("/meta/config")]);
+  manifest.grafana = appConfig.grafana_url;
 
   const draw = async (c) => {
     $("#back-link", main).setAttribute("href", hrefWith("/graphs", c));
     const entry = manifest.graphs[slug === "rankings" ? mode : slug];
-    $("#gd-chart", main).innerHTML = `<iframe class="chart-frame" src="${esc(embedSrc(manifest, entry, c))}"
-      title="Chart: ${esc(g.q)} (a table version follows below)" loading="lazy"></iframe>`;
+    if (manifest.grafana) {
+      $("#gd-chart", main).innerHTML = `<iframe class="chart-frame" src="${esc(embedSrc(manifest, entry, c))}"
+        title="Chart: ${esc(g.q)} (a table version follows below)" loading="lazy"></iframe>`;
+    } else {
+      $("#gd-chart", main).innerHTML = `<div class="notice notice--info">${icon("i-info")}<div><strong>Chart preview isn't configured for this hosted demo.</strong>
+        The summary and accessible data table are available below.</div></div>`;
+      $("#gd-table-wrap", main).open = true;
+    }
     const concl = $("#gd-conclusion", main), tbl = $("#gd-table", main);
     try {
       const p = params(c);

@@ -1,5 +1,4 @@
 {
-  "grafana": "http://localhost:3000",
   "graphs": {
     "debt-earnings": {
       "uid": "gradpath-graph-debt-earnings",

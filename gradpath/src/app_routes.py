@@ -24,8 +24,10 @@ from plan_calc import ASSUMPTIONS, PlanInputs, compute_plan
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))   # gradpath/ → pipeline pkg
 from pipeline.agents.repayment_timeline_agent import RepaymentTimelineAgent  # noqa: E402
+from pipeline.agents.tuition_source_agent import TuitionSourceAgent  # noqa: E402
 
 timeline_agent = RepaymentTimelineAgent()
+tuition_source_agent = TuitionSourceAgent()
 
 router = APIRouter()
 
@@ -302,6 +304,16 @@ def school_detail(flt: Filters = Depends()):
     }]
 
 
+@router.get("/schools/tuition_sources")
+def school_tuition_sources(flt: Filters = Depends()):
+    """Versioned published tuition, 12-month equivalents and official verification link."""
+    iid = _selected_school(flt)
+    directory = _dir_lookup()
+    if iid is None or directory.empty or iid not in directory.index:
+        return []
+    return [tuition_source_agent.gather(directory.loc[iid])]
+
+
 @router.get("/schools/programs")
 def school_programs(flt: Filters = Depends()):
     iid = _selected_school(flt)
@@ -450,6 +462,7 @@ PLAN_PARAMS = dict(
     work_weeks_year=("Part-time weeks per school year", 0, 52), work_months_year=("Part-time months per school year", 0, 12),
     work_savings_pct=("Share of part-time take-home saved for school %", 0, 100),
 )
+PERIOD_FIELDS = ("tuition", "living", "grants", "contribution")
 
 
 class PlanParams:
@@ -461,7 +474,9 @@ class PlanParams:
                  work_state: str | None = None, occupation: str | None = None,
                  borrowing_basis: str | None = None, work_unit: str | None = None,
                  work_amount: str | None = None, work_hours_week: str | None = None, work_weeks_year: str | None = None,
-                 work_months_year: str | None = None, work_savings_pct: str | None = None):
+                 work_months_year: str | None = None, work_savings_pct: str | None = None,
+                 tuition_unit: str | None = None, living_unit: str | None = None,
+                 grants_unit: str | None = None, contribution_unit: str | None = None):
         self.raw = {k: v for k, v in locals().items() if k != "self"}
 
 
@@ -475,6 +490,18 @@ def _plan_context(pp: PlanParams, flt: Filters) -> dict:
     entered = {k for k, v in num.items() if v is not None}
     for k in entered:
         provenance[k] = "You entered"
+    for key in PERIOD_FIELDS:
+        unit = (raw.get(f"{key}_unit") or "annual").strip().lower()
+        if unit not in {"annual", "monthly"}:
+            msgs.append(f"Unrecognized period for {key}; using annual.")
+        elif unit == "monthly" and num[key] is not None:
+            num[key] *= 12
+            if num[key] > PLAN_PARAMS[key][2]:
+                msgs.append(f"Monthly {key} exceeds the annual maximum of ${PLAN_PARAMS[key][2]:,.0f} after conversion.")
+                num[key] = None
+                provenance.pop(key, None)
+            else:
+                provenance[key] = "You entered monthly; converted to annual (×12)"
 
     iid = _selected_school(flt)
     progs = apply_filters(get_df(), flt)
@@ -749,7 +776,7 @@ def plan_explain(pp: PlanParams = Depends(), flt: Filters = Depends()):
 PLAN_KEYS = ["start_year", "grad_year", "savings", "contribution", "grants", "existing_debt", "borrowing", "rate",
              "tuition", "living", "salary_low", "salary_mid", "salary_high", "repay_pct", "in_state", "work_state",
              "occupation", "borrowing_basis", "work_unit", "work_amount", "work_hours_week", "work_weeks_year",
-             "work_months_year", "work_savings_pct"]
+             "work_months_year", "work_savings_pct", "tuition_unit", "living_unit", "grants_unit", "contribution_unit"]
 
 
 @router.post("/plan/calculate")

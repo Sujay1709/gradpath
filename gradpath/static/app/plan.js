@@ -9,6 +9,7 @@ const EXAMPLE = { school: "186380", school_label: "Rutgers University-New Brunsw
   savings: "4000", contribution: "1500", grants: "6000", existing_debt: "0", borrowing: "5500", tuition: "", living: "13000",
   rate: "", occupation: "Example student (fictional)", work_state: "NJ", salary_low: "42000", salary_mid: "", salary_high: "72000",
   repay_pct: "10", borrowing_basis: "annual", work_unit: "hourly", work_amount: "16.50",
+  tuition_unit: "annual", living_unit: "annual", grants_unit: "annual", contribution_unit: "annual",
   work_hours_week: "12", work_weeks_year: "30", work_months_year: "9", work_savings_pct: "50" };
 
 // ── storage ────────────────────────────────────────────────────────────────
@@ -52,14 +53,14 @@ const F = {
   start_year: { step: 1, label: "Start year", required: true, int: true, min: 2000, max: 2045, example: "2027" },
   grad_year: { step: 1, label: "Expected graduation year", required: true, int: true, min: 2000, max: 2055, example: "2031" },
   savings: { step: 2, label: "Current savings", money: true, min: 0, max: 2000000, example: "4000" },
-  contribution: { step: 2, label: "Savings you add each year", money: true, min: 0, max: 500000, example: "1500" },
-  grants: { step: 2, label: "Scholarships and grants per year", money: true, min: 0, max: 500000, example: "6000" },
+  contribution: { step: 2, label: "Savings you add", money: true, min: 0, max: 500000, example: "1500" },
+  grants: { step: 2, label: "Scholarships and grants", money: true, min: 0, max: 500000, example: "6000" },
   existing_debt: { step: 2, label: "Existing student-loan balance", money: true, min: 0, max: 2000000, example: "0" },
   borrowing: { step: 2, label: "Planned borrowing amount", money: true, min: 0, max: 2000000, example: "22000",
                recovery: "Enter a total planned amount or the amount per year." },
-  tuition: { step: 2, label: "Tuition and fees per year", money: true, min: 0, max: 500000, example: "11000", requiredUnlessAuto: "tuition",
+  tuition: { step: 2, label: "Tuition and fees", money: true, min: 0, max: 500000, example: "11000", requiredUnlessAuto: "tuition",
              recovery: "This school doesn't publish tuition. Enter an estimate from its website." },
-  living: { step: 2, label: "Living expenses per year", money: true, required: true, min: 0, max: 500000, example: "13000",
+  living: { step: 2, label: "Living expenses", money: true, required: true, min: 0, max: 500000, example: "13000",
             recovery: "Enter an estimate for housing, food, books and transport, for example 13000." },
   rate: { step: 2, label: "Loan interest rate (%)", min: 0, max: 25, example: "6.52" },
   occupation: { step: 3, label: "Intended occupation" },
@@ -88,7 +89,8 @@ function validateField(key, draft, auto) {
   const n = Number(v);
   if (!Number.isFinite(n)) return `“${raw}” isn't a number. Enter digits only, for example ${f.example}.`;
   if (f.int && !Number.isInteger(n)) return `Enter a whole year, for example ${f.example}.`;
-  if (n < f.min || n > f.max) return `${f.label} must be between ${f.money ? money(f.min) : f.min} and ${f.money ? money(f.max) : f.max}. Check for an extra zero.`;
+  const max = ["tuition", "living", "grants", "contribution"].includes(key) && draft[`${key}_unit`] === "monthly" ? f.max / 12 : f.max;
+  if (n < f.min || n > max) return `${f.label} must be between ${f.money ? money(f.min) : f.min} and ${f.money ? money(max) : max} ${draft[`${key}_unit`] === "monthly" ? "per month" : "per year"}. Check for an extra zero.`;
   if (key === "grad_year" && draft.start_year && n <= Number(clean(draft.start_year)))
     return "Graduation must come after the start year. Change one of the two years.";
   return "";
@@ -130,6 +132,14 @@ const numField = (key, draft, hint = "", auto = "") => `<div class="field">${lab
     aria-describedby="p-${key}-err ${hint ? `p-${key}-hint` : ""} p-${key}-auto">
   <div class="field__auto" id="p-${key}-auto">${auto}</div>
   <div class="field__error" id="p-${key}-err"></div></div>`;
+
+const periodField = (key, draft, hint = "", auto = "") => `<div class="field">${label(key, hint)}
+  <div class="period-row"><input id="p-${key}" name="${key}" inputmode="decimal" autocomplete="off" value="${esc(draft[key] ?? "")}" aria-describedby="${hint ? `p-${key}-hint ` : ""}p-${key}-err p-${key}-annual p-${key}-auto">
+    <select id="p-${key}_unit" data-period="${key}" aria-label="${esc(F[key].label)} period">
+      <option value="annual" ${draft[`${key}_unit`] !== "monthly" ? "selected" : ""}>Per year</option>
+      <option value="monthly" ${draft[`${key}_unit`] === "monthly" ? "selected" : ""}>Per month</option></select></div>
+  <span class="field__hint" id="p-${key}-annual" aria-live="polite"></span>
+  <div class="field__auto" id="p-${key}-auto">${auto}</div><div class="field__error" id="p-${key}-err"></div></div>`;
 
 export async function planStepPage(main) {
   const step = Math.min(3, Math.max(1, Number(new URLSearchParams(location.search).get("step")) || 1));
@@ -217,12 +227,13 @@ export async function planStepPage(main) {
       const tuitionAuto = auto.tuition != null ? `Leave blank to use ${money(auto.tuition)}: ${esc(auto.tuition_note)}.` : "";
       const borrowingBasis = d.borrowing_basis || (d.borrowing ? "annual" : "estimate");
       d.borrowing_basis = borrowingBasis;
-      fieldsEl.innerHTML = `<p class="meta">Enter yearly amounts in dollars. Per-year amounts repeat for every year you're in school.</p><div class="form-grid">
-        ${numField("tuition", d, "Published tuition and fees, or your own estimate.", tuitionAuto)}
-        ${numField("living", d, "Housing, food, books and transport.")}
-        ${numField("grants", d, "Free money you don't repay.")}
+      fieldsEl.innerHTML = `<p class="meta">Choose monthly or yearly amounts. GradPath converts monthly figures to 12 months per school year. Current savings is a one-time balance.</p><div class="form-grid">
+        ${periodField("tuition", d, "Tuition and fees, excluding living costs.", tuitionAuto)}
+        <div class="field"><h3>School cost evidence</h3><div id="p-tuition-source" class="source-card" aria-live="polite">${loading("Checking published tuition")}</div></div>
+        ${periodField("living", d, "Housing, food, books and transport.")}
+        ${periodField("grants", d, "Free money you don't repay.")}
         ${numField("savings", d, "What you have saved today.")}
-        ${numField("contribution", d, "Before and during school.")}
+        ${periodField("contribution", d, "Savings you add before and during school.")}
         <div class="field"><label for="p-borrowing_basis">How should borrowing be estimated?<span class="opt">Choose one</span></label>
           <select id="p-borrowing_basis">
             <option value="estimate" ${borrowingBasis === "estimate" ? "selected" : ""}>Estimate from remaining education costs</option>
@@ -238,6 +249,28 @@ export async function planStepPage(main) {
         ${numField("existing_debt", d, "Loans you already have.")}
         ${numField("rate", d, "", "Leave blank to use 6.52%, the 2026–27 federal undergraduate loan rate.")}
       </div>`;
+      const refreshAnnual = (key) => {
+        const v = Number(clean(d[key])), amount = clean(d[key]) === "" || !Number.isFinite(v) ? null : v;
+        $(`#p-${key}-annual`, fieldsEl).textContent = amount == null ? "" :
+          `${money(amount * (d[`${key}_unit`] === "monthly" ? 12 : 1))} per school year${d[`${key}_unit`] === "monthly" ? " (12 months)" : ""}`;
+      };
+      ["tuition", "living", "grants", "contribution"].forEach((key) => {
+        refreshAnnual(key);
+        $(`#p-${key}`, fieldsEl).addEventListener("input", () => { d[key] = $(`#p-${key}`, fieldsEl).value; refreshAnnual(key); });
+        $(`#p-${key}_unit`, fieldsEl).addEventListener("change", (event) => {
+          d[`${key}_unit`] = event.target.value; refreshAnnual(key); persist();
+        });
+      });
+      if (d.school) api("/schools/tuition_sources", { school: d.school }).then(([source]) => {
+        const box = $("#p-tuition-source", fieldsEl); if (!box) return;
+        if (!source) { box.textContent = "No published school cost is available. Enter your estimate above."; return; }
+        const yearly = d.in_state === "no" ? source.tuition_fees_out_of_state : source.tuition_fees_in_state;
+        box.innerHTML = `<strong>Published tuition and fees</strong>
+          <span>${yearly == null ? "Not reported for this residency" : `${money(yearly)} per academic year · ${money(yearly / 12, true)} per month`}</span>
+          ${source.cost_of_attendance_academic_year == null ? "" : `<span>Published cost of attendance: ${money(source.cost_of_attendance_academic_year)} per academic year · ${money(source.monthly_cost_of_attendance, true)} per month</span>`}
+          ${source.official_website ? `<a href="${esc(source.official_website)}" target="_blank" rel="noopener noreferrer">Check current tuition on the school's official website ${icon("i-external")}</a>` : '<span>Official website unavailable; enter your own estimate.</span>'}
+          <span class="meta">College Scorecard ${esc(source.source_year)}. Monthly figures divide annual costs by 12; they are not billing quotes. Verify current rates and fees on the school website, then enter a current amount above.</span>`;
+      }).catch(() => { const box = $("#p-tuition-source", fieldsEl); if (box) box.textContent = "Source unavailable. Enter your estimate above."; });
       $("#p-borrowing_basis", fieldsEl).addEventListener("change", (e) => { d.borrowing_basis = e.target.value; persist(); renderFields(); });
     } else {
       const states = (await api("/options/states")).filter((s) => s.value !== "__all");
@@ -361,6 +394,7 @@ const show = (k, d) => {
   if (k === "in_state") return v === "no" ? "Out-of-state" : "In-state";
   if (k === "borrowing_basis") return ({ estimate: "Estimate from remaining cost", total: "Known total amount", annual: "Known amount per year" })[v] || esc(v);
   if (k === "work_unit") return ({ hourly: "Per hour", weekly: "Per week", monthly: "Per month" })[v] || esc(v);
+  if (["tuition", "living", "grants", "contribution"].includes(k)) return `${money(Number(clean(v)))} ${d[`${k}_unit`] === "monthly" ? "per month" : "per year"}`;
   if (F[k] && F[k].money) return money(Number(clean(v)));
   if (k === "rate" || k === "repay_pct") return `${esc(clean(v))}%`;
   if (k === "major") return esc(String(v).replace(/\.$/, ""));
@@ -453,7 +487,7 @@ export async function planResultsPage(main) {
     <div id="rs-body">${loading("Calculating your plan")}</div>`;
   let r;
   try {
-    const body = Object.fromEntries([...Object.keys(F), "borrowing_basis", "work_unit"].map((k) =>
+    const body = Object.fromEntries([...Object.keys(F), "borrowing_basis", "work_unit", "tuition_unit", "living_unit", "grants_unit", "contribution_unit"].map((k) =>
       [k, clean(d[k]) === "" ? null : String(d[k]).trim()]));
     r = await apiPost("/plan/calculate", body);
   } catch (e) { $("#rs-body", main).innerHTML = errorBox(`We couldn't calculate your plan (${esc(e.message)}). Check that GradPath is running, then try again.`); return; }

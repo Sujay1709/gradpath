@@ -95,6 +95,15 @@ def meta_health():
             "agents": {timeline_agent.name: timeline_agent.stats}}
 
 
+@app.get("/meta/config")
+def meta_config(request: Request):
+    """Public, non-secret frontend configuration; Grafana is optional for hosted deployments."""
+    grafana_url = os.getenv("GRADPATH_GRAFANA_URL", "").strip().rstrip("/")
+    if not grafana_url and request.url.hostname in {"localhost", "127.0.0.1"}:
+        grafana_url = "http://localhost:3000"
+    return {"grafana_url": grafana_url or None}
+
+
 # ── Health / datasource test ──────────────────────────────────────────────────
 
 @app.get("/")
