@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     GF_PATHS_DATA=/data/grafana \
     GF_PATHS_LOGS=/tmp/grafana-logs \
-    GF_PATHS_PLUGINS=/data/grafana/plugins \
+    GF_PATHS_PLUGINS=/app/grafana-plugins \
     GF_PATHS_PROVISIONING=/app/gradpath/grafana/provisioning \
     GF_SERVER_HTTP_ADDR=127.0.0.1 \
     GF_SERVER_HTTP_PORT=3000 \
@@ -14,8 +14,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     GF_AUTH_ANONYMOUS_ENABLED=true \
     GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer \
     GF_AUTH_DISABLE_LOGIN_FORM=true \
-    GF_USERS_DEFAULT_THEME=light \
-    GF_INSTALL_PLUGINS=marcusolsson-json-datasource
+    GF_USERS_DEFAULT_THEME=light
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates curl gnupg supervisor \
@@ -27,6 +26,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get update \
     && apt-get install -y --no-install-recommends grafana caddy \
     && rm -rf /var/lib/apt/lists/*
+
+RUN grafana cli --pluginsDir /app/grafana-plugins plugins install marcusolsson-json-datasource
 
 WORKDIR /app
 COPY gradpath/requirements.txt /app/gradpath/requirements.txt
