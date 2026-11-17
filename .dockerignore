@@ -1,0 +1,11 @@
+.git
+.venv
+**/.venv
+__pycache__
+**/__pycache__
+*.pyc
+*.log
+.DS_Store
+.env
+**/.env
+generated_images
