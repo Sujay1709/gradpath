@@ -1,3 +1,7 @@
+{
+	admin off
+}
+
 :{$PORT:8080} {
 	@grafana path /grafana /grafana/*
 
