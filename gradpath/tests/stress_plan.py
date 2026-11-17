@@ -7,6 +7,7 @@ Needs the API running (./start.sh, or uvicorn on port 8000). Run from anywhere:
     python3 gradpath/tests/stress_plan.py --quick         # 3 schools per category
     python3 gradpath/tests/stress_plan.py --per-category 40 --seed 11
     python3 gradpath/tests/stress_plan.py --skip-perf     # correctness only
+    python3 gradpath/tests/stress_plan.py --skip-embeds   # when optional Grafana is not running
 
 Four checks, exit code 1 if any fails:
 
@@ -268,7 +269,12 @@ def check_plan(api, per_category, seed):
                             rep.flag("zero_debt_label", f"{where}: {s['debt_free_date']}")
                         continue
                     pct = repay_pct_used(q.get("repay_pct", ""))
-                    want_pay = max(std, round_up_cents(s["starting_salary"] / 12 * pct / 100))
+                    # Verified state income tax is applied to salary-based payments by the API.
+                    # When no verified tax estimate exists, the API uses gross salary.
+                    repayment_income = (s["estimated_net_salary"]
+                                        if s.get("estimated_net_salary") is not None
+                                        else s["starting_salary"])
+                    want_pay = max(std, round_up_cents(repayment_income / 12 * pct / 100))
                     if abs(s["monthly_payment"] - want_pay) > 0.011:
                         rep.flag("payment", f"{where} {s['scenario']}: api {s['monthly_payment']} vs {want_pay}")
                     n, interest = simulate(P, rate, s["monthly_payment"])
@@ -361,7 +367,7 @@ def check_smart_filters(api, seed, n=40):
     return rep
 
 
-def check_product(api):
+def check_product(api, check_embeds=True):
     """Student app: every page serves, the planner calculates from a request body, charts are embeddable."""
     rep = Report()
     for path in ["/", "/schools", "/graphs", "/graphs/debt-earnings", "/graphs/rankings", "/graphs/programs",
@@ -385,15 +391,17 @@ def check_product(api):
     if {"scenarios", "timeline", "milestones", "explanation", "notes"} - set(res):
         rep.flag("calculate_shape", str(sorted(res)))
     manifest = json.load(urllib.request.urlopen(api + "/static/app/embed.json"))
-    for slug, e in manifest["graphs"].items():
-        url = f"{manifest['grafana']}/d-solo/{e['uid']}/?orgId=1&panelId={e['panel_id']}"
-        try:
-            with urllib.request.urlopen(url, timeout=30) as r:
-                if "deny" in (r.headers.get("X-Frame-Options") or "").lower():
-                    rep.flag("embed_blocked", f"{slug}: Grafana sends X-Frame-Options deny (allow_embedding off)")
-        except Exception as ex:
-            rep.flag("embed_unreachable", f"{slug}: {ex}")
-    print(f"  14 product pages, POST /plan/calculate and {len(manifest['graphs'])} embedded charts checked")
+    if check_embeds:
+        for slug, e in manifest["graphs"].items():
+            url = f"{manifest['grafana']}/d-solo/{e['uid']}/?orgId=1&panelId={e['panel_id']}"
+            try:
+                with urllib.request.urlopen(url, timeout=30) as r:
+                    if "deny" in (r.headers.get("X-Frame-Options") or "").lower():
+                        rep.flag("embed_blocked", f"{slug}: Grafana sends X-Frame-Options deny (allow_embedding off)")
+            except Exception as ex:
+                rep.flag("embed_unreachable", f"{slug}: {ex}")
+    print(f"  14 product pages, POST /plan/calculate and {len(manifest['graphs'])} embedded charts "
+          f"{'checked' if check_embeds else 'listed (Grafana check skipped)'}")
     return rep
 
 
@@ -453,6 +461,8 @@ def main():
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--quick", action="store_true", help="3 schools per category")
     ap.add_argument("--skip-perf", action="store_true")
+    ap.add_argument("--skip-embeds", action="store_true",
+                    help="skip optional Grafana embed reachability checks")
     args = ap.parse_args()
 
     try:
@@ -467,7 +477,7 @@ def main():
     reports.append(("dashboard queries", check_dashboards(args.api, sample_school)))
     reports[-1][1].print_issues("dashboard queries")
     print("1a. Student app")
-    reports.append(("student app", check_product(args.api)))
+    reports.append(("student app", check_product(args.api, check_embeds=not args.skip_embeds)))
     reports[-1][1].print_issues("student app")
     print("1b. Smart filters")
     reports.append(("smart filters", check_smart_filters(args.api, args.seed)))

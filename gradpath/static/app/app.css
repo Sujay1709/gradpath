@@ -1,14 +1,14 @@
-/* GradPath design tokens. Warm identity; strongest orange reserved for the current
-   nav item, the primary action and one highlight per page. All text pairs meet WCAG AA. */
+/* GradPath university palette. */
 :root {
-  --color-primary: #c2410c;        /* burnt orange, 5.2:1 with white text */
-  --color-primary-hover: #9a3412;
-  --color-accent: #fff1e6;         /* soft tint for highlights */
-  --color-accent-ink: #7c2d12;
-  --color-text: #1f1a17;
-  --color-muted: #5b4f47;          /* 7.4:1 on surface */
+  --color-primary: #064573;
+  --color-primary-hover: #073352;
+  --color-gold: #ffcc49;
+  --color-accent: #ecf3f7;
+  --color-accent-ink: #14405d;
+  --color-text: #142b40;
+  --color-muted: #475965;
   --color-surface: #ffffff;
-  --color-bg: #fbf8f5;
+  --color-bg: #f6f4ee;
   --color-border: #e5dbd2;
   --color-border-strong: #b9aca1;
   --color-success: #166534;
@@ -89,7 +89,10 @@ a:hover { color: var(--color-primary); }
 .page:focus { outline: none; }
 .page-header { margin-bottom: var(--space-5); }
 .page-header h1:focus { outline: none; }
+.eyebrow { color: var(--color-accent-ink); font-size: var(--text-s); font-weight: 700; letter-spacing: .04em;
+           text-transform: uppercase; margin-bottom: var(--space-2); }
 .lead { font-size: var(--text-l); color: var(--color-muted); max-width: 62ch; }
+.intro-note { max-width: 72ch; margin-top: var(--space-3); color: var(--color-muted); }
 .meta { font-size: var(--text-s); color: var(--color-muted); }
 .section { margin-top: var(--space-6); }
 .section > h2 { margin-bottom: var(--space-4); }
@@ -259,6 +262,12 @@ tbody tr:last-child td { border-bottom: 0; }
 @media (max-width: 639px) { .progress li span { display: none; } }
 .form-grid { display: grid; gap: var(--space-5) var(--space-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .form-grid .span-2 { grid-column: 1 / -1; }
+.period-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(9rem, auto); gap: var(--space-2); }
+.period-row input, .period-row select { min-width: 0; width: 100%; }
+.source-card { display: flex; flex-direction: column; gap: var(--space-2); padding: 0 0 0 var(--space-4);
+  border-left: 3px solid var(--color-primary); overflow-wrap: anywhere; }
+.source-card .icon { vertical-align: middle; }
+@media (max-width: 539px) { .period-row { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 699px) { .form-grid { grid-template-columns: minmax(0, 1fr); } }
 .step-footer { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
 .secondary-zone { margin-top: var(--space-7); padding-top: var(--space-4); border-top: 1px dashed var(--color-border);
@@ -293,3 +302,30 @@ details.accordion > div { padding: 0 var(--space-5) var(--space-5); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+h1, h2, h3, .brand { font-family: Georgia, "Times New Roman", serif; }
+.site-header, .primary-nav { background: var(--color-primary-hover); }
+.site-header .brand, .site-header .icon--brand, .primary-nav a { color: #fff; }
+.site-header .brand { font-size: 1.5rem; }
+.primary-nav a[aria-current="page"], .button--primary {
+  background: var(--color-gold); color: var(--color-primary-hover);
+}
+.button--primary:hover { background: #ffdd80; color: var(--color-primary-hover); }
+.site-header :focus-visible, .campus-hero :focus-visible { outline-color: white; }
+.page:has(.campus-hero) { padding-top: 0; }
+.campus-hero {
+  position: relative; isolation: isolate; display: flex; align-items: flex-end;
+  margin-inline: calc(50% - 50vw); padding: clamp(2rem, 5vw, 5rem) max(5vw, calc((100vw - 1080px)/2));
+  min-height: clamp(29rem, 65vh, 44rem); color: white; background: #123d58
+    linear-gradient(0deg, rgba(4,20,35,.95), rgba(4,20,35,.72) 32%, transparent 76%) center/cover;
+}
+.campus-hero::before { content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(0deg, #071d30 0%, rgba(7,29,48,.80) 32%, rgba(7,29,48,.10) 75%),
+              url("./campus-hero.jpg") center 38%/cover; }
+.campus-wordmark { position: absolute; top: 2%; left: 0; width: 100%; text-align: center;
+  font: bold clamp(4rem, 12vw, 12rem)/1 Georgia, serif; color: rgba(255,255,255,.4); pointer-events: none; }
+.campus-intro { position: relative; max-width: 36rem; }
+.campus-intro h1 { max-width: 14ch; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1.04; }
+.campus-intro p { max-width: 52ch; margin: 1rem 0 1.25rem; }
+.campus-section-title { margin: var(--space-7) 0 var(--space-5); text-align: center;
+  font-size: clamp(1.8rem, 3vw, 2.6rem); }

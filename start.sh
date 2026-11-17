@@ -67,6 +67,7 @@ grafana server \
   cfg:default.paths.plugins=/opt/homebrew/var/lib/grafana/plugins \
   cfg:auth.anonymous.enabled=true \
   cfg:auth.anonymous.org_role=Viewer \
+  cfg:auth.disable_login_form=true \
   cfg:users.default_theme=light \
   cfg:security.allow_embedding=true \
   cfg:dashboards.default_home_dashboard_path="$GRADPATH/grafana/dashboards/main/gradpath-start.json" \
@@ -87,13 +88,15 @@ echo "============================================================"
 echo "  GradPath is running!"
 echo ""
 echo "  GradPath app:          http://localhost:8000   (students start here)"
-echo "  Grafana (admin):       http://localhost:3000"
+echo "  Grafana (charts):      http://localhost:3000"
 echo "  Classic dashboards:    http://localhost:3000/d/gradpath-main  ·  /d/gradpath-tax"
 echo "  API docs:              http://localhost:8000/docs"
 echo ""
-echo "  Visitors are read-only viewers; admins can still sign in at http://localhost:3000/login"
+echo "  Grafana access is anonymous and read-only; the student app is the GradPath home page."
 echo "  Ctrl+C to stop both services"
 echo "============================================================"
+
+open http://localhost:8000
 
 trap "echo ''; echo '  Stopping services...'; kill $API_PID $GRAFANA_PID 2>/dev/null; exit 0" INT TERM
 wait

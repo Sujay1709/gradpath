@@ -113,10 +113,15 @@ export async function overviewPage(main, ctx) {
   const planLabel = plan === "complete" ? "View my plan" : plan === "draft" ? "Continue my plan" : "Start my plan";
   const planHref = plan === "complete" ? "/plan/results" : "/plan";
   main.innerHTML = `
-    <header class="page-header">
-      <h1>Plan your degree with real outcomes and your own assumptions.</h1>
-      <p class="lead">GradPath uses U.S. Department of Education data on what graduates earned and borrowed, plus the numbers you enter, to help you compare options and plan.</p>
+    <header class="campus-hero">
+      <span class="campus-wordmark" aria-hidden="true">GradPath</span>
+      <div class="campus-intro">
+        <h1>What will your degree cost?</h1>
+        <p>Compare U.S. programs, estimate what you’ll need to borrow, and see what monthly payments could look like after graduation.</p>
+        <a class="button button--primary" href="${planHref}" data-link>${planLabel} &rarr;</a>
+      </div>
     </header>
+    <h2 class="campus-section-title">Explore your options</h2>
     <section aria-label="Main choices" class="grid grid--3">
       ${choice("i-school", "Explore schools and programs", "Search 4,043 schools and 320 majors and rank them by earnings and student debt.", hrefWith("/schools", ctx), "Explore schools")}
       ${choice("i-chart", "Compare debt and earnings", "See whether typical earnings can support typical debt, by program, state or credential.", hrefWith("/graphs", ctx), "Compare outcomes")}
@@ -167,24 +172,34 @@ export async function schoolsPage(main, ctx) {
   main.innerHTML = `
     <header class="page-header"><h1>Schools and programs</h1>
       <p class="lead">Search by school, major or state. Results are ranked by how student debt compares with earnings.</p></header>
-    <div id="sc-filters">${loading("Loading filters")}</div>
+    <div id="sc-filters">${loading("Loading school search")}</div>
     <div id="sc-detail"></div>
     <section class="section" aria-labelledby="results-h">
       <div class="actions actions--split"><h2 id="results-h" style="margin:0">Ranked results</h2>
-        <div class="field" style="min-width:220px"><label for="sc-sort">Sort by</label>
-          <select id="sc-sort">${Object.entries(SORTS).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select></div></div>
+        <div class="actions">
+          <div class="field" style="min-width:260px"><label for="sc-fit">Financial outcomes category</label>
+            <select id="sc-fit"><option value="">All outcome groups</option>
+              <option value="lower">Strong outcome fit (lowest debt-to-earnings quartile)</option>
+              <option value="middle">Middle range</option>
+              <option value="higher">Higher debt burden (highest quartile)</option></select></div>
+          <div class="field" style="min-width:220px"><label for="sc-sort">Sort by</label>
+            <select id="sc-sort">${Object.entries(SORTS).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select></div>
+        </div></div>
+      <p class="meta">Categories compare schools’ median debt-to-earnings within the matching data. They describe financial outcomes, not prestige or admission likelihood.</p>
       <p class="meta" id="sc-count" aria-live="polite"></p>
       <div id="sc-results">${loading("Loading results")}</div>
     </section>`;
   let limit = 25;
   let c = ctx;
   const sortSel = $("#sc-sort", main);
+  const fitSel = $("#sc-fit", main);
 
   const showResults = async () => {
     const box = $("#sc-results", main);
     box.innerHTML = loading("Loading results");
     try {
-      const [rows, [s]] = await Promise.all([api("/schools/table", { ...params(c), limit, sort: sortSel.value }), api("/metrics/summary_stats", params(c))]);
+      const [rows, [s]] = await Promise.all([api("/schools/table", { ...params(c), limit, sort: sortSel.value,
+        financial_fit: fitSel.value || undefined }), api("/metrics/summary_stats", params(c))]);
       $("#sc-count", main).textContent = `Showing ${num(rows.length)} of ${num(s.matching_programs)} matching programs. ${DATA_YEAR}.`;
       box.innerHTML = table({
         caption: `Programs ranked by ${SORTS[sortSel.value].toLowerCase()}`,
@@ -197,6 +212,7 @@ export async function schoolsPage(main, ctx) {
           { label: "Median earnings", num: true, value: (r) => money(r.median_earnings) },
           { label: "Median student debt", num: true, value: (r) => money(r.median_debt) },
           { label: "Debt ÷ earnings", num: true, html: (r) => band(r.debt_to_earnings) },
+          { label: "Financial fit", key: "financial_fit" },
           { label: "Graduates measured", num: true, value: (r) => num(r.cohort_size) },
         ], rows }) + (rows.length >= limit && rows.length < s.matching_programs
           ? `<p class="actions" style="margin-top:var(--space-4)"><button type="button" class="button button--secondary" id="sc-more">Show 25 more</button></p>` : "");
@@ -262,6 +278,7 @@ export async function schoolsPage(main, ctx) {
   const filterSpec = { primary: ["school", "major", "state", "credential"], advanced: ["cip", "school_type"],
                        heading: "Filter schools", onChange: (next) => { c = next; limit = 25; showDetail(); showResults(); } };
   sortSel.addEventListener("change", () => { limit = 25; showResults(); });
+  fitSel.addEventListener("change", () => { limit = 25; showResults(); });
   await filterPanel($("#sc-filters", main), c, filterSpec);
   showDetail();
   showResults();
@@ -325,13 +342,20 @@ export async function graphDetailPage(main, ctx, slug) {
       <details class="accordion" id="gd-table-wrap"><summary>View the data as a table</summary><div id="gd-table"></div></details>
       <p class="meta">Source: U.S. Department of Education, College Scorecard (release Oct 2026). ${DATA_YEAR}.</p>
     </section>`;
-  const manifest = await api("/static/app/embed.json");
+  const [manifest, appConfig] = await Promise.all([api("/static/app/embed.json"), api("/meta/config")]);
+  manifest.grafana = appConfig.grafana_url;
 
   const draw = async (c) => {
     $("#back-link", main).setAttribute("href", hrefWith("/graphs", c));
     const entry = manifest.graphs[slug === "rankings" ? mode : slug];
-    $("#gd-chart", main).innerHTML = `<iframe class="chart-frame" src="${esc(embedSrc(manifest, entry, c))}"
-      title="Chart: ${esc(g.q)} (a table version follows below)" loading="lazy"></iframe>`;
+    if (manifest.grafana) {
+      $("#gd-chart", main).innerHTML = `<iframe class="chart-frame" src="${esc(embedSrc(manifest, entry, c))}"
+        title="Chart: ${esc(g.q)} (a table version follows below)" loading="lazy"></iframe>`;
+    } else {
+      $("#gd-chart", main).innerHTML = `<div class="notice notice--info">${icon("i-info")}<div><strong>Chart preview isn't configured for this hosted demo.</strong>
+        The summary and accessible data table are available below.</div></div>`;
+      $("#gd-table-wrap", main).open = true;
+    }
     const concl = $("#gd-conclusion", main), tbl = $("#gd-table", main);
     try {
       const p = params(c);

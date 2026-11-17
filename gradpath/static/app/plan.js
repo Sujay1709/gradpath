@@ -8,7 +8,9 @@ const EXAMPLE = { school: "186380", school_label: "Rutgers University-New Brunsw
   major: "", credential: "Bachelor's Degree", in_state: "yes", start_year: "2027", grad_year: "2031",
   savings: "4000", contribution: "1500", grants: "6000", existing_debt: "0", borrowing: "5500", tuition: "", living: "13000",
   rate: "", occupation: "Example student (fictional)", work_state: "NJ", salary_low: "42000", salary_mid: "", salary_high: "72000",
-  repay_pct: "10" };
+  repay_pct: "10", borrowing_basis: "annual", work_unit: "hourly", work_amount: "16.50",
+  tuition_unit: "annual", living_unit: "annual", grants_unit: "annual", contribution_unit: "annual",
+  work_hours_week: "12", work_weeks_year: "30", work_months_year: "9", work_savings_pct: "50" };
 
 // ── storage ────────────────────────────────────────────────────────────────
 function load() {
@@ -51,14 +53,14 @@ const F = {
   start_year: { step: 1, label: "Start year", required: true, int: true, min: 2000, max: 2045, example: "2027" },
   grad_year: { step: 1, label: "Expected graduation year", required: true, int: true, min: 2000, max: 2055, example: "2031" },
   savings: { step: 2, label: "Current savings", money: true, min: 0, max: 2000000, example: "4000" },
-  contribution: { step: 2, label: "Savings you add each year", money: true, min: 0, max: 500000, example: "1500" },
-  grants: { step: 2, label: "Scholarships and grants per year", money: true, min: 0, max: 500000, example: "6000" },
+  contribution: { step: 2, label: "Savings you add", money: true, min: 0, max: 500000, example: "1500" },
+  grants: { step: 2, label: "Scholarships and grants", money: true, min: 0, max: 500000, example: "6000" },
   existing_debt: { step: 2, label: "Existing student-loan balance", money: true, min: 0, max: 2000000, example: "0" },
-  borrowing: { step: 2, label: "Expected borrowing per year", money: true, required: true, min: 0, max: 500000, example: "5500",
-               recovery: "Enter how much you expect to borrow each year. Enter 0 if you won't borrow." },
-  tuition: { step: 2, label: "Tuition and fees per year", money: true, min: 0, max: 500000, example: "11000", requiredUnlessAuto: "tuition",
+  borrowing: { step: 2, label: "Planned borrowing amount", money: true, min: 0, max: 2000000, example: "22000",
+               recovery: "Enter a total planned amount or the amount per year." },
+  tuition: { step: 2, label: "Tuition and fees", money: true, min: 0, max: 500000, example: "11000", requiredUnlessAuto: "tuition",
              recovery: "This school doesn't publish tuition. Enter an estimate from its website." },
-  living: { step: 2, label: "Living expenses per year", money: true, required: true, min: 0, max: 500000, example: "13000",
+  living: { step: 2, label: "Living expenses", money: true, required: true, min: 0, max: 500000, example: "13000",
             recovery: "Enter an estimate for housing, food, books and transport, for example 13000." },
   rate: { step: 2, label: "Loan interest rate (%)", min: 0, max: 25, example: "6.52" },
   occupation: { step: 3, label: "Intended occupation" },
@@ -68,25 +70,34 @@ const F = {
                 recovery: "No Scorecard earnings match this program. Enter the salary you expect, for example 52000." },
   salary_high: { step: 3, label: "Aspirational starting salary", money: true, min: 0, max: 2000000, example: "70000" },
   repay_pct: { step: 3, label: "Share of salary for loan payments (%)", min: 1, max: 50, example: "10" },
+  work_amount: { step: 3, label: "Part-time pay amount", money: true, min: 0, max: 100000, example: "16.50" },
+  work_hours_week: { step: 3, label: "Hours per week", min: 0, max: 80, example: "12" },
+  work_weeks_year: { step: 3, label: "Weeks worked per school year", min: 0, max: 52, example: "30" },
+  work_months_year: { step: 3, label: "Months worked per school year", min: 0, max: 12, example: "9" },
+  work_savings_pct: { step: 3, label: "Part-time take-home saved for school (%)", min: 0, max: 100, example: "50" },
 };
 const clean = (v) => String(v ?? "").trim().replace(/[$,%\s]/g, "");
 
 function validateField(key, draft, auto) {
   const f = F[key], raw = draft[key] ?? "", v = clean(raw);
-  const needed = f.required || (f.requiredUnlessAuto && !auto[f.requiredUnlessAuto]);
+  const needed = f.required || (f.requiredUnlessAuto && !auto[f.requiredUnlessAuto])
+    || (key === "borrowing" && (draft.borrowing_basis || "estimate") !== "estimate");
   if (key === "school") return draft.school ? "" : `${f.label} is required. ${f.recovery}`;
+  if (key === "borrowing" && (draft.borrowing_basis || "estimate") === "estimate") return "";
   if (v === "") return needed ? `${f.label} is required. ${f.recovery || `Enter a value, for example ${f.example}.`}` : "";
   if (["occupation", "work_state", "major", "credential", "in_state"].includes(key)) return "";
   const n = Number(v);
   if (!Number.isFinite(n)) return `“${raw}” isn't a number. Enter digits only, for example ${f.example}.`;
   if (f.int && !Number.isInteger(n)) return `Enter a whole year, for example ${f.example}.`;
-  if (n < f.min || n > f.max) return `${f.label} must be between ${f.money ? money(f.min) : f.min} and ${f.money ? money(f.max) : f.max}. Check for an extra zero.`;
+  const max = ["tuition", "living", "grants", "contribution"].includes(key) && draft[`${key}_unit`] === "monthly" ? f.max / 12 : f.max;
+  if (n < f.min || n > max) return `${f.label} must be between ${f.money ? money(f.min) : f.min} and ${f.money ? money(max) : max} ${draft[`${key}_unit`] === "monthly" ? "per month" : "per year"}. Check for an extra zero.`;
   if (key === "grad_year" && draft.start_year && n <= Number(clean(draft.start_year)))
     return "Graduation must come after the start year. Change one of the two years.";
   return "";
 }
 function missingRequired(draft, auto) {
-  return Object.keys(F).filter((k) => (F[k].required || (F[k].requiredUnlessAuto && !auto[F[k].requiredUnlessAuto])) && validateField(k, draft, auto));
+  return Object.keys(F).filter((k) => (F[k].required || (F[k].requiredUnlessAuto && !auto[F[k].requiredUnlessAuto])
+    || (k === "borrowing" && (draft.borrowing_basis || "estimate") !== "estimate")) && validateField(k, draft, auto));
 }
 
 /** Scorecard values that fill blanks: published tuition, historical salary, school state. */
@@ -122,6 +133,14 @@ const numField = (key, draft, hint = "", auto = "") => `<div class="field">${lab
   <div class="field__auto" id="p-${key}-auto">${auto}</div>
   <div class="field__error" id="p-${key}-err"></div></div>`;
 
+const periodField = (key, draft, hint = "", auto = "") => `<div class="field">${label(key, hint)}
+  <div class="period-row"><input id="p-${key}" name="${key}" inputmode="decimal" autocomplete="off" value="${esc(draft[key] ?? "")}" aria-describedby="${hint ? `p-${key}-hint ` : ""}p-${key}-err p-${key}-annual p-${key}-auto">
+    <select id="p-${key}_unit" data-period="${key}" aria-label="${esc(F[key].label)} period">
+      <option value="annual" ${draft[`${key}_unit`] !== "monthly" ? "selected" : ""}>Per year</option>
+      <option value="monthly" ${draft[`${key}_unit`] === "monthly" ? "selected" : ""}>Per month</option></select></div>
+  <span class="field__hint" id="p-${key}-annual" aria-live="polite"></span>
+  <div class="field__auto" id="p-${key}-auto">${auto}</div><div class="field__error" id="p-${key}-err"></div></div>`;
+
 export async function planStepPage(main) {
   const step = Math.min(3, Math.max(1, Number(new URLSearchParams(location.search).get("step")) || 1));
   const state = load();
@@ -146,6 +165,9 @@ export async function planStepPage(main) {
   const renderFields = async () => {
     if (step === 1) {
       const schools = await api("/options/schools");
+      const schoolGroups = { lower: "Strong outcome fit (lowest debt-to-earnings quartile)",
+        middle: "Middle range", higher: "Higher debt burden (highest quartile)" };
+      const visibleSchools = () => schools.filter((o) => !d.school_group || o.financial_fit === d.school_group);
       let progs = [];
       if (d.school) { try { progs = await api("/schools/programs", { school: d.school }); } catch { progs = []; } }
       const majors = [...new Map(progs.map((p) => [p.major_value, p.program])).entries()];
@@ -157,9 +179,14 @@ export async function planStepPage(main) {
             <br><span class="meta">Address from College Scorecard.</span></div></div>`; } catch { card = ""; }
       }
       fieldsEl.innerHTML = `<div class="form-grid">
-        <div class="field span-2">${label("school", "Type part of the name or a state code, e.g. TX.")}
+        <div class="field"><label for="p-school-group">School financial outcome group<span class="opt">Optional</span></label>
+          <select id="p-school-group"><option value="">All schools</option>
+            ${Object.entries(schoolGroups).map(([v, t]) => `<option value="${v}" ${d.school_group === v ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
+          <span class="field__hint">Groups compare reported debt-to-earnings outcomes, not school prestige or admission likelihood.</span></div>
+        <div class="field span-2">${label("school", "Search by school name, city or state code.")}
           <input id="p-school" type="search" list="p-dl-schools" autocomplete="off" value="${esc(d.school_label || "")}" aria-describedby="p-school-hint p-school-err">
-          <datalist id="p-dl-schools">${schools.map((o) => `<option value="${esc(o.text)}">`).join("")}</datalist>
+          <datalist id="p-dl-schools">${visibleSchools().map((o) => `<option value="${esc(o.text)}">`).join("")}</datalist>
+          <div class="field__hint" id="p-school-count">${visibleSchools().length.toLocaleString()} schools available in this group.</div>
           <div class="field__error" id="p-school-err"></div></div>
         <div class="span-2">${card}</div>
         <div class="field">${label("major", d.school ? "Programs with published outcomes at this school." : "Choose a school first.")}
@@ -176,6 +203,13 @@ export async function planStepPage(main) {
         ${numField("grad_year", d, "Usually 4 years after starting a bachelor's degree, 2 for an associate's.")}
       </div>`;
       const sInput = $("#p-school", fieldsEl);
+      $("#p-school-group", fieldsEl).addEventListener("change", (e) => {
+        d.school_group = e.target.value;
+        const matches = visibleSchools();
+        $("#p-dl-schools", fieldsEl).innerHTML = matches.map((o) => `<option value="${esc(o.text)}">`).join("");
+        $("#p-school-count", fieldsEl).textContent = `${matches.length.toLocaleString()} schools available in this group.`;
+        persist();
+      });
       sInput.addEventListener("change", async () => {
         const hit = schools.find((o) => o.text === sInput.value.trim());
         const err = $("#p-school-err", fieldsEl);
@@ -191,34 +225,128 @@ export async function planStepPage(main) {
       fieldsEl.querySelectorAll('input[name="in_state"]').forEach((r) => r.addEventListener("change", async () => { d.in_state = r.value; persist(); auto = await autoValues(d); }));
     } else if (step === 2) {
       const tuitionAuto = auto.tuition != null ? `Leave blank to use ${money(auto.tuition)}: ${esc(auto.tuition_note)}.` : "";
-      fieldsEl.innerHTML = `<p class="meta">Enter yearly amounts in dollars. Per-year amounts repeat for every year you're in school.</p><div class="form-grid">
-        ${numField("tuition", d, "Published tuition and fees, or your own estimate.", tuitionAuto)}
-        ${numField("living", d, "Housing, food, books and transport.")}
-        ${numField("grants", d, "Free money you don't repay.")}
+      const borrowingBasis = d.borrowing_basis || (d.borrowing ? "annual" : "estimate");
+      d.borrowing_basis = borrowingBasis;
+      fieldsEl.innerHTML = `<p class="meta">Choose monthly or yearly amounts. GradPath converts monthly figures to 12 months per school year. Current savings is a one-time balance.</p><div class="form-grid">
+        ${periodField("tuition", d, "Tuition and fees, excluding living costs.", tuitionAuto)}
+        <div class="field"><h3>School cost evidence</h3><div id="p-tuition-source" class="source-card" aria-live="polite">${loading("Checking published tuition")}</div></div>
+        ${periodField("living", d, "Housing, food, books and transport.")}
+        ${periodField("grants", d, "Free money you don't repay.")}
         ${numField("savings", d, "What you have saved today.")}
-        ${numField("contribution", d, "Before and during school.")}
-        ${numField("borrowing", d, "Federal or private student loans per year.")}
+        ${periodField("contribution", d, "Savings you add before and during school.")}
+        <div class="field"><label for="p-borrowing_basis">How should borrowing be estimated?<span class="opt">Choose one</span></label>
+          <select id="p-borrowing_basis">
+            <option value="estimate" ${borrowingBasis === "estimate" ? "selected" : ""}>Estimate from remaining education costs</option>
+            <option value="total" ${borrowingBasis === "total" ? "selected" : ""}>I know the total planned loan amount</option>
+            <option value="annual" ${borrowingBasis === "annual" ? "selected" : ""}>I know the amount borrowed each year</option>
+          </select></div>
+        <div class="field" id="p-borrowing-wrap" ${borrowingBasis === "estimate" ? "hidden" : ""}>
+          <label for="p-borrowing">${borrowingBasis === "total" ? "Total planned borrowing" : "Planned borrowing per year"}<span class="req">Required</span></label>
+          <input id="p-borrowing" name="borrowing" inputmode="decimal" autocomplete="off" value="${esc(d.borrowing ?? "")}"
+            aria-describedby="p-borrowing-err p-borrowing-hint">
+          <span class="field__hint" id="p-borrowing-hint">Existing loan balance is entered separately below.</span>
+          <div class="field__error" id="p-borrowing-err"></div></div>
         ${numField("existing_debt", d, "Loans you already have.")}
         ${numField("rate", d, "", "Leave blank to use 6.52%, the 2026–27 federal undergraduate loan rate.")}
       </div>`;
+      const refreshAnnual = (key) => {
+        const v = Number(clean(d[key])), amount = clean(d[key]) === "" || !Number.isFinite(v) ? null : v;
+        $(`#p-${key}-annual`, fieldsEl).textContent = amount == null ? "" :
+          `${money(amount * (d[`${key}_unit`] === "monthly" ? 12 : 1))} per school year${d[`${key}_unit`] === "monthly" ? " (12 months)" : ""}`;
+      };
+      ["tuition", "living", "grants", "contribution"].forEach((key) => {
+        refreshAnnual(key);
+        $(`#p-${key}`, fieldsEl).addEventListener("input", () => { d[key] = $(`#p-${key}`, fieldsEl).value; refreshAnnual(key); });
+        $(`#p-${key}_unit`, fieldsEl).addEventListener("change", (event) => {
+          d[`${key}_unit`] = event.target.value; refreshAnnual(key); persist();
+        });
+      });
+      if (d.school) api("/schools/tuition_sources", { school: d.school }).then(([source]) => {
+        const box = $("#p-tuition-source", fieldsEl); if (!box) return;
+        if (!source) { box.textContent = "No published school cost is available. Enter your estimate above."; return; }
+        const yearly = d.in_state === "no" ? source.tuition_fees_out_of_state : source.tuition_fees_in_state;
+        box.innerHTML = `<strong>Published tuition and fees</strong>
+          <span>${yearly == null ? "Not reported for this residency" : `${money(yearly)} per academic year · ${money(yearly / 12, true)} per month`}</span>
+          ${source.cost_of_attendance_academic_year == null ? "" : `<span>Published cost of attendance: ${money(source.cost_of_attendance_academic_year)} per academic year · ${money(source.monthly_cost_of_attendance, true)} per month</span>`}
+          ${source.official_website ? `<a href="${esc(source.official_website)}" target="_blank" rel="noopener noreferrer">Check current tuition on the school's official website ${icon("i-external")}</a>` : '<span>Official website unavailable; enter your own estimate.</span>'}
+          <span class="meta">College Scorecard ${esc(source.source_year)}. Monthly figures divide annual costs by 12; they are not billing quotes. Verify current rates and fees on the school website, then enter a current amount above.</span>`;
+      }).catch(() => { const box = $("#p-tuition-source", fieldsEl); if (box) box.textContent = "Source unavailable. Enter your estimate above."; });
+      $("#p-borrowing_basis", fieldsEl).addEventListener("change", (e) => { d.borrowing_basis = e.target.value; persist(); renderFields(); });
     } else {
       const states = (await api("/options/states")).filter((s) => s.value !== "__all");
       if (!d.work_state && auto.state) { d.work_state = auto.state; d.work_state_auto = true; persist(); }
+      if (d.work_amount) {
+        if ((d.work_unit || "hourly") === "monthly" && !d.work_months_year) d.work_months_year = "9";
+        if ((d.work_unit || "hourly") !== "monthly" && !d.work_weeks_year) d.work_weeks_year = "30";
+        if ((d.work_unit || "hourly") === "hourly" && !d.work_hours_week) d.work_hours_week = "15";
+        if (!d.work_savings_pct) d.work_savings_pct = "50";
+      }
       const salaryAuto = auto.salary != null ? `Leave blank to use ${money(auto.salary)}, the historical median for your program (College Scorecard).` : "";
-      fieldsEl.innerHTML = `<p class="meta">Three salaries show a range instead of one guess. Only the expected salary is needed.</p><div class="form-grid">
+      fieldsEl.innerHTML = `<p class="meta">Three salaries show a range instead of one guess. Only the expected salary is needed. Part-time pay is annualized and adjusted for estimated state income tax only where verified.</p><div class="form-grid">
         <div class="field">${label("occupation")}<input id="p-occupation" name="occupation" maxlength="80" value="${esc(d.occupation || "")}" placeholder="e.g. Registered nurse"></div>
         <div class="field">${label("work_state")}<select id="p-work_state" aria-describedby="p-work_state-auto"><option value="">Not sure yet</option>
           ${states.map((s) => `<option value="${s.value}" ${s.value === d.work_state ? "selected" : ""}>${esc(s.text)}</option>`).join("")}</select>
           <div class="field__auto" id="p-work_state-auto">${d.work_state_auto && d.work_state === auto.state ? `Filled in with your school's state (${esc(auto.state)}). Change it if you plan to work elsewhere.` : ""}</div></div>
+        <div class="field"><label for="p-work_unit">Part-time pay period<span class="opt">Optional</span></label>
+          <select id="p-work_unit"><option value="hourly" ${(d.work_unit || "hourly") === "hourly" ? "selected" : ""}>Dollars per hour</option>
+            <option value="weekly" ${d.work_unit === "weekly" ? "selected" : ""}>Dollars per week</option>
+            <option value="monthly" ${d.work_unit === "monthly" ? "selected" : ""}>Dollars per month</option></select></div>
+        ${numField("work_amount", d, "Expected gross pay, before estimated state income tax.")}
+        <div id="p-work-hourly" ${(d.work_unit || "hourly") === "hourly" ? "" : "hidden"}>${numField("work_hours_week", d, "Average hours during school.")}</div>
+        <div id="p-work-weeks" ${d.work_unit === "monthly" ? "hidden" : ""}>${numField("work_weeks_year", d, "Default is 30 weeks in a school year.")}</div>
+        <div id="p-work-months" ${d.work_unit === "monthly" ? "" : "hidden"}>${numField("work_months_year", d, "Default is 9 months in a school year.")}</div>
+        ${numField("work_savings_pct", d, "Share of estimated state-tax-adjusted pay you plan to put toward school. Default: 50%.")}
         ${numField("salary_low", d, "A salary you're fairly sure you could beat.")}
         ${numField("salary_mid", d, "Your best guess.", salaryAuto)}
         ${numField("salary_high", d, "A strong outcome, not a promise.")}
         ${numField("repay_pct", d, "", "Leave blank to put 10% of your salary toward loans (never less than the standard payment).")}
+        <div class="span-2" id="p-work-preview" aria-live="polite"></div>
       </div>`;
+      $("#p-work_unit", fieldsEl).addEventListener("change", (e) => { d.work_unit = e.target.value; persist(); renderFields(); });
       $("#p-work_state", fieldsEl).addEventListener("change", (e) => { d.work_state = e.target.value; d.work_state_auto = false; persist(); $("#p-work_state-auto", fieldsEl).textContent = ""; });
+      let previewTimer;
+      const updateWorkPreview = async () => {
+        const preview = $("#p-work-preview", fieldsEl);
+        if (!clean(d.work_amount) || Number(clean(d.work_amount)) <= 0) {
+          preview.innerHTML = `<p class="meta">Enter expected part-time pay to see its estimated school-year contribution.</p>`;
+          return;
+        }
+        preview.innerHTML = loading("Estimating school-year work income");
+        const query = Object.fromEntries(["school", "major", "credential", "in_state", "start_year", "grad_year",
+          "work_state", "work_unit", "work_amount", "work_hours_week", "work_weeks_year", "work_months_year", "work_savings_pct"]
+          .filter((key) => d[key] !== undefined && d[key] !== "").map((key) => [key, d[key]]));
+        try {
+          const [estimate] = await api("/plan/estimate", query);
+          const net = estimate.part_time_annual_net_after_state_tax;
+          const netLabel = net == null ? "Not available for this state" : money(net);
+          preview.innerHTML = `<section class="notice notice--info">${icon("i-info")}<div><strong>Estimated part-time work during school</strong>
+            <p>${esc(estimate.part_time_schedule || "")}</p>
+            <p>${money(estimate.part_time_annual_gross)} gross per school year · ${netLabel} after estimated state income tax ·
+              ${money(estimate.part_time_annual_school_savings)} saved for education each year.</p>
+            <span class="meta">${esc(estimate.part_time_tax_note || "State tax is not verified; earnings are not used to reduce the funding gap.")}</span></div></section>`;
+        } catch {
+          preview.innerHTML = `<p class="meta">The income estimate will appear when you review your plan.</p>`;
+        }
+      };
+      const scheduleWorkPreview = () => { clearTimeout(previewTimer); previewTimer = setTimeout(updateWorkPreview, 350); };
+      fieldsEl.querySelectorAll("input[name]").forEach((input) => input.addEventListener("input", scheduleWorkPreview));
+      $("#p-work_state", fieldsEl).addEventListener("change", scheduleWorkPreview);
+      if (d.work_amount) updateWorkPreview();
     }
     fieldsEl.querySelectorAll("input[name]:not([type=radio])").forEach((inp) => {
-      inp.addEventListener("input", () => { d[inp.name] = inp.value; persistSoon(); });
+      inp.addEventListener("input", () => {
+        d[inp.name] = inp.value;
+        if (inp.name === "work_amount" && inp.value) {
+          const unit = d.work_unit || "hourly";
+          const defaults = unit === "monthly" ? { work_months_year: "9" }
+            : unit === "hourly" ? { work_hours_week: "15", work_weeks_year: "30" } : { work_weeks_year: "30" };
+          defaults.work_savings_pct = "50";
+          Object.entries(defaults).forEach(([key, value]) => {
+            if (!d[key]) { d[key] = value; const field = $("#p-" + key, fieldsEl); if (field) field.value = value; }
+          });
+        }
+        persistSoon();
+      });
       inp.addEventListener("blur", () => showError(inp.name));
     });
   };
@@ -264,6 +392,9 @@ const show = (k, d) => {
   const v = d[k];
   if (v === undefined || v === null || String(v).trim() === "") return `<span class="meta">Not entered</span>`;
   if (k === "in_state") return v === "no" ? "Out-of-state" : "In-state";
+  if (k === "borrowing_basis") return ({ estimate: "Estimate from remaining cost", total: "Known total amount", annual: "Known amount per year" })[v] || esc(v);
+  if (k === "work_unit") return ({ hourly: "Per hour", weekly: "Per week", monthly: "Per month" })[v] || esc(v);
+  if (["tuition", "living", "grants", "contribution"].includes(k)) return `${money(Number(clean(v)))} ${d[`${k}_unit`] === "monthly" ? "per month" : "per year"}`;
   if (F[k] && F[k].money) return money(Number(clean(v)));
   if (k === "rate" || k === "repay_pct") return `${esc(clean(v))}%`;
   if (k === "major") return esc(String(v).replace(/\.$/, ""));
@@ -274,14 +405,18 @@ export async function planReviewPage(main) {
   const state = load(), d = state.draft;
   const auto = await autoValues(d);
   const missing = missingRequired(d, auto);
+  const displayLabel = (k) => k === "school" ? "School" : k === "borrowing_basis" ? "Borrowing method"
+    : k === "work_unit" ? "Part-time pay period" : F[k].label;
   const group = (title, step, keys) => `<section class="card review-group" aria-labelledby="rv-${step}">
-      <div><h2 id="rv-${step}">${title}</h2><dl class="facts">${keys.map((k) => `<dt>${esc(k === "school" ? "School" : F[k].label)}</dt><dd>${k === "school" ? esc(d.school_label || "") || '<span class="meta">Not entered</span>' : show(k, d)}</dd>`).join("")}</dl></div>
+      <div><h2 id="rv-${step}">${title}</h2><dl class="facts">${keys.map((k) => `<dt>${esc(displayLabel(k))}</dt><dd>${k === "school" ? esc(d.school_label || "") || '<span class="meta">Not entered</span>' : show(k, d)}</dd>`).join("")}</dl></div>
       <a class="button button--secondary" href="/plan?step=${step}" data-link aria-label="Edit ${title}">${icon("i-edit")}Edit</a></section>`;
   const assumptions = [
     !clean(d.tuition) && auto.tuition != null ? `Tuition: ${money(auto.tuition)} from College Scorecard (${esc(auto.tuition_note)}).` : null,
     !clean(d.salary_mid) && auto.salary != null ? `Expected salary: ${money(auto.salary)}, the historical median for your program.` : null,
     !clean(d.rate) ? "Interest rate: 6.52%, the 2026–27 federal undergraduate loan rate." : null,
-    !clean(d.repay_pct) ? "Loan payments: 10% of salary, never less than the standard 10-year payment." : null,
+    !clean(d.repay_pct) ? "Loan payments: 10% of estimated pay after state income tax where verified, never less than the standard 10-year payment." : null,
+    d.work_amount ? "Part-time work is annualized for the school year. Only verified state income tax is subtracted; federal and payroll taxes are excluded." : null,
+    (d.borrowing_basis || "estimate") === "estimate" ? "Planned borrowing is estimated from tuition, living costs, grants, savings, and verified part-time take-home pay." : null,
     "Costs stay the same each year; savings don't grow; loans build simple interest until repayment starts 6 months after a May graduation.",
   ].filter(Boolean);
   main.innerHTML = `<header class="page-header"><h1>Review your answers</h1>
@@ -290,8 +425,8 @@ export async function planReviewPage(main) {
       <ul>${missing.map((k) => `<li><a href="/plan?step=${F[k].step}" data-link>${esc(k === "school" ? "School" : F[k].label)}</a></li>`).join("")}</ul></div></div>` : ""}
     <div class="stack section">
       ${group("Education", 1, ["school", "major", "credential", "in_state", "start_year", "grad_year"])}
-      ${group("Funding", 2, ["tuition", "living", "grants", "savings", "contribution", "borrowing", "existing_debt", "rate"])}
-      ${group("Career", 3, ["occupation", "work_state", "salary_low", "salary_mid", "salary_high", "repay_pct"])}
+      ${group("Funding", 2, ["tuition", "living", "grants", "savings", "contribution", "borrowing_basis", "borrowing", "existing_debt", "rate"])}
+      ${group("Career", 3, ["occupation", "work_state", "work_unit", "work_amount", "work_hours_week", "work_weeks_year", "work_months_year", "work_savings_pct", "salary_low", "salary_mid", "salary_high", "repay_pct"])}
       <section class="card" aria-labelledby="rv-assume"><h2 id="rv-assume">Assumptions GradPath will use</h2>
         <ul>${assumptions.map((a) => `<li>${a}</li>`).join("")}</ul></section>
     </div>
@@ -352,7 +487,8 @@ export async function planResultsPage(main) {
     <div id="rs-body">${loading("Calculating your plan")}</div>`;
   let r;
   try {
-    const body = Object.fromEntries(Object.keys(F).map((k) => [k, clean(d[k]) === "" ? null : String(d[k]).trim()]));
+    const body = Object.fromEntries([...Object.keys(F), "borrowing_basis", "work_unit", "tuition_unit", "living_unit", "grants_unit", "contribution_unit"].map((k) =>
+      [k, clean(d[k]) === "" ? null : String(d[k]).trim()]));
     r = await apiPost("/plan/calculate", body);
   } catch (e) { $("#rs-body", main).innerHTML = errorBox(`We couldn't calculate your plan (${esc(e.message)}). Check that GradPath is running, then try again.`); return; }
   const e = r.estimate, sc = r.scenarios.filter((s) => s.starting_salary);
@@ -369,11 +505,19 @@ export async function planResultsPage(main) {
     ${warn.length ? `<div class="notice notice--warning" role="alert">${icon("i-alert")}<div><strong>Check these answers:</strong><ul>${warn.map((w) => `<li>${esc(w.detail)}</li>`).join("")}</ul>
       <a href="/plan/edit" data-link>Edit my answers</a></div></div>` : ""}
     <section aria-label="Key results" class="grid grid--4 section">
-      ${card("Estimated funding gap", money(e.funding_gap), `Total cost ${money(e.total_education_cost)} minus grants and savings, before borrowing.`)}
+      ${card("Estimated funding gap", money(e.funding_gap), `Total cost ${money(e.total_education_cost)} minus grants, savings, and included part-time contributions.`)}
       ${card("Debt when repayment begins", money(e.debt_at_repayment_start), `In ${esc(e.repayment_start)}, including ${money(e.accrued_interest_before_repayment)} of interest built up in school.`)}
       ${card("Estimated monthly payment", `${money(e.standard_monthly_payment, true)}<span class="kpi__note"> /month</span>`, pays.length ? `Standard 10-year payment. Your scenarios: ${money(Math.min(...pays), true)} to ${money(Math.max(...pays), true)}.` : "Standard 10-year payment.")}
       ${card("Estimated debt-free range", esc(e.debt_free_range), esc(e.repayment_time_range), true)}
     </section>
+    ${e.annual_part_time_gross > 0 ? `<section class="section card" aria-labelledby="pt-h"><h2 id="pt-h">Part-time work estimate</h2>
+      <p class="meta">${esc(e.part_time_schedule)}</p>
+      <div class="grid grid--4">
+        ${card("Annual gross work income", money(e.annual_part_time_gross), "Before state tax")}
+        ${card("Estimated annual income after state tax", money(e.annual_part_time_net_after_state_tax), "State tax only; federal and payroll taxes excluded")}
+        ${card("Saved for education each year", money(e.annual_part_time_contribution), "Your selected share of estimated state-tax-adjusted pay")}
+        ${card("Total contribution while enrolled", money(e.part_time_contributions), `Across ${e.years_in_school} school years`)}
+      </div><p class="meta">${esc(e.part_time_tax_note)}</p></section>` : ""}
     ${e.debt_at_repayment_start > 0 ? `<section class="section card" aria-labelledby="tl-h"><h2 id="tl-h">Loan balance over time</h2>
       ${timelineChart(r.timeline)}
       <details class="accordion" style="margin-top:var(--space-4)"><summary>View the balance as a table</summary><div>
@@ -382,9 +526,10 @@ export async function planResultsPage(main) {
     <section class="section" aria-labelledby="sc-h"><h2 id="sc-h">Salary scenarios</h2>
       ${table({ caption: "Repayment under each starting salary", rows: r.scenarios, columns: [
         { label: "Scenario", key: "scenario" }, { label: "Starting salary", num: true, value: (s) => money(s.starting_salary) },
+        { label: "Estimated annual pay after state tax", num: true, value: (s) => money(s.estimated_net_salary) },
         { label: "Salary source", value: (s) => s.salary_source },
         { label: "Monthly payment", num: true, value: (s) => s.monthly_payment == null ? "—" : money(s.monthly_payment, true) },
-        { label: "Share of pay", num: true, value: (s) => s.payment_share_of_gross_pct == null ? "—" : `${s.payment_share_of_gross_pct}%` },
+        { label: "Share of estimated net pay", num: true, value: (s) => s.payment_share_of_net_pct == null ? "—" : `${s.payment_share_of_net_pct}%` },
         { label: "Time to repay", key: "time_to_repay" }, { label: "Final payment", key: "debt_free_date" },
         { label: "Total interest", num: true, value: (s) => money(s.total_interest) },
         { label: "Est. state income tax / yr", num: true, value: (s) => money(s.est_state_income_tax) }] })}
