@@ -112,19 +112,73 @@ export async function overviewPage(main, ctx) {
   const plan = planStatus();
   const planLabel = plan === "complete" ? "View my plan" : plan === "draft" ? "Continue my plan" : "Start my plan";
   const planHref = plan === "complete" ? "/plan/results" : "/plan";
+  const schoolHref = hrefWith("/schools", ctx);
+  const graphHref = hrefWith("/graphs", ctx);
   main.innerHTML = `
-    <header class="campus-hero">
-      <span class="campus-wordmark" aria-hidden="true">GradPath</span>
-      <div class="campus-intro">
-        <h1>What will your degree cost?</h1>
-        <p>Compare U.S. programs, estimate what you’ll need to borrow, and see what monthly payments could look like after graduation.</p>
-        <a class="button button--primary" href="${planHref}" data-link>${planLabel} &rarr;</a>
+    <header class="home-hero">
+      <div class="home-hero__intro">
+        <span class="home-eyebrow">A clearer route from degree to financial freedom</span>
+        <h1>Make your degree decision with your future in view.</h1>
+        <p>Explore schools, understand the cost of borrowing, and build a plan for life after graduation.</p>
+        <div class="home-hero__actions">
+          <a class="button button--primary" href="${esc(planHref)}" data-link>${esc(planLabel)} ${icon("i-next")}</a>
+          <a class="home-hero__text-link" href="${esc(schoolHref)}" data-link>Explore schools ${icon("i-next")}</a>
+        </div>
+        <p class="home-hero__source">Built with U.S. College Scorecard data. Your plan uses your own costs and savings.</p>
       </div>
+      <section class="feature-window" aria-roledescription="carousel" aria-label="Three ways to plan your path">
+        <div class="feature-window__top"><span>YOUR PATH, ONE STEP AT A TIME</span><span aria-hidden="true">GRADPATH / 01</span></div>
+        <div class="feature-window__viewport">
+          <div class="feature-window__track" id="home-slide-track">
+            <article class="feature-window__slide feature-window__slide--schools" role="group" aria-roledescription="slide" aria-label="1 of 3: Find your fit">
+              <div class="feature-window__copy"><span class="feature-window__step">01 / Explore</span>
+                <h2>Find a school that fits your goals.</h2>
+                <p>Search U.S. institutions and compare published outcomes by major and location.</p>
+                <a href="${esc(schoolHref)}" data-link>Explore schools ${icon("i-next")}</a></div>
+              <div class="feature-window__art feature-window__art--schools" aria-hidden="true">
+                <span class="mini-card mini-card--back">Major <strong>Computer Science</strong></span>
+                <span class="mini-card mini-card--front">School <strong>Find your fit</strong><span class="mini-card__line"></span><span class="mini-card__line mini-card__line--short"></span></span>
+              </div>
+            </article>
+            <article class="feature-window__slide feature-window__slide--funding" role="group" aria-roledescription="slide" aria-label="2 of 3: Build your funding plan" aria-hidden="true" inert>
+              <div class="feature-window__copy"><span class="feature-window__step">02 / Plan</span>
+                <h2>See the full funding picture.</h2>
+                <p>Add your savings and school costs to estimate the gap you may need to fund.</p>
+                <a href="${esc(planHref)}" data-link>${esc(planLabel)} ${icon("i-next")}</a></div>
+              <div class="feature-window__art feature-window__art--funding" aria-hidden="true">
+                <span class="funding-art__label">Your funding mix</span><span class="funding-art__bar"><i></i><i></i><i></i></span>
+                <span class="funding-art__key"><i></i>Savings <i></i>Aid <i></i>Possible borrowing</span>
+              </div>
+            </article>
+            <article class="feature-window__slide feature-window__slide--future" role="group" aria-roledescription="slide" aria-label="3 of 3: Compare your future" aria-hidden="true" inert>
+              <div class="feature-window__copy"><span class="feature-window__step">03 / Compare</span>
+                <h2>Look beyond graduation day.</h2>
+                <p>Compare debt and earnings, then estimate a repayment timeline for your own scenario.</p>
+                <a href="${esc(graphHref)}" data-link>View outcome graphs ${icon("i-next")}</a></div>
+              <div class="feature-window__art feature-window__art--future" aria-hidden="true">
+                <span class="future-art__axis">TODAY</span><span class="future-art__path"><i></i><i></i><i></i></span><span class="future-art__axis">YOUR NEXT CHAPTER</span>
+              </div>
+            </article>
+          </div>
+        </div>
+        <div class="feature-window__controls">
+          <span id="home-slide-status" class="feature-window__status" role="status">Slide 1 of 3: Find your fit</span>
+          <div class="feature-window__dots" role="group" aria-label="Choose a slide">
+            <button type="button" aria-label="Show slide 1: Find your fit" aria-current="true" data-slide="0"></button>
+            <button type="button" aria-label="Show slide 2: Build your funding plan" data-slide="1"></button>
+            <button type="button" aria-label="Show slide 3: Compare your future" data-slide="2"></button>
+          </div>
+          <div class="feature-window__arrows">
+            <button type="button" data-slide-prev aria-label="Previous slide">&larr;</button>
+            <button type="button" data-slide-next aria-label="Next slide">&rarr;</button>
+          </div>
+        </div>
+      </section>
     </header>
-    <h2 class="campus-section-title">Explore your options</h2>
+    <div class="home-section-heading"><span class="home-eyebrow">Choose where to begin</span><h2>Explore your options</h2></div>
     <section aria-label="Main choices" class="grid grid--3">
-      ${choice("i-school", "Explore schools and programs", "Search 4,043 schools and 320 majors and rank them by earnings and student debt.", hrefWith("/schools", ctx), "Explore schools")}
-      ${choice("i-chart", "Compare debt and earnings", "See whether typical earnings can support typical debt, by program, state or credential.", hrefWith("/graphs", ctx), "Compare outcomes")}
+      ${choice("i-school", "Explore schools and programs", "Search thousands of U.S. schools and compare available outcomes by major.", schoolHref, "Explore schools")}
+      ${choice("i-chart", "Compare debt and earnings", "See whether typical earnings can support typical debt, by program, state or credential.", graphHref, "Compare outcomes")}
       ${choice("i-plan", "Build my financial plan", "Estimate your funding gap, monthly loan payment and when you could be debt-free.", planHref, planLabel, true)}
     </section>
     <section class="section" aria-labelledby="lookup-h">
@@ -132,6 +186,35 @@ export async function overviewPage(main, ctx) {
       <div id="ov-filters">${loading("Loading filters")}</div>
       <div id="ov-results" class="section" aria-live="polite"></div>
     </section>`;
+  const carousel = $(".feature-window", main);
+  const track = $("#home-slide-track", carousel);
+  const slides = [...carousel.querySelectorAll(".feature-window__slide")];
+  const dots = [...carousel.querySelectorAll("[data-slide]")];
+  const labels = ["Find your fit", "Build your funding plan", "Compare your future"];
+  let currentSlide = 0;
+  const showSlide = (next) => {
+    currentSlide = (next + slides.length) % slides.length;
+    track.style.setProperty("--slide-index", currentSlide);
+    slides.forEach((slide, index) => {
+      slide.toggleAttribute("inert", index !== currentSlide);
+      if (index === currentSlide) slide.removeAttribute("aria-hidden");
+      else slide.setAttribute("aria-hidden", "true");
+    });
+    dots.forEach((dot, index) => {
+      if (index === currentSlide) dot.setAttribute("aria-current", "true");
+      else dot.removeAttribute("aria-current");
+    });
+    $("#home-slide-status", carousel).textContent = `Slide ${currentSlide + 1} of ${slides.length}: ${labels[currentSlide]}`;
+  };
+  $("[data-slide-prev]", carousel).addEventListener("click", () => showSlide(currentSlide - 1));
+  $("[data-slide-next]", carousel).addEventListener("click", () => showSlide(currentSlide + 1));
+  dots.forEach((dot) => dot.addEventListener("click", () => showSlide(Number(dot.dataset.slide))));
+  carousel.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      event.preventDefault();
+      showSlide(currentSlide + (event.key === "ArrowRight" ? 1 : -1));
+    }
+  });
   const results = $("#ov-results", main);
   const show = async (c) => {
     if (!["school", "major", "state", "credential", "school_type"].some((k) => c[k])) {
