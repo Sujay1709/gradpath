@@ -497,6 +497,18 @@ export async function planResultsPage(main) {
   const missing = r.notes.filter((n) => n.type.includes("Missing"));
   const assumptions = r.notes.filter((n) => n.type.includes("Assumption"));
   const inputs = r.notes.filter((n) => n.type.includes("You entered"));
+  // Give students concrete ways to replace broad or historical defaults with current facts.
+  const refineSteps = [
+    e.confidence?.startsWith("Low")
+      ? "Choose both your school and major to find the closest available historical outcome match."
+      : `Outcome match: ${e.confidence}. These are historical results, not a forecast of your personal earnings.`,
+    e.tuition_source?.startsWith("Scorecard")
+      ? "Replace published tuition with the current cost from your school's official cost-of-attendance page; include housing, fees, and confirmed grants."
+      : "Confirm tuition, housing, fees, and grants against your current school estimate and award letter.",
+    e.expected_salary_source?.startsWith("Scorecard")
+      ? "Compare the historical program median with current entry-level salary ranges for your target role and work location."
+      : "Compare your expected salary with current entry-level ranges for your target role and work location.",
+  ];
   const tag = (t, cls) => `<span class="tag tag--${cls}">${t}</span>`;
   const card = (title, value, note, hl = false) => `<div class="card kpi ${hl ? "card--highlight" : ""}">${tag("Estimate", "estimate")}
     <span class="kpi__label">${esc(title)}</span><span class="kpi__value">${value}</span><span class="kpi__note">${note}</span></div>`;
@@ -504,6 +516,12 @@ export async function planResultsPage(main) {
   $("#rs-body", main).innerHTML = `
     ${warn.length ? `<div class="notice notice--warning" role="alert">${icon("i-alert")}<div><strong>Check these answers:</strong><ul>${warn.map((w) => `<li>${esc(w.detail)}</li>`).join("")}</ul>
       <a href="/plan/edit" data-link>Edit my answers</a></div></div>` : ""}
+    <section class="section card" aria-labelledby="refine-estimate-h">
+      <h2 id="refine-estimate-h">Make this estimate more personal</h2>
+      <p>Start with these checks before relying on the result. Updating an assumption changes your scenario; it does not make future costs or earnings certain.</p>
+      <ol>${refineSteps.map((step) => `<li>${esc(step)}</li>`).join("")}</ol>
+      <a class="button button--secondary" href="/plan/edit" data-link>${icon("i-edit")}Update my assumptions</a>
+    </section>
     <section aria-label="Key results" class="grid grid--4 section">
       ${card("Estimated funding gap", money(e.funding_gap), `Total cost ${money(e.total_education_cost)} minus grants, savings, and included part-time contributions.`)}
       ${card("Debt when repayment begins", money(e.debt_at_repayment_start), `In ${esc(e.repayment_start)}, including ${money(e.accrued_interest_before_repayment)} of interest built up in school.`)}
