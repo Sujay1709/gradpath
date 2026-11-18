@@ -112,6 +112,17 @@ def _school_options_json(state, major, cip, credential, school_type, data_year) 
     d = get_directory()
     if len(d):
         schools = schools.merge(d[["institution_id", "city"]], on="institution_id", how="left")
+        # The field-of-study file suppresses small cohorts. Keep those institutions
+        # searchable for planning, while leaving their outcome tier unreported.
+        if not any((major, cip, credential, data_year)):
+            directory = d[["institution_id", "school_name", "city", "state", "school_type"]]
+            if state and state != "__all":
+                directory = directory[directory["state"] == state]
+            if school_type and school_type != "__all":
+                directory = directory[directory["school_type"] == school_type]
+            missing = directory[~directory["institution_id"].isin(schools["institution_id"])]
+            schools = pd.concat([schools, missing.rename(columns={"school_name": "institution_name"})[
+                ["institution_id", "institution_name", "state", "city"]]], ignore_index=True)
     else:
         schools = schools.assign(city=None)
     where = (schools["city"].fillna("") + ", " + schools["state"].fillna("")).str.strip(", ")
@@ -119,6 +130,7 @@ def _school_options_json(state, major, cip, credential, school_type, data_year) 
     fit = _school_financial_fit_map(state, major, cip, credential, school_type, data_year)
     out = pd.DataFrame({"text": text, "value": schools["institution_id"],
                         "financial_fit": schools["institution_id"].astype(str).map(fit)})
+    out.loc[out["financial_fit"].isna(), "text"] += " (outcomes not reported)"
     out = out.iloc[out["text"].str.lower().argsort(kind="stable")]
     return out.to_json(orient="records", force_ascii=False)
 
