@@ -650,7 +650,8 @@ def _plan_context(pp: PlanParams, flt: Filters) -> dict:
     tax_rows = []
     if work_state:
         for s in result["scenarios"]:
-            est = estimate_state_tax(work_state, s["starting_salary"]) if s["starting_salary"] else None
+            est = (estimate_state_tax(work_state, s["starting_salary"])
+                   if s["starting_salary"] is not None else None)
             tax_rows.append((s["scenario"], est))
 
     return dict(inputs=inputs, result=result, msgs=msgs, provenance=provenance, missing=missing, iid=iid,

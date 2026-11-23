@@ -202,6 +202,21 @@ class PlanCalculateTests(unittest.TestCase):
         for key in ("annual_tuition_used", "total_education_cost", "funding_gap", "debt_at_repayment_start"):
             self.assertEqual(monthly[key], annual[key], key)
 
+    def test_out_of_order_salaries_are_reported_without_reordering(self):
+        from app_routes import plan_calculate
+        result = plan_calculate({"school": "186380", "start_year": 2027, "grad_year": 2031,
+                                 "borrowing": 10000, "salary_low": 65000,
+                                 "salary_mid": 50000, "salary_high": 40000})
+        self.assertTrue(any("out of order" in n["detail"] for n in result["notes"]))
+        self.assertEqual([s["starting_salary"] for s in result["scenarios"]], [65000, 50000, 40000])
+
+    def test_inconsistent_years_are_corrected_and_disclosed(self):
+        from app_routes import plan_calculate
+        result = plan_calculate({"school": "186380", "start_year": 2031, "grad_year": 2027,
+                                 "borrowing": 10000, "salary_mid": 50000})
+        self.assertEqual(result["estimate"]["grad_year_used"], 2032)
+        self.assertTrue(any("Graduation year must be after" in n["detail"] for n in result["notes"]))
+
     def test_school_source_has_official_link_and_monthly_arithmetic(self):
         from app_routes import school_tuition_sources
         source = school_tuition_sources(Filters(school="186380"))[0]
@@ -247,6 +262,14 @@ class FilterTests(unittest.TestCase):
         self.assertEqual(parse_number("nan", "x", 0, 100, 1.0, msgs), 1.0)
         self.assertEqual(len(msgs), 3)
         self.assertEqual(parse_number("'; DROP TABLE x;--", "x", 0, 1, None, []), None)
+
+    def test_parse_number_inclusive_bounds_and_out_of_range_values(self):
+        msgs = []
+        self.assertEqual(parse_number("0", "x", 0, 25, None, msgs), 0)
+        self.assertEqual(parse_number("25", "x", 0, 25, None, msgs), 25)
+        self.assertIsNone(parse_number("-0.01", "x", 0, 25, None, msgs))
+        self.assertIsNone(parse_number("25.01", "x", 0, 25, None, msgs))
+        self.assertEqual(len(msgs), 2)
 
 
 class DataTests(unittest.TestCase):

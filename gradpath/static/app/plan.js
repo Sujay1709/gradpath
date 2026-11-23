@@ -491,8 +491,9 @@ export async function planResultsPage(main) {
       [k, clean(d[k]) === "" ? null : String(d[k]).trim()]));
     r = await apiPost("/plan/calculate", body);
   } catch (e) { $("#rs-body", main).innerHTML = errorBox(`We couldn't calculate your plan (${esc(e.message)}). Check that GradPath is running, then try again.`); return; }
-  const e = r.estimate, sc = r.scenarios.filter((s) => s.starting_salary);
+  const e = r.estimate, sc = r.scenarios.filter((s) => s.starting_salary != null && s.monthly_payment != null);
   const pays = sc.map((s) => s.monthly_payment);
+  const affordability = r.scenarios.filter((s) => s.affordability_warning);
   const warn = r.notes.filter((n) => n.type.includes("Input check"));
   const missing = r.notes.filter((n) => n.type.includes("Missing"));
   const assumptions = r.notes.filter((n) => n.type.includes("Assumption"));
@@ -541,6 +542,7 @@ export async function planResultsPage(main) {
       <details class="accordion" style="margin-top:var(--space-4)"><summary>View the balance as a table</summary><div>
       ${table({ caption: "Remaining balance each October", rows: yearly, columns: [{ label: "Month", key: "month" },
         ...SERIES.filter(([k]) => r.timeline.some((x) => x[k] != null)).map(([k, n]) => ({ label: n, num: true, value: (x) => money(x[k]) }))] })}</div></details></section>` : ""}
+    ${affordability.length ? `<div class="notice notice--warning" role="alert"><div><strong>Affordability check</strong><ul>${affordability.map((s) => `<li><strong>${esc(s.scenario)}:</strong> ${esc(s.affordability_warning)}</li>`).join("")}</ul><p class="meta">30% is a planning prompt for this dashboard, not a universal affordability rule. Compare payments with take-home pay and essential expenses.</p></div></div>` : ""}
     <section class="section" aria-labelledby="sc-h"><h2 id="sc-h">Salary scenarios</h2>
       ${table({ caption: "Repayment under each starting salary", rows: r.scenarios, columns: [
         { label: "Scenario", key: "scenario" }, { label: "Starting salary", num: true, value: (s) => money(s.starting_salary) },
@@ -548,6 +550,7 @@ export async function planResultsPage(main) {
         { label: "Salary source", value: (s) => s.salary_source },
         { label: "Monthly payment", num: true, value: (s) => s.monthly_payment == null ? "—" : money(s.monthly_payment, true) },
         { label: "Share of estimated net pay", num: true, value: (s) => s.payment_share_of_net_pct == null ? "—" : `${s.payment_share_of_net_pct}%` },
+        { label: "Affordability check", value: (s) => s.affordability_warning || (s.starting_salary == null ? "Salary not entered" : "No threshold warning") },
         { label: "Time to repay", key: "time_to_repay" }, { label: "Final payment", key: "debt_free_date" },
         { label: "Total interest", num: true, value: (s) => money(s.total_interest) },
         { label: "Est. state income tax / yr", num: true, value: (s) => money(s.est_state_income_tax) }] })}

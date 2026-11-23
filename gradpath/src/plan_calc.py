@@ -191,10 +191,11 @@ def compute_plan(p: PlanInputs) -> dict:
     for label, salary, net_salary in (("Conservative", p.salary_conservative, p.salary_conservative_net),
                                       ("Expected", p.salary_expected, p.salary_expected_net),
                                       ("Aspirational", p.salary_aspirational, p.salary_aspirational_net)):
-        if salary is None or salary <= 0:
+        if salary is None:
             scenarios.append({"scenario": label, "starting_salary": None, "monthly_payment": None,
                               "months_to_debt_free": None, "time_to_repay": "—", "debt_free_date": "Missing salary",
-                              "total_interest": None, "payment_share_of_gross_pct": None})
+                              "total_interest": None, "payment_share_of_gross_pct": None,
+                              "payment_share_of_net_pct": None, "affordability_warning": None})
             continue
         budget_income = net_salary if net_salary is not None else salary
         budget = max(std_payment, round_up_cents(budget_income / 12 * p.repay_pct / 100))
@@ -205,17 +206,28 @@ def compute_plan(p: PlanInputs) -> dict:
             date = "No loan balance"
         else:
             date = final_payment_month(p.grad_year, months)
+        gross_share = round(budget * 12 / salary * 100, 1) if principal > 0 and salary > 0 else None
+        affordability_warning = None
+        if principal > 0 and salary <= 0:
+            affordability_warning = ("No income is reported. The standard-plan payment is shown only as a "
+                                     "reference, not as an income-supported payment estimate.")
+        elif principal > 0 and gross_share is not None and gross_share > 30:
+            affordability_warning = (f"The estimated payment is {gross_share:.1f}% of gross salary, above the "
+                                     "30% planning prompt; taxes and living costs are not included.")
         scenarios.append({
             "scenario": label,
             "starting_salary": round(salary, 0),
-            "estimated_net_salary": round(net_salary, 0) if net_salary is not None else None,
+            "estimated_net_salary": round(net_salary, 0) if net_salary is not None else (0 if salary == 0 else None),
             "monthly_payment": round(budget, 2) if principal > 0 else 0.0,
             "months_to_debt_free": months,
             "time_to_repay": duration_label(months) if months else ("—" if months is None else "No loans"),
             "debt_free_date": date,
             "total_interest": total_interest(principal, p.rate_pct, budget),
-            "payment_share_of_gross_pct": round(budget * 12 / salary * 100, 1) if principal > 0 else 0.0,
-            "payment_share_of_net_pct": round(budget * 12 / budget_income * 100, 1) if principal > 0 and budget_income > 0 else 0.0,
+            "payment_share_of_gross_pct": gross_share if principal > 0 else 0.0,
+            "payment_share_of_net_pct": (round(budget * 12 / budget_income * 100, 1)
+                                          if principal > 0 and budget_income > 0
+                                          else None if principal > 0 else 0.0),
+            "affordability_warning": affordability_warning,
         })
 
     std_months = months_to_payoff(principal, p.rate_pct, std_payment)
